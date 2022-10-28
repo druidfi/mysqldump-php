@@ -55,10 +55,7 @@ jobs:
     steps:
 
       - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-          ref: ${{ github.event.pull_request.head.ref }}
+        uses: actions/checkout@v2
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
