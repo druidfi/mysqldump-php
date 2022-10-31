@@ -59,6 +59,10 @@ class Mysqldump
     private array $tableWheres = [];
     private array $tableLimits = [];
 
+    // pended SQL defaults to nothing
+    private string $prependSQL = '';
+    private string $appendSQL = '';
+
     /**
      * Constructor of Mysqldump.
      *
@@ -164,6 +168,30 @@ class Mysqldump
     }
 
     /**
+     * Add SQL to the start of the backup
+     *
+     * @param string $sql to add at start of backup. Caller is responsible for ensuring the SQL is valid the the backup.
+     *  */
+    public function addPrependSQL(string $sql)
+    {
+        $this->prependSQL .= $sql;
+
+        return $this;
+    }
+
+    /**
+     * Add SQL to the end of the backup
+     *
+     * @param string $sql to add at end of backup. Caller is responsible for ensuring the SQL is valid the the backup.
+     */
+    public function addAppendSQL(string $sql)
+    {
+        $this->appendSQL .= $sql;
+
+        return $this;
+    }
+
+    /**
      * Primary function, triggers dumping.
      *
      * @param string|null $filename Name of file to write sql dump to
@@ -190,6 +218,13 @@ class Mysqldump
         // Write some basic info to output file
         if (!$this->settings->skipComments()) {
             $this->write($this->getDumpFileHeader());
+        }
+
+        // Write prepend SQL to output file
+        if ($this->prependSQL) {
+            $this->write("-- mysqldump-php prepended SQL". PHP_EOL.
+                         $this->prependSQL. PHP_EOL.
+                         "-- mysqldump-php end prepended SQL". PHP_EOL. PHP_EOL);
         }
 
         // Store server settings and use saner defaults to dump
@@ -232,6 +267,13 @@ class Mysqldump
 
         // Restore saved parameters.
         $this->write($this->db->restoreParameters());
+
+        // Write append SQL to output file
+        if ($this->appendSQL) {
+            $this->write("-- mysqldump-php appended SQL". PHP_EOL.
+                         $this->appendSQL. PHP_EOL.
+                         "-- mysqldump-php end appended SQL". PHP_EOL. PHP_EOL);
+        }
 
         // Write some stats to output file.
         if (!$this->settings->skipComments()) {
