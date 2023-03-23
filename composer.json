@@ -24,7 +24,7 @@
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "3.*",
-        "phpunit/phpunit": "^8.5.15 || ^9"
+        "phpunit/phpunit": "^8.5.15 || ^9 || ^10"
     },
     "autoload": {
         "psr-4": {
