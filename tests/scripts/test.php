@@ -99,7 +99,7 @@ try {
         "mysql:host=$host;dbname=test011",
         $user,
         "",
-        ['complete-insert' =>  false]
+        ['complete-insert' => false, 'hex-blob' => false]
     );
     $dump->start("output/mysqldump-php_test011a.sql");
 
