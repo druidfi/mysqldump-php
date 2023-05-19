@@ -178,6 +178,9 @@ All options:
 - **no-autocommit**
   - Option to disable autocommit (faster inserts, no problems with index keys)
   - MySQL docs [5.7](https://dev.mysql.com/doc/refman/5.7/en/commit.html)
+- **no-create-db**
+  - Option to disable the dump of create database statements.
+  - https://dev.mysql.com/doc/refman/5.1/en/mysqldump.html#option_mysqldump_no-create-db
 - **no-create-info**
   - MySQL docs [5.7](https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#option_mysqldump_no-create-info)
 - **no-data**

@@ -34,6 +34,7 @@ class DumpSettings
         'insert-ignore' => false,
         'net_buffer_length' => 1000000,
         'no-autocommit' => true,
+        'no-create-db' => false,
         'no-create-info' => false,
         'lock-tables' => true,
         'routines' => false,
@@ -121,6 +122,11 @@ class DumpSettings
     public function getNetBufferLength(): int
     {
         return $this->settings['net_buffer_length'];
+    }
+
+    public function getNoCreateDb(): bool
+    {
+        return $this->settings['no-create-db'];
     }
 
     public function getNoData(): array

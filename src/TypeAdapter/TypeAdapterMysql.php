@@ -61,6 +61,10 @@ class TypeAdapterMysql implements TypeAdapterInterface
 
     public function databases(string $databaseName): string
     {
+        if ($this->settings->getNoCreateDb()) {
+            return '';
+        }
+
         $stmt = $this->db->query("SHOW VARIABLES LIKE 'character_set_database';");
         $characterSet = $stmt->fetchColumn(1);
         $stmt->closeCursor();
