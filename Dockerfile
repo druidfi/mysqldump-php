@@ -16,6 +16,10 @@ FROM druidfi/php:8.2 as php-82
 
 RUN sudo apk --update -X https://dl-cdn.alpinelinux.org/alpine/edge/community --no-cache add php82-pdo php82-pdo_mysql
 
+FROM druidfi/php:8.3 as php-83
+
+RUN sudo apk --update -X https://dl-cdn.alpinelinux.org/alpine/edge/community --no-cache add php82-pdo php82-pdo_mysql
+
 FROM php-${PHP_SHORT_VERSION}
 
 RUN sudo apk --update --no-cache add bash mysql-client \

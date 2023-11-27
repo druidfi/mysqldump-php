@@ -21,14 +21,6 @@ jobs:
           - os: ubuntu-20.04
             database: 'mysql'
             database-version: '5.7'
-            php-version: '7.4'
-          - os: ubuntu-20.04
-            database: 'mysql'
-            database-version: '5.7'
-            php-version: '8.0'
-          - os: ubuntu-20.04
-            database: 'mysql'
-            database-version: '5.7'
             php-version: '8.1'
           - os: ubuntu-20.04
             database: 'mysql'
@@ -42,14 +34,6 @@ jobs:
           - os: ubuntu-latest
             database: 'mysql'
             database-version: '8.0'
-            php-version: '7.4'
-          - os: ubuntu-latest
-            database: 'mysql'
-            database-version: '8.0'
-            php-version: '8.0'
-          - os: ubuntu-latest
-            database: 'mysql'
-            database-version: '8.0'
             php-version: '8.1'
           - os: ubuntu-latest
             database: 'mysql'
@@ -60,14 +44,6 @@ jobs:
             database-version: '8.0'
             php-version: '8.3'
           # MariaDB 10.11 LTS
-          - os: ubuntu-20.04
-            database: 'mariadb'
-            database-version: '10.11'
-            php-version: '7.4'
-          - os: ubuntu-20.04
-            database: 'mariadb'
-            database-version: '10.11'
-            php-version: '8.0'
           - os: ubuntu-20.04
             database: 'mariadb'
             database-version: '10.11'

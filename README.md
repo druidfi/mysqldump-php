@@ -26,7 +26,7 @@ Out of the box, `mysqldump-php` supports backing up table structures, the data i
 
 ## Requirements
 
-- PHP 7.4 or 8.x with PDO - [see supported versions](https://www.php.net/supported-versions.php)
+- PHP 8.x with PDO - [see supported versions](https://www.php.net/supported-versions.php)
 - MySQL 5.7 or newer (and compatible MariaDB)
 
 ## Installing
