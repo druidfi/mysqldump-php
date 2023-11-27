@@ -5,6 +5,7 @@ on:
     branches:
       # Push events on main branch
       - main
+      - 2.x
   pull_request:
 
 jobs:
