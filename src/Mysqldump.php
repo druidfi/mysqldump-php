@@ -762,6 +762,7 @@ class Mysqldump
         }
 
         $dbHandler = $this->conn;
+        $hexBlobEnabled = $this->settings->isEnabled('hex-blob');
         foreach ($row as $colName => $colValue) {
             if ($this->transformColumnValueCallable) {
                 $colValue = call_user_func($this->transformColumnValueCallable, $tableName, $colName, $colValue, $row);
@@ -771,7 +772,7 @@ class Mysqldump
             if ($colValue === null) {
                 $ret[] = "NULL";
                 continue;
-            } elseif ($this->settings->isEnabled('hex-blob') && $colType['is_blob']) {
+            } elseif ($hexBlobEnabled && $colType['is_blob']) {
                 if ($colType['type'] == 'bit' || !empty($colValue)) {
                     $ret[] = sprintf('0x%s', $colValue);
                 } else {
