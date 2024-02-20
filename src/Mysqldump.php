@@ -761,35 +761,32 @@ class Mysqldump
             $row = call_user_func($this->transformTableRowCallable, $tableName, $row);
         }
 
+        $dbHandler = $this->conn;
         foreach ($row as $colName => $colValue) {
             if ($this->transformColumnValueCallable) {
                 $colValue = call_user_func($this->transformColumnValueCallable, $tableName, $colName, $colValue, $row);
             }
+            $colType = $columnTypes[$colName];
 
-            $ret[] = $this->escape($colValue, $columnTypes[$colName]);
+            if ($colValue === null) {
+                $ret[] = "NULL";
+                continue;
+            } elseif ($this->settings->isEnabled('hex-blob') && $colType['is_blob']) {
+                if ($colType['type'] == 'bit' || !empty($colValue)) {
+                    $ret[] = sprintf('0x%s', $colValue);
+                } else {
+                    $ret[] = "''";
+                }
+                continue;
+            } elseif ($colType['is_numeric']) {
+                $ret[] = $colValue;
+                continue;
+            }
+
+            $ret[] = $dbHandler->quote($colValue);
         }
 
         return $ret;
-    }
-
-    /**
-     * Escape values with quotes when needed.
-     */
-    private function escape(?string $colValue, array $colType)
-    {
-        if (is_null($colValue)) {
-            return 'NULL';
-        } elseif ($this->settings->isEnabled('hex-blob') && $colType['is_blob']) {
-            if ($colType['type'] == 'bit' || !empty($colValue)) {
-                return sprintf('0x%s', $colValue);
-            } else {
-                return "''";
-            }
-        } elseif ($colType['is_numeric']) {
-            return $colValue;
-        }
-
-        return $this->conn->quote($colValue);
     }
 
     /**
