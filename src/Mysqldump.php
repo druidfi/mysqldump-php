@@ -837,6 +837,7 @@ class Mysqldump
         $ignore = $this->settings->isEnabled('insert-ignore') ? '  IGNORE' : '';
         $count = 0;
 
+        $line = '';
         foreach ($resultSet as $row) {
             $count++;
             $values = $this->prepareColumnValues($tableName, $row);
@@ -844,34 +845,33 @@ class Mysqldump
 
             if ($onlyOnce || !$this->settings->isEnabled('extended-insert')) {
                 if ($this->settings->isEnabled('complete-insert') && count($colNames)) {
-                    $lineSize += $this->write(sprintf(
+                    $line .= sprintf(
                         'INSERT%s INTO `%s` (%s) VALUES (%s)',
                         $ignore,
                         $tableName,
                         implode(', ', $colNames),
                         $valueList
-                    ));
-                } else {
-                    $lineSize += $this->write(
-                        sprintf('INSERT%s INTO `%s` VALUES (%s)', $ignore, $tableName, $valueList)
                     );
+                } else {
+                    $line .= sprintf('INSERT%s INTO `%s` VALUES (%s)', $ignore, $tableName, $valueList);
                 }
                 $onlyOnce = false;
             } else {
-                $lineSize += $this->write(sprintf(',(%s)', $valueList));
+                $line .= sprintf(',(%s)', $valueList);
             }
 
-            if (($lineSize > $this->settings->getNetBufferLength())
+            if ((strlen($line) > $this->settings->getNetBufferLength())
                 || !$this->settings->isEnabled('extended-insert')) {
                 $onlyOnce = true;
-                $lineSize = $this->write(';' . PHP_EOL);
+                $this->write($line . ';' . PHP_EOL);
+                $line = '';
             }
         }
 
         $resultSet->closeCursor();
 
-        if (!$onlyOnce) {
-            $this->write(';' . PHP_EOL);
+        if ($line !== '') {
+            $this->write($line. ';' . PHP_EOL);
         }
 
         $this->endListValues($tableName, $count);
