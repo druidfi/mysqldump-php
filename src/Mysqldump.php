@@ -758,12 +758,12 @@ class Mysqldump
         $columnTypes = $this->tableColumnTypes[$tableName];
 
         if ($this->transformTableRowCallable) {
-            $row = call_user_func($this->transformTableRowCallable, $tableName, $row);
+            $row = ($this->transformTableRowCallable)($tableName, $row);
         }
 
         foreach ($row as $colName => $colValue) {
             if ($this->transformColumnValueCallable) {
-                $colValue = call_user_func($this->transformColumnValueCallable, $tableName, $colName, $colValue, $row);
+                $colValue = ($this->transformColumnValueCallable)($tableName, $colName, $colValue, $row);
             }
 
             $ret[] = $this->escape($colValue, $columnTypes[$colName]);
@@ -877,7 +877,7 @@ class Mysqldump
         $this->endListValues($tableName, $count);
 
         if ($this->infoCallable && is_callable($this->infoCallable)) {
-            call_user_func($this->infoCallable, 'table', ['name' => $tableName, 'rowCount' => $count]);
+            ($this->infoCallable)('table', ['name' => $tableName, 'rowCount' => $count]);
         }
 
         $this->settings->setCompleteInsert($completeInsertBackup);
