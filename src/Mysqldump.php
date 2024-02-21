@@ -773,7 +773,7 @@ class Mysqldump
                 $ret[] = "NULL";
                 continue;
             } elseif ($hexBlobEnabled && $colType['is_blob']) {
-                if ($colType['type'] == 'bit' || !empty($colValue)) {
+                if ($colType['type'] == 'bit' || $colValue !== '') {
                     $ret[] = sprintf('0x%s', $colValue);
                 } else {
                     $ret[] = "''";
