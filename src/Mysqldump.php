@@ -767,19 +767,23 @@ class Mysqldump
             if ($this->transformColumnValueCallable) {
                 $colValue = call_user_func($this->transformColumnValueCallable, $tableName, $colName, $colValue, $row);
             }
-            $colType = $columnTypes[$colName];
 
             if ($colValue === null) {
                 $ret[] = "NULL";
                 continue;
-            } elseif ($hexBlobEnabled && $colType['is_blob']) {
+            }
+
+            $colType = $columnTypes[$colName];
+            if ($hexBlobEnabled && $colType['is_blob']) {
                 if ($colType['type'] == 'bit' || $colValue !== '') {
                     $ret[] = sprintf('0x%s', $colValue);
                 } else {
                     $ret[] = "''";
                 }
                 continue;
-            } elseif ($colType['is_numeric']) {
+            }
+
+            if ($colType['is_numeric']) {
                 $ret[] = $colValue;
                 continue;
             }
