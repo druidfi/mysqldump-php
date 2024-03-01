@@ -16,7 +16,7 @@ services:
 
   db3:
     container_name: "mysqldump-php-mariadb-80"
-    image: druidfi/mariadb:10.6-drupal
+    image: druidfi/mariadb:10.11-drupal
     ports:
       - 3306
 
