@@ -839,6 +839,11 @@ class Mysqldump
         $ignore = $this->settings->isEnabled('insert-ignore') ? '  IGNORE' : '';
         $count = 0;
 
+        $isInfoCallable = $this->infoCallable && is_callable($this->infoCallable);
+        if ($isInfoCallable) {
+            ($this->infoCallable)('table', ['name' => $tableName, 'completed' => false, 'rowCount' => $count]);
+        }
+
         $line = '';
         foreach ($resultSet as $row) {
             $count++;
@@ -867,6 +872,10 @@ class Mysqldump
                 $onlyOnce = true;
                 $this->write($line . ';' . PHP_EOL);
                 $line = '';
+
+                if ($isInfoCallable) {
+                    ($this->infoCallable)('table', ['name' => $tableName, 'completed' => false, 'rowCount' => $count]);
+                }
             }
         }
 
@@ -878,8 +887,8 @@ class Mysqldump
 
         $this->endListValues($tableName, $count);
 
-        if ($this->infoCallable && is_callable($this->infoCallable)) {
-            ($this->infoCallable)('table', ['name' => $tableName, 'rowCount' => $count]);
+        if ($isInfoCallable) {
+            ($this->infoCallable)('table', ['name' => $tableName, 'completed' => true, 'rowCount' => $count]);
         }
 
         $this->settings->setCompleteInsert($completeInsertBackup);
