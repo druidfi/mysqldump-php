@@ -758,38 +758,40 @@ class Mysqldump
         $columnTypes = $this->tableColumnTypes[$tableName];
 
         if ($this->transformTableRowCallable) {
-            $row = call_user_func($this->transformTableRowCallable, $tableName, $row);
+            $row = ($this->transformTableRowCallable)($tableName, $row);
         }
 
+        $dbHandler = $this->conn;
+        $hexBlobEnabled = $this->settings->isEnabled('hex-blob');
         foreach ($row as $colName => $colValue) {
             if ($this->transformColumnValueCallable) {
-                $colValue = call_user_func($this->transformColumnValueCallable, $tableName, $colName, $colValue, $row);
+                $colValue = ($this->transformColumnValueCallable)($tableName, $colName, $colValue, $row);
             }
 
-            $ret[] = $this->escape($colValue, $columnTypes[$colName]);
+            if ($colValue === null) {
+                $ret[] = "NULL";
+                continue;
+            }
+
+            $colType = $columnTypes[$colName];
+            if ($hexBlobEnabled && $colType['is_blob']) {
+                if ($colType['type'] == 'bit' || $colValue !== '') {
+                    $ret[] = sprintf('0x%s', $colValue);
+                } else {
+                    $ret[] = "''";
+                }
+                continue;
+            }
+
+            if ($colType['is_numeric']) {
+                $ret[] = $colValue;
+                continue;
+            }
+
+            $ret[] = $dbHandler->quote($colValue);
         }
 
         return $ret;
-    }
-
-    /**
-     * Escape values with quotes when needed.
-     */
-    private function escape(?string $colValue, array $colType)
-    {
-        if (is_null($colValue)) {
-            return 'NULL';
-        } elseif ($this->settings->isEnabled('hex-blob') && $colType['is_blob']) {
-            if ($colType['type'] == 'bit' || !empty($colValue)) {
-                return sprintf('0x%s', $colValue);
-            } else {
-                return "''";
-            }
-        } elseif ($colType['is_numeric']) {
-            return $colValue;
-        }
-
-        return $this->conn->quote($colValue);
     }
 
     /**
@@ -837,6 +839,12 @@ class Mysqldump
         $ignore = $this->settings->isEnabled('insert-ignore') ? '  IGNORE' : '';
         $count = 0;
 
+        $isInfoCallable = $this->infoCallable && is_callable($this->infoCallable);
+        if ($isInfoCallable) {
+            ($this->infoCallable)('table', ['name' => $tableName, 'completed' => false, 'rowCount' => $count]);
+        }
+
+        $line = '';
         foreach ($resultSet as $row) {
             $count++;
             $values = $this->prepareColumnValues($tableName, $row);
@@ -844,40 +852,43 @@ class Mysqldump
 
             if ($onlyOnce || !$this->settings->isEnabled('extended-insert')) {
                 if ($this->settings->isEnabled('complete-insert') && count($colNames)) {
-                    $lineSize += $this->write(sprintf(
+                    $line .= sprintf(
                         'INSERT%s INTO `%s` (%s) VALUES (%s)',
                         $ignore,
                         $tableName,
                         implode(', ', $colNames),
                         $valueList
-                    ));
-                } else {
-                    $lineSize += $this->write(
-                        sprintf('INSERT%s INTO `%s` VALUES (%s)', $ignore, $tableName, $valueList)
                     );
+                } else {
+                    $line .= sprintf('INSERT%s INTO `%s` VALUES (%s)', $ignore, $tableName, $valueList);
                 }
                 $onlyOnce = false;
             } else {
-                $lineSize += $this->write(sprintf(',(%s)', $valueList));
+                $line .= sprintf(',(%s)', $valueList);
             }
 
-            if (($lineSize > $this->settings->getNetBufferLength())
+            if ((strlen($line) > $this->settings->getNetBufferLength())
                 || !$this->settings->isEnabled('extended-insert')) {
                 $onlyOnce = true;
-                $lineSize = $this->write(';' . PHP_EOL);
+                $this->write($line . ';' . PHP_EOL);
+                $line = '';
+
+                if ($isInfoCallable) {
+                    ($this->infoCallable)('table', ['name' => $tableName, 'completed' => false, 'rowCount' => $count]);
+                }
             }
         }
 
         $resultSet->closeCursor();
 
-        if (!$onlyOnce) {
-            $this->write(';' . PHP_EOL);
+        if ($line !== '') {
+            $this->write($line. ';' . PHP_EOL);
         }
 
         $this->endListValues($tableName, $count);
 
-        if ($this->infoCallable && is_callable($this->infoCallable)) {
-            call_user_func($this->infoCallable, 'table', ['name' => $tableName, 'rowCount' => $count]);
+        if ($isInfoCallable) {
+            ($this->infoCallable)('table', ['name' => $tableName, 'completed' => true, 'rowCount' => $count]);
         }
 
         $this->settings->setCompleteInsert($completeInsertBackup);
