@@ -237,7 +237,7 @@ are not available in mysqldump.
 
 Local setup for tests:
 
-```
+```console
 docker compose up -d --build
 docker compose exec php81 /app/tests/scripts/create_users.sh
 docker compose exec php81 /app/tests/scripts/create_users.sh db2
