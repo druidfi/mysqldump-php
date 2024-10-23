@@ -238,7 +238,7 @@ are not available in mysqldump.
 Local setup for tests:
 
 ```console
-docker compose up -d --build
+docker compose up --wait --build
 docker compose exec php81 /app/tests/scripts/create_users.sh
 docker compose exec php81 /app/tests/scripts/create_users.sh db2
 docker compose exec php81 /app/tests/scripts/create_users.sh db3
@@ -246,14 +246,17 @@ docker compose exec -w /app/tests/scripts php74 ./test.sh
 docker compose exec -w /app/tests/scripts php80 ./test.sh
 docker compose exec -w /app/tests/scripts php81 ./test.sh
 docker compose exec -w /app/tests/scripts php82 ./test.sh
+docker compose exec -w /app/tests/scripts php83 ./test.sh
 docker compose exec -w /app/tests/scripts php74 ./test.sh db2
 docker compose exec -w /app/tests/scripts php80 ./test.sh db2
 docker compose exec -w /app/tests/scripts php81 ./test.sh db2
 docker compose exec -w /app/tests/scripts php82 ./test.sh db2
+docker compose exec -w /app/tests/scripts php83 ./test.sh db2
 docker compose exec -w /app/tests/scripts php74 ./test.sh db3
 docker compose exec -w /app/tests/scripts php80 ./test.sh db3
 docker compose exec -w /app/tests/scripts php81 ./test.sh db3
 docker compose exec -w /app/tests/scripts php82 ./test.sh db3
+docker compose exec -w /app/tests/scripts php83 ./test.sh db3
 ```
 
 ## Credits
