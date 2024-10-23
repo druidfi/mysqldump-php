@@ -7,6 +7,7 @@
 **/*.checksum
 /composer.lock
 /composer.phar
+/docs/cache/
 /tests/scripts/output/*.checksum
 /tests/scripts/output/*.sql
 /vendor/

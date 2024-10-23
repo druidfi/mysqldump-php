@@ -259,6 +259,14 @@ docker compose exec -w /app/tests/scripts php82 ./test.sh db3
 docker compose exec -w /app/tests/scripts php83 ./test.sh db3
 ```
 
+## Docs
+
+Docs can be created by running:
+
+```
+docker run --rm -v "$(pwd):/data" "phpdoc/phpdoc:3"
+```
+
 ## Credits
 
 Forked from Diego Torres's version which have latest updates from 2020. Use it for PHP 7.3 and older.
