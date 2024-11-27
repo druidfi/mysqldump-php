@@ -836,7 +836,7 @@ class Mysqldump
         $resultSet = $this->conn->query($stmt);
         $resultSet->setFetchMode(PDO::FETCH_ASSOC);
 
-        $ignore = $this->settings->isEnabled('insert-ignore') ? ' IGNORE' : '';
+        $ignore = $this->settings->isEnabled('insert-ignore') ? '  IGNORE' : '';
         $count = 0;
 
         $isInfoCallable = $this->infoCallable && is_callable($this->infoCallable);
