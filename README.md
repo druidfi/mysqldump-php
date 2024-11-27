@@ -267,6 +267,14 @@ Docs can be created by running:
 docker run --rm -v "$(pwd):/data" "phpdoc/phpdoc:3"
 ```
 
+## Docs
+
+Docs can be created by running:
+
+```
+docker run --rm -v "$(pwd):/data" "phpdoc/phpdoc:3"
+```
+
 ## Credits
 
 Forked from Diego Torres's version which have latest updates from 2020. Use it for PHP 7.3 and older.
