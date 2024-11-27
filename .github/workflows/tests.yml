@@ -77,12 +77,6 @@ jobs:
 
     steps:
 
-      - name: Setup mysqldump
-        run: |
-          shopt -s expand_aliases
-          alias mysqldump='docker exec db mysqldump'
-          mysqldump --version
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -103,11 +97,12 @@ jobs:
       - name: Run PHPunit tests
         run: vendor/bin/phpunit
 
-      - name: Get mysqldump version
-        run: mysqldump --version
-
       - name: Create user and databases for testing
         run: cat docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql | mysql -h127.0.0.1 -uroot -pexample
 
       - name: Run test script
-        run: cd tests/scripts && ./test.sh 127.0.0.1
+        run: |
+          shopt -s expand_aliases
+          alias mysqldump='docker exec db mysqldump'
+          mysqldump --version
+          cd tests/scripts && ./test.sh 127.0.0.1
