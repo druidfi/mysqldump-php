@@ -16,7 +16,7 @@ jobs:
 
     services:
       db:
-        image: ${{ matrix.database_image }}
+        image: ${{ matrix.database }}:${{ matrix.database_version }}
         env:
           # The MySQL docker container requires these environment variables to be set
           # so we can create and migrate the test database.
@@ -39,30 +39,38 @@ jobs:
 
           # MySQL 8.0
           - os: ubuntu-latest
-            database_image: mysql:8.0
+            database: mysql
+            database_version: 8.0
             php-version: 8.1
           - os: ubuntu-latest
-            database_image: mysql:8.0
+            database: mysql
+            database_version: 8.0
             php-version: 8.2
           - os: ubuntu-latest
-            database_image: mysql:8.0
+            database: mysql
+            database_version: 8.0
             php-version: 8.3
           - os: ubuntu-latest
-            database_image: mysql:8.0
+            database: mysql
+            database_version: 8.0
             php-version: 8.4
 
           # MariaDB 10.11 LTS
           - os: ubuntu-20.04
-            database_image: mariadb:10.11
+            database: mariadb
+            database_version: 10.11
             php-version: 8.1
           - os: ubuntu-20.04
-            database_image: mariadb:10.11
+            database: mariadb
+            database_version: 10.11
             php-version: 8.2
           - os: ubuntu-20.04
-            database_image: mariadb:10.11
+            database: mariadb
+            database_version: 10.11
             php-version: 8.3
           - os: ubuntu-20.04
-            database_image: mariadb:10.11
+            database: mariadb
+            database_version: 10.11
             php-version: 8.4
 
     steps:
