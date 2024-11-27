@@ -21,6 +21,7 @@ jobs:
           # The MySQL docker container requires these environment variables to be set
           # so we can create and migrate the test database.
           # See: https://hub.docker.com/_/mysql
+          MARIADB_ROOT_PASSWORD: example
           MYSQL_ROOT_PASSWORD: example
           MYSQL_DATABASE: example
           MYSQL_USER: example
