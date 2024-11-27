@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOST=${1:-db}
+HOST=${1:-mysql}
 USER=example
 PASS=example
 MYSQL_CMD="mysql -h $HOST -u $USER -p$PASS"

@@ -1,6 +1,6 @@
 services:
 
-  db1:
+  mysql:
     container_name: mysqldump-php-mysql-80
     image: mysql:8.0
     env_file:
@@ -8,7 +8,7 @@ services:
     volumes:
       - ./docker-entrypoint-initdb.d/mysql-init.sql:/docker-entrypoint-initdb.d/00-init.sql
 
-  db2:
+  mariadb:
     container_name: mysqldump-php-mariadb-10
     image: mariadb:10.11
     env_file:
@@ -25,8 +25,8 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - db1
-      - db2
+      - mysql
+      - mariadb
 
   php82:
     container_name: mysqldump-php-82
@@ -37,8 +37,8 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - db1
-      - db2
+      - mysql
+      - mariadb
 
   php83:
     container_name: mysqldump-php-83
@@ -49,8 +49,8 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - db1
-      - db2
+      - mysql
+      - mariadb
 
   php84:
     container_name: mysqldump-php-84
@@ -61,5 +61,5 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - db1
-      - db2
+      - mysql
+      - mariadb

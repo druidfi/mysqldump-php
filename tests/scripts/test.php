@@ -9,7 +9,7 @@ use Druidfi\Mysqldump\DumpSettings;
 use Druidfi\Mysqldump\Mysqldump;
 use Druidfi\Mysqldump\Compress\CompressManagerFactory;
 
-$host = $argv[1] ?? 'db'; // Get host name from test.sh
+$host = $argv[1] ?? 'mysql'; // Get host name from test.sh
 $user = 'example';
 $pass = 'example';
 

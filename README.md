@@ -239,14 +239,14 @@ Local setup for tests:
 
 ```console
 docker compose up --wait --build
-docker compose exec -w /app/tests/scripts php81 ./test.sh db1
-docker compose exec -w /app/tests/scripts php82 ./test.sh db1
-docker compose exec -w /app/tests/scripts php83 ./test.sh db1
-docker compose exec -w /app/tests/scripts php84 ./test.sh db1
-docker compose exec -w /app/tests/scripts php81 ./test.sh db2
-docker compose exec -w /app/tests/scripts php82 ./test.sh db2
-docker compose exec -w /app/tests/scripts php83 ./test.sh db2
-docker compose exec -w /app/tests/scripts php84 ./test.sh db2
+docker compose exec -w /app/tests/scripts php81 ./test.sh mysql
+docker compose exec -w /app/tests/scripts php82 ./test.sh mysql
+docker compose exec -w /app/tests/scripts php83 ./test.sh mysql
+docker compose exec -w /app/tests/scripts php84 ./test.sh mysql
+docker compose exec -w /app/tests/scripts php81 ./test.sh mariadb
+docker compose exec -w /app/tests/scripts php82 ./test.sh mariadb
+docker compose exec -w /app/tests/scripts php83 ./test.sh mariadb
+docker compose exec -w /app/tests/scripts php84 ./test.sh mariadb
 ```
 
 ## Credits
