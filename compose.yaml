@@ -2,7 +2,7 @@ services:
 
   mysql:
     container_name: mysqldump-php-mysql-80
-    image: mysql:8.0
+    image: bitnami/mysql:8.0
     env_file:
       - .env.mysql
     volumes:
@@ -10,7 +10,7 @@ services:
 
   mariadb:
     container_name: mysqldump-php-mariadb-10
-    image: mariadb:10.11
+    image: bitnami/mariadb:10.11
     env_file:
       - .env.mysql
     volumes:
