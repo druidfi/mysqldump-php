@@ -80,7 +80,7 @@ jobs:
       - name: Setup mysqldump
         run: |
           shopt -s expand_aliases
-          mysqldump='docker exec db mysqldump'
+          alias mysqldump='docker exec db mysqldump'
           mysqldump --version
 
       - name: Checkout code
