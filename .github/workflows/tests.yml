@@ -14,54 +14,58 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    services:
+      db:
+        image: ${{ matrix.database_image }}
+        env:
+          # The MySQL docker container requires these environment variables to be set
+          # so we can create and migrate the test database.
+          # See: https://hub.docker.com/_/mysql
+          MYSQL_ROOT_PASSWORD: mysql
+          MYSQL_DATABASE: mysql
+          MYSQL_USER: mysql
+          MYSQL_PASSWORD: mysql
+        ports:
+          # Opens port 3306 on service container and host
+          # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
+          - 3306:3306
+          # Before continuing, verify the mysql container is reachable from the ubuntu host
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     strategy:
       fail-fast: false
       matrix:
         include:
+
           # MySQL 8.0
           - os: ubuntu-latest
-            database: 'mysql'
-            database-version: '8.0'
-            php-version: '8.1'
+            database_image: mysql:8.0
+            php-version: 8.1
           - os: ubuntu-latest
-            database: 'mysql'
-            database-version: '8.0'
-            php-version: '8.2'
+            database_image: mysql:8.0
+            php-version: 8.2
           - os: ubuntu-latest
-            database: 'mysql'
-            database-version: '8.0'
-            php-version: '8.3'
+            database_image: mysql:8.0
+            php-version: 8.3
           - os: ubuntu-latest
-            database: 'mysql'
-            database-version: '8.0'
-            php-version: '8.4'
+            database_image: mysql:8.0
+            php-version: 8.4
+
           # MariaDB 10.11 LTS
           - os: ubuntu-20.04
-            database: 'mariadb'
-            database-version: '10.11'
-            php-version: '8.1'
+            database_image: mariadb:10.11
+            php-version: 8.1
           - os: ubuntu-20.04
-            database: 'mariadb'
-            database-version: '10.11'
-            php-version: '8.2'
+            database_image: mariadb:10.11
+            php-version: 8.2
           - os: ubuntu-20.04
-            database: 'mariadb'
-            database-version: '10.11'
-            php-version: '8.3'
+            database_image: mariadb:10.11
+            php-version: 8.3
           - os: ubuntu-20.04
-            database: 'mariadb'
-            database-version: '10.11'
-            php-version: '8.4'
+            database_image: mariadb:10.11
+            php-version: 8.4
 
     steps:
-
-      - uses: shogo82148/actions-setup-mysql@v1
-        with:
-          distribution: '${{ matrix.database }}'
-          mysql-version: '${{ matrix.database-version }}'
-          user: 'example'
-          password: 'example'
-          root-password: 'example'
 
       - name: Checkout code
         uses: actions/checkout@v4
