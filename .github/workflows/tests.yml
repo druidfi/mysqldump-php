@@ -96,7 +96,7 @@ jobs:
         run: vendor/bin/phpunit
 
       - name: Create user and databases for testing
-        run: mysql -u root -pexample < docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql
+        run: mysql -h 127.0.0.1 -u root -pexample < docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql
 
       - name: Run test script
         run: cd tests/scripts && ./test.sh 127.0.0.1
