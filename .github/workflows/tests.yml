@@ -77,8 +77,11 @@ jobs:
 
     steps:
 
-      - name: Validate composer.json
-        run: docker exec db mysqldump --version && exit 0
+      - name: Setup mysqldump
+        run: |
+          shopt -s expand_aliases
+          mysqldump='docker exec db mysqldump'
+          mysqldump --version
 
       - name: Checkout code
         uses: actions/checkout@v4
