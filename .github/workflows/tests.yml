@@ -21,10 +21,10 @@ jobs:
           # The MySQL docker container requires these environment variables to be set
           # so we can create and migrate the test database.
           # See: https://hub.docker.com/_/mysql
-          MYSQL_ROOT_PASSWORD: mysql
-          MYSQL_DATABASE: mysql
-          MYSQL_USER: mysql
-          MYSQL_PASSWORD: mysql
+          MYSQL_ROOT_PASSWORD: example
+          MYSQL_DATABASE: example
+          MYSQL_USER: example
+          MYSQL_PASSWORD: example
         ports:
           # Opens port 3306 on service container and host
           # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
@@ -96,7 +96,7 @@ jobs:
         run: vendor/bin/phpunit
 
       - name: Create user and databases for testing
-        run: mysql -h 127.0.0.1 -u root -pmysql < docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql
+        run: cat docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql | mysql -h127.0.0.1 -uroot -pexample
 
       - name: Run test script
         run: cd tests/scripts && ./test.sh 127.0.0.1
