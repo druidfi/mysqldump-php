@@ -97,6 +97,9 @@ jobs:
       - name: Run PHPunit tests
         run: vendor/bin/phpunit
 
+      - name: Get mysqldump version
+        run: mysqldump --version
+
       - name: Create user and databases for testing
         run: cat docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql | mysql -h127.0.0.1 -uroot -pexample
 
