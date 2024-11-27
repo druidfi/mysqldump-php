@@ -26,14 +26,14 @@ Out of the box, `mysqldump-php` supports backing up table structures, the data i
 
 ## Requirements
 
-- PHP 7.4 or 8.x with PDO - [see supported versions](https://www.php.net/supported-versions.php)
-- MySQL 5.7 or newer (and compatible MariaDB)
+- PHP 8.1 or newer with PDO - [see supported versions](https://www.php.net/supported-versions.php)
+- MySQL 8.0 or newer (and compatible MariaDB)
 
 ## Installing
 
 Install using [Composer](https://getcomposer.org/):
 
-```
+```console
 composer require druidfi/mysqldump-php
 ```
 
@@ -239,29 +239,19 @@ Local setup for tests:
 
 ```console
 docker compose up --wait --build
-docker compose exec php81 /app/tests/scripts/create_users.sh
-docker compose exec php81 /app/tests/scripts/create_users.sh db2
-docker compose exec php81 /app/tests/scripts/create_users.sh db3
-docker compose exec -w /app/tests/scripts php74 ./test.sh
-docker compose exec -w /app/tests/scripts php80 ./test.sh
-docker compose exec -w /app/tests/scripts php81 ./test.sh
-docker compose exec -w /app/tests/scripts php82 ./test.sh
-docker compose exec -w /app/tests/scripts php83 ./test.sh
-docker compose exec -w /app/tests/scripts php74 ./test.sh db2
-docker compose exec -w /app/tests/scripts php80 ./test.sh db2
+docker compose exec -w /app/tests/scripts php81 ./test.sh db1
+docker compose exec -w /app/tests/scripts php82 ./test.sh db1
+docker compose exec -w /app/tests/scripts php83 ./test.sh db1
+docker compose exec -w /app/tests/scripts php84 ./test.sh db1
 docker compose exec -w /app/tests/scripts php81 ./test.sh db2
 docker compose exec -w /app/tests/scripts php82 ./test.sh db2
 docker compose exec -w /app/tests/scripts php83 ./test.sh db2
-docker compose exec -w /app/tests/scripts php74 ./test.sh db3
-docker compose exec -w /app/tests/scripts php80 ./test.sh db3
-docker compose exec -w /app/tests/scripts php81 ./test.sh db3
-docker compose exec -w /app/tests/scripts php82 ./test.sh db3
-docker compose exec -w /app/tests/scripts php83 ./test.sh db3
+docker compose exec -w /app/tests/scripts php84 ./test.sh db2
 ```
 
 ## Credits
 
-Forked from Diego Torres's version which have latest updates from 2020. Use it for PHP 7.3 and older.
+Forked from Diego Torres's version which have latest updates from 2020. Use it for PHP 8.0 and older.
 https://github.com/ifsnop/mysqldump-php
 
 Originally based on James Elliott's script from 2009.

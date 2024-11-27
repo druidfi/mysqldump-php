@@ -5,6 +5,7 @@ on:
     branches:
       # Push events on main branch
       - main
+      - php-8.4
   pull_request:
 
 jobs:
@@ -17,39 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # MySQL 5.7
-          - os: ubuntu-20.04
-            database: 'mysql'
-            database-version: '5.7'
-            php-version: '7.4'
-          - os: ubuntu-20.04
-            database: 'mysql'
-            database-version: '5.7'
-            php-version: '8.0'
-          - os: ubuntu-20.04
-            database: 'mysql'
-            database-version: '5.7'
-            php-version: '8.1'
-          - os: ubuntu-20.04
-            database: 'mysql'
-            database-version: '5.7'
-            php-version: '8.2'
-          - os: ubuntu-20.04
-            database: 'mysql'
-            database-version: '5.7'
-            php-version: '8.3'
           # MySQL 8.0
           - os: ubuntu-latest
             database: 'mysql'
             database-version: '8.0'
-            php-version: '7.4'
-          - os: ubuntu-latest
-            database: 'mysql'
-            database-version: '8.0'
-            php-version: '8.0'
-          - os: ubuntu-latest
-            database: 'mysql'
-            database-version: '8.0'
             php-version: '8.1'
           - os: ubuntu-latest
             database: 'mysql'
@@ -59,18 +31,14 @@ jobs:
             database: 'mysql'
             database-version: '8.0'
             php-version: '8.3'
+          - os: ubuntu-latest
+            database: 'mysql'
+            database-version: '8.0'
+            php-version: '8.4'
           # MariaDB 10.11 LTS
           - os: ubuntu-20.04
             database: 'mariadb'
             database-version: '10.11'
-            php-version: '7.4'
-          - os: ubuntu-20.04
-            database: 'mariadb'
-            database-version: '10.11'
-            php-version: '8.0'
-          - os: ubuntu-20.04
-            database: 'mariadb'
-            database-version: '10.11'
             php-version: '8.1'
           - os: ubuntu-20.04
             database: 'mariadb'
@@ -80,6 +48,10 @@ jobs:
             database: 'mariadb'
             database-version: '10.11'
             php-version: '8.3'
+          - os: ubuntu-20.04
+            database: 'mariadb'
+            database-version: '10.11'
+            php-version: '8.4'
 
     steps:
 
@@ -87,9 +59,9 @@ jobs:
         with:
           distribution: '${{ matrix.database }}'
           mysql-version: '${{ matrix.database-version }}'
-          user: 'travis'
-          password: ''
-          root-password: 'drupal'
+          user: 'example'
+          password: 'example'
+          root-password: 'example'
 
       - name: Checkout code
         uses: actions/checkout@v4

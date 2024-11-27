@@ -4,14 +4,15 @@ date_default_timezone_set('UTC');
 error_reporting(E_ALL);
 
 $host = $argv[1] ?? 'db'; // Get host name from test.sh
-$user = 'travis';
+$user = 'example';
+$pass = 'example';
 $expected_double = '-2.2250738585072014e-308';
 $ret = 0;
 
 print "PHP version is ". phpversion() . PHP_EOL;
 print "PDO check: double field" . PHP_EOL . PHP_EOL;
 
-$db = new \PDO("mysql:host=$host;dbname=test001", $user, null, [
+$db = new \PDO("mysql:host=$host;dbname=test001", $user, $pass, [
     \PDO::ATTR_PERSISTENT => true,
     \PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false,

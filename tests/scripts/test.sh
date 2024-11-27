@@ -1,9 +1,10 @@
 #!/bin/bash
 
 HOST=${1:-db}
-USER=travis
-MYSQL_CMD="mysql -h $HOST -u $USER"
-MYSQLDUMP_CMD="mysqldump -h $HOST -u $USER"
+USER=example
+PASS=example
+MYSQL_CMD="mysql -h $HOST -u $USER -p$PASS"
+MYSQLDUMP_CMD="mysqldump -h $HOST -u $USER -p$PASS"
 
 major=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $1}'`
 medium=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $2}'`

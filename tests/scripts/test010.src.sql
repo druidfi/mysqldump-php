@@ -35,7 +35,7 @@ DELIMITER ;;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;;
 /*!50003 SET @saved_time_zone      = @@time_zone */ ;;
 /*!50003 SET time_zone             = 'SYSTEM' */ ;;
-/*!50106 CREATE*/ /*!50117 DEFINER=`travis`@`%`*/ /*!50106 EVENT `e_test010` ON SCHEDULE AT '2030-01-01 23:59:00' ON COMPLETION NOT PRESERVE ENABLE DO INSERT INTO test010.test VALUES (NOW()) */ ;;
+/*!50106 CREATE*/ /*!50117 DEFINER=`example`@`%`*/ /*!50106 EVENT `e_test010` ON SCHEDULE AT '2030-01-01 23:59:00' ON COMPLETION NOT PRESERVE ENABLE DO INSERT INTO test010.test VALUES (NOW()) */ ;;
 /*!50003 SET time_zone             = @saved_time_zone */ ;;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;;
