@@ -87,4 +87,4 @@ jobs:
         run: mysql -u root -pexample < docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql
 
       - name: Run test script
-        run: tests/scripts/test.sh 127.0.0.1
+        run: cd tests/scripts && ./test.sh 127.0.0.1
