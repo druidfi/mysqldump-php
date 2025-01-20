@@ -45,7 +45,7 @@ class DumpSettings
         'skip-definer' => false,
         'where' => '',
         /* deprecated */
-        'disable-foreign-keys-check' => true
+        'disable-foreign-keys-check' => true,
     ];
     private array $settings;
 
@@ -60,6 +60,12 @@ class DumpSettings
 
         if (false === $this->settings['skip-tz-utc']) {
             $this->settings['init_commands'][] = "SET TIME_ZONE='+00:00'";
+        }
+
+        $sqlMode = getenv('SQL_MODE') ?? null;
+
+        if ($sqlMode && is_string($sqlMode)) {
+            $this->settings['init_commands'][] = "SET SESSION sql_mode='" . $sqlMode . "'";
         }
 
         $diff = array_diff(array_keys($this->settings), array_keys(self::$defaults));
