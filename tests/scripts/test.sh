@@ -3,6 +3,9 @@
 if command -v mariadb &> /dev/null; then
     MYSQL_BINARY="mariadb"
     MYSQLDUMP_BINARY="mariadb-dump"
+else
+    MYSQL_BINARY="mysql"
+    MYSQLDUMP_BINARY="mysqldump"
 fi
 
 HOST=${1:-mysql}
