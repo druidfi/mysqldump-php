@@ -251,7 +251,7 @@ docker compose exec -w /app/tests/scripts php84 ./test.sh mariadb
 
 ## Credits
 
-Forked from Diego Torres's version which have latest updates from 2020. Use it for PHP 8.0 and older.
+Forked from Diego Torres's version which have latest updates from 2020. Use it for PHP 8.1 and older.
 https://github.com/ifsnop/mysqldump-php
 
 Originally based on James Elliott's script from 2009.
