@@ -26,7 +26,7 @@ Out of the box, `mysqldump-php` supports backing up table structures, the data i
 
 ## Requirements
 
-- PHP 8.1 or newer with PDO - [see supported versions](https://www.php.net/supported-versions.php)
+- PHP 8.2 or newer with PDO - [see supported versions](https://www.php.net/supported-versions.php)
 - MySQL 8.0 or newer (and compatible MariaDB)
 
 ## Installing
@@ -238,12 +238,11 @@ are not available in mysqldump.
 Local setup for tests:
 
 ```console
+composer install
 docker compose up --wait --build
-docker compose exec -w /app/tests/scripts php81 ./test.sh mysql
 docker compose exec -w /app/tests/scripts php82 ./test.sh mysql
 docker compose exec -w /app/tests/scripts php83 ./test.sh mysql
 docker compose exec -w /app/tests/scripts php84 ./test.sh mysql
-docker compose exec -w /app/tests/scripts php81 ./test.sh mariadb
 docker compose exec -w /app/tests/scripts php82 ./test.sh mariadb
 docker compose exec -w /app/tests/scripts php83 ./test.sh mariadb
 docker compose exec -w /app/tests/scripts php84 ./test.sh mariadb

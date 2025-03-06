@@ -1,6 +1,5 @@
-ARG PHP_SHORT_VERSION=81
+ARG PHP_SHORT_VERSION=82
 
-FROM php:8.1-alpine AS php-81
 FROM php:8.2-alpine AS php-82
 FROM php:8.3-alpine AS php-83
 FROM php:8.4-alpine AS php-84
