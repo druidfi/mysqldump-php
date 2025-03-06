@@ -40,29 +40,29 @@ jobs:
         include:
 
           # MySQL 8.0
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             database: mysql
             database_image: bitnami/mysql:8.0
             php-version: 8.2
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             database: mysql
             database_image: bitnami/mysql:8.0
             php-version: 8.3
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             database: mysql
             database_image: bitnami/mysql:8.0
             php-version: 8.4
 
           # MariaDB 10.11 LTS
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             database: mariadb
             database_image: bitnami/mariadb:10.11
             php-version: 8.2
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             database: mariadb
             database_image: bitnami/mariadb:10.11
             php-version: 8.3
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             database: mariadb
             database_image: bitnami/mariadb:10.11
             php-version: 8.4
