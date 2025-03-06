@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if command -v mariadb &> /dev/null; then
-    MYSQL_BINARY='mariadb'
-    MYSQLDUMP_BINARY='mariadb-dump'
+    MYSQL_BINARY="mariadb"
+    MYSQLDUMP_BINARY="mariadb-dump"
 fi
 
 HOST=${1:-mysql}
