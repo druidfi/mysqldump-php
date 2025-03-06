@@ -5,8 +5,9 @@ on:
     branches:
       # Push events on main branch
       - main
-      - php-8.4
   pull_request:
+    branches:
+      - php-8.4
 
 jobs:
 
