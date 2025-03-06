@@ -2,7 +2,7 @@ services:
 
   mysql:
     container_name: mysqldump-php-mysql-80
-    image: bitnami/mysql:8.0
+    image: mysql:8.0
     env_file:
       - .env.mysql
     volumes:
@@ -10,7 +10,7 @@ services:
 
   mariadb:
     container_name: mysqldump-php-mariadb-10
-    image: bitnami/mariadb:10.11
+    image: mariadb:10.11
     env_file:
       - .env.mysql
     volumes:
@@ -24,6 +24,7 @@ services:
         PHP_SHORT_VERSION: 82
     volumes:
       - .:/app
+      - ./config/skip-ssl.cnf:/etc/my.cnf.d/skip-ssl.cnf
     depends_on:
       - mysql
       - mariadb
@@ -36,6 +37,7 @@ services:
         PHP_SHORT_VERSION: 83
     volumes:
       - .:/app
+      - ./config/skip-ssl.cnf:/etc/my.cnf.d/skip-ssl.cnf
     depends_on:
       - mysql
       - mariadb
@@ -48,6 +50,7 @@ services:
         PHP_SHORT_VERSION: 84
     volumes:
       - .:/app
+      - ./config/skip-ssl.cnf:/etc/my.cnf.d/skip-ssl.cnf
     depends_on:
       - mysql
       - mariadb

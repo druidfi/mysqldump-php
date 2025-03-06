@@ -1,10 +1,15 @@
 #!/bin/bash
 
+if command -v mariadb &> /dev/null; then
+    MYSQL_BINARY='mariadb'
+    MYSQLDUMP_BINARY='mariadb-dump'
+fi
+
 HOST=${1:-mysql}
 USER=example
 PASS=example
-MYSQL_CMD="mysql -h $HOST -u $USER -p$PASS"
-MYSQLDUMP_CMD="mysqldump -h $HOST -u $USER -p$PASS"
+MYSQL_CMD="$MYSQL_BINARY -h $HOST -u $USER -p$PASS"
+MYSQLDUMP_CMD="$MYSQLDUMP_BINARY -h $HOST -u $USER -p$PASS"
 
 major=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $1}'`
 medium=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $2}'`
