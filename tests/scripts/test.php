@@ -9,11 +9,12 @@ use Druidfi\Mysqldump\DumpSettings;
 use Druidfi\Mysqldump\Mysqldump;
 use Druidfi\Mysqldump\Compress\CompressManagerFactory;
 
-$host = $argv[1] ?? 'db'; // Get host name from test.sh
-$user = 'travis';
+$host = $argv[1] ?? 'mysql'; // Get host name from test.sh
+$user = 'example';
+$pass = 'example';
 
 $dumpSettings = [
-    'exclude-tables' => ['/^travis*/'],
+    'exclude-tables' => ['/^example*/'],
     'compress' => CompressManagerFactory::NONE,
     'no-data' => false,
     'add-drop-table' => true,
@@ -29,153 +30,191 @@ $dumpSettings = [
     'add-drop-database' => false,
     'hex-blob' => true,
     'no-create-info' => false,
-    'where' => ''
+    'where' => '',
 ];
 
 try {
     // do nothing test
     print "Create dump with PHP: mysql-php_test000.sql" . PHP_EOL;
-    $dump = new Mysqldump("mysql:host=$host;dbname=test001", $user);
+    $dump = new Mysqldump("mysql:host=$host;dbname=test001", $user, $pass);
 
     print "Create dump with PHP: mysql-php_test001.sql" . PHP_EOL;
-    $dump = new Mysqldump("mysql:host=$host;dbname=test001", $user, "", $dumpSettings);
+    $dump = new Mysqldump("mysql:host=$host;dbname=test001", $user, $pass, $dumpSettings);
     $dump->start("output/mysqldump-php_test001.sql");
 
     // checks if complete-insert && hex-blob works ok together
     print "Create dump with PHP: mysql-php_test001_complete.sql" . PHP_EOL;
     $dumpSettings['complete-insert'] = true;
-    $dump = new Mysqldump("mysql:host=$host;dbname=test001", $user, "", $dumpSettings);
+    $dump = new Mysqldump("mysql:host=$host;dbname=test001", $user, $pass, $dumpSettings);
     $dump->start("output/mysqldump-php_test001_complete.sql");
 
     print "Create dump with PHP: mysql-php_test002.sql" . PHP_EOL;
     $dumpSettings['default-character-set'] = DumpSettings::UTF8MB4;
     $dumpSettings['complete-insert'] = true;
-    $dump = new Mysqldump("mysql:host=$host;dbname=test002", $user, "", $dumpSettings);
+    $dump = new Mysqldump("mysql:host=$host;dbname=test002", $user, $pass, $dumpSettings);
     $dump->start("output/mysqldump-php_test002.sql");
 
     print "Create dump with PHP: mysql-php_test005.sql" . PHP_EOL;
     $dumpSettings['complete-insert'] = false;
-    $dump = new Mysqldump("mysql:host=$host;dbname=test005", $user, "", $dumpSettings);
+    $dump = new Mysqldump("mysql:host=$host;dbname=test005", $user, $pass, $dumpSettings);
     $dump->start("output/mysqldump-php_test005.sql");
 
     print "Create dump with PHP: mysql-php_test006.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test006a",
         $user,
-        "",
-        ["no-data" => true, "add-drop-table" => true]
+        $pass,
+        [
+            "no-data" => true,
+            "add-drop-table" => true,
+        ]
     );
+
     $dump->start("output/mysqldump-php_test006.sql");
 
     print "Create dump with PHP: mysql-php_test008.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test008",
         $user,
-        "",
-        ["no-data" => true, "add-drop-table" => true]
+        $pass,
+        [
+            "no-data" => true,
+            "add-drop-table" => true,
+        ]
     );
+
     $dump->start("output/mysqldump-php_test008.sql");
 
     print "Create dump with PHP: mysql-php_test009.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test009",
         $user,
-        "",
-        ["no-data" => true, "add-drop-table" => true, "reset-auto-increment" => true, "add-drop-database" => true]
+        $pass,
+        [
+            "no-data" => true,
+            "add-drop-table" => true,
+            "reset-auto-increment" => true,
+            "add-drop-database" => true,
+        ]
     );
+
     $dump->start("output/mysqldump-php_test009.sql");
 
     print "Create dump with PHP: mysql-php_test010.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test010",
         $user,
-        "",
-        ["events" => true]
+        $pass,
+        [
+            "events" => true,
+        ]
     );
+
     $dump->start("output/mysqldump-php_test010.sql");
 
     print "Create dump with PHP: mysql-php_test011a.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test011",
         $user,
-        "",
-        ['complete-insert' =>  false]
+        $pass,
+        [
+            'complete-insert' => false,
+        ]
     );
+
     $dump->start("output/mysqldump-php_test011a.sql");
 
     print "Create dump with PHP: mysql-php_test011b.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test011",
         $user,
-        "",
+        $pass,
         [
-        'complete-insert' => true,
+            'complete-insert' => true,
         ]
     );
+
     $dump->start("output/mysqldump-php_test011b.sql");
 
     print "Create dump with PHP: mysql-php_test012.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test012",
         $user,
-        "",
+        $pass,
         [
-        'events' => true,
-        'skip-triggers' => false,
-        'routines' => true,
-        'add-drop-trigger' => true,
+            'events' => true,
+            'skip-triggers' => false,
+            'routines' => true,
+            'add-drop-trigger' => true,
         ]
     );
+
     $dump->start("output/mysqldump-php_test012.sql");
 
     print "Create dump with PHP: mysql-php_test012b_no-definer.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test012",
         $user,
-        "",
+        $pass,
         [
-        "events" => true,
-        'skip-triggers' => false,
-        'routines' => true,
-        'add-drop-trigger' => true,
-        'skip-definer' => true,
+            "events" => true,
+            'skip-triggers' => false,
+            'routines' => true,
+            'add-drop-trigger' => true,
+            'skip-definer' => true,
         ]
     );
+
     $dump->start("output/mysqldump-php_test012_no-definer.sql");
 
     print "Create dump with PHP: mysql-php_test013.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test001",
         $user,
-        "",
+        $pass,
         [
-        "insert-ignore" => true,
-        "extended-insert" => false
+            "insert-ignore" => true,
+            "extended-insert" => false,
         ]
     );
+
     $dump->start("output/mysqldump-php_test013.sql");
 
     print "Create dump with PHP: mysql-php_test014a.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test014",
         $user,
-        "",
+        $pass,
         [
             'complete-insert' => false,
             'hex-blob' => true,
-        ]    );
+        ]
+    );
+
     $dump->start("output/mysqldump-php_test014a.sql");
 
     print "Create dump with PHP: mysql-php_test014b.sql" . PHP_EOL;
+
     $dump = new Mysqldump(
         "mysql:host=$host;dbname=test014",
         $user,
-        "",
+        $pass,
         [
             'complete-insert' => true,
             'hex-blob' => true,
         ]
     );
+
     $dump->start("output/mysqldump-php_test014b.sql");
 
     exit(0);
