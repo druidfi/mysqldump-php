@@ -183,7 +183,10 @@ class Mysqldump
         $this->connect();
 
         // Create a new compressManager to manage compressed output
-        $this->io = CompressManagerFactory::create($this->settings->getCompressMethod());
+        $this->io = CompressManagerFactory::create(
+            $this->settings->getCompressMethod(),
+            $this->settings->getCompressLevel()
+        );
 
         // Create output file
         $this->io->open($destination);
