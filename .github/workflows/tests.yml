@@ -1,6 +1,7 @@
 name: Run tests
+
 permissions:
-  contents: read
+  contents: read # For reading the repository
 
 on:
   push:
