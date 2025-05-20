@@ -16,6 +16,7 @@ class DumpSettings
         'exclude-tables' => [],
         'include-views' => [],
         'compress' => 'None',
+        'compress-level' => 0,
         'init_commands' => [],
         'no-data' => [],
         'if-not-exists' => false,
@@ -81,6 +82,11 @@ class DumpSettings
     public function getCompressMethod(): string
     {
         return $this->settings['compress'] ?? CompressManagerFactory::NONE;
+    }
+
+    public function getCompressLevel(): int
+    {
+        return (int) ($this->settings['compress-level'] ?? 0);
     }
 
     public function getDefaultCharacterSet(): string

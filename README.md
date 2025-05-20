@@ -139,8 +139,12 @@ All options:
 - **if-not-exists**
   - Only create a new table when a table of the same name does not already exist. No error message is thrown if the table already exists. 
 - **compress**
-  - Possible values: `Bzip2|Gzip|Gzipstream|None`, default is `None`
-  - Could be specified using the consts: `CompressManagerFactory::GZIP`, `CompressManagerFactory::BZIP2` or `CompressManagerFactory::NONE`
+  - Possible values: `Bzip2|Gzip|Gzipstream|Zstd|Lz4|None`, default is `None`
+  - Could be specified using the consts: `CompressManagerFactory::GZIP`, `CompressManagerFactory::BZIP2`, `CompressManagerFactory::ZSTD`, `CompressManagerFactory::LZ4` or `CompressManagerFactory::NONE`
+- **compress-level**
+  - Compression level to use (integer), default is `0` (no compression level specified)
+  - For Zstd: 1-22 (default: 3)
+  - For Lz4: 1-12 (default: 1)
 - **reset-auto-increment**
   - Removes the AUTO_INCREMENT option from the database definition
   - Useful when used with no-data, so when db is recreated, it will start from 1 instead of using an old value
@@ -219,7 +223,7 @@ To dump a database, you need the following privileges:
   - If "lock tables" option was enabled.
 - **PROCESS**
   - If you don’t use the --no-tablespaces option.
-    
+
 Use **SHOW GRANTS FOR user@host;** to know what privileges user has. See the following link for more information:
 
 - [Which are the minimum privileges required to get a backup of a MySQL database schema?](https://dba.stackexchange.com/questions/55546/which-are-the-minimum-privileges-required-to-get-a-backup-of-a-mysql-database-sc/55572#55572)

@@ -120,10 +120,10 @@ This document contains a detailed list of actionable improvement tasks for the m
 
 ## Feature Enhancements
 
-22. [ ] Add new compression options:
-    - [ ] Support for Zstandard compression
-    - [ ] Support for LZ4 compression
-    - [ ] Configurable compression levels
+22. [x] Add new compression options:
+    - [x] Support for Zstandard compression
+    - [x] Support for LZ4 compression
+    - [x] Configurable compression levels
 
 23. [ ] Enhance data transformation capabilities:
     - [ ] Add more powerful data anonymization features
