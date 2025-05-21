@@ -1040,4 +1040,12 @@ class Mysqldump
     {
         $this->infoCallable = $callable;
     }
+
+    /**
+     * Set a callable that will be used to transform column values.
+     */
+    public function setTransformColumnValueHook(callable $callable)
+    {
+        $this->transformColumnValueCallable = $callable;
+    }
 }
