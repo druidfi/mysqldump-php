@@ -5,7 +5,7 @@ This document contains a detailed list of actionable improvement tasks for the m
 ## Architecture Improvements
 
 1. [ ] Refactor the large Mysqldump class into smaller, more focused classes:
-   - [ ] Create a separate DatabaseConnector class to handle connection logic
+   - [x] Create a separate DatabaseConnector class to handle connection logic
    - [ ] Create a separate DumpWriter class to handle file output
    - [ ] Create separate classes for different database object types (Tables, Views, Triggers, etc.)
 

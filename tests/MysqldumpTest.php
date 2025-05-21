@@ -44,11 +44,16 @@ class MysqldumpTest extends TestCase
         $dbName = 'test';
         $dsn = "mysql: host={$host}; dbname={$dbName};";
         $dump = new Mysqldump($dsn, $user, $pass);
-        $this->assertEquals($dsn, $this->getPrivate($dump, 'dsn'), 'dsn is not set correctly');
-        $this->assertEquals($user, $this->getPrivate($dump, 'user'), 'user is not set correctly');
-        $this->assertEquals($pass, $this->getPrivate($dump, 'pass'), 'pass is not set correctly');
-        $this->assertEquals($host, $this->getPrivate($dump, 'host'), 'host is not set correctly');
-        $this->assertEquals($dbName, $this->getPrivate($dump, 'dbName'), 'dbName is not set correctly');
+
+        // Get the connector property
+        $connector = $this->getPrivate($dump, 'connector');
+
+        // Test the properties on the connector
+        $this->assertEquals($dsn, $this->getPrivateFromObject($connector, 'dsn'), 'dsn is not set correctly');
+        $this->assertEquals($user, $this->getPrivateFromObject($connector, 'user'), 'user is not set correctly');
+        $this->assertEquals($pass, $this->getPrivateFromObject($connector, 'pass'), 'pass is not set correctly');
+        $this->assertEquals($host, $this->getPrivateFromObject($connector, 'host'), 'host is not set correctly');
+        $this->assertEquals($dbName, $this->getPrivateFromObject($connector, 'dbName'), 'dbName is not set correctly');
     }
 
   /**
@@ -120,5 +125,12 @@ class MysqldumpTest extends TestCase
         $reflectionProperty = new \ReflectionProperty(Mysqldump::class, $var);
         $reflectionProperty->setAccessible(true);
         return $reflectionProperty->getValue($dump);
+    }
+
+    private function getPrivateFromObject($object, $var)
+    {
+        $reflectionProperty = new \ReflectionProperty(get_class($object), $var);
+        $reflectionProperty->setAccessible(true);
+        return $reflectionProperty->getValue($object);
     }
 }
