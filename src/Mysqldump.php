@@ -104,7 +104,7 @@ class Mysqldump
         }
 
         if ($this->settings->isEnabled('insert-ignore')) {
-            return 'INSERT IGNORE';
+            return 'INSERT  IGNORE';
         }
 
         return 'INSERT';
