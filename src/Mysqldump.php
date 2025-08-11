@@ -15,8 +15,6 @@
 
 namespace Druidfi\Mysqldump;
 
-use Druidfi\Mysqldump\Compress\CompressInterface;
-use Druidfi\Mysqldump\Compress\CompressManagerFactory;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterInterface;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterMysql;
 use Exception;
@@ -27,7 +25,7 @@ class Mysqldump
     // Database
     private DatabaseConnector $connector;
     private ?PDO $conn = null;
-    private CompressInterface $io;
+    private DumpWriter $writer;
     private TypeAdapterInterface $db;
 
     private static string $adapterClass = TypeAdapterMysql::class;
@@ -73,6 +71,7 @@ class Mysqldump
     {
         $this->connector = new DatabaseConnector($dsn, $user, $pass, $pdoOptions);
         $this->settings = new DumpSettings($settings);
+        $this->writer = new DumpWriter($this->settings);
     }
 
 
@@ -94,7 +93,7 @@ class Mysqldump
 
     private function write(string $data): int
     {
-        return $this->io->write($data);
+        return $this->writer->write($data);
     }
 
     private function getInsertType(): string
@@ -128,14 +127,8 @@ class Mysqldump
         // Connect to database
         $this->connect();
 
-        // Create a new compressManager to manage compressed output
-        $this->io = CompressManagerFactory::create(
-            $this->settings->getCompressMethod(),
-            $this->settings->getCompressLevel()
-        );
-
-        // Create output file
-        $this->io->open($destination);
+        // Initialize the writer with the destination
+        $this->writer->initialize($destination);
 
         // Write some basic info to output file
         if (!$this->settings->skipComments()) {
@@ -200,7 +193,7 @@ class Mysqldump
         }
 
         // Close output file.
-        $this->io->close();
+        $this->writer->close();
     }
 
     /**
