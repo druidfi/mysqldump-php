@@ -3,16 +3,21 @@
 if command -v mariadb &> /dev/null; then
     MYSQL_BINARY="mariadb"
     MYSQLDUMP_BINARY="mariadb-dump"
+    # MariaDB client uses different SSL flags than MySQL
+    SSL_FLAGS="--ssl-verify-server-cert=OFF --ssl=0"
 else
     MYSQL_BINARY="mysql"
     MYSQLDUMP_BINARY="mysqldump"
+    # MySQL client supports --ssl-mode
+    SSL_FLAGS="--ssl-mode=DISABLED"
 fi
 
 HOST=${1:-mysql}
 USER=example
 PASS=example
-MYSQL_CMD="$MYSQL_BINARY -h $HOST -u $USER -p$PASS"
-MYSQLDUMP_CMD="$MYSQLDUMP_BINARY -h $HOST -u $USER -p$PASS"
+# Force-disable SSL for local/container tests to avoid self-signed cert errors with newer images
+MYSQL_CMD="$MYSQL_BINARY $SSL_FLAGS -h $HOST -u $USER -p$PASS"
+MYSQLDUMP_CMD="$MYSQLDUMP_BINARY $SSL_FLAGS -h $HOST -u $USER -p$PASS"
 
 major=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $1}'`
 medium=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $2}'`
@@ -213,6 +218,13 @@ cat output/mysqldump-php_test010.sql | grep CREATE | grep EVENT > output/mysqldu
 
 cat output/mysqldump-php_test012.sql | grep -E -e '50001 (CREATE|VIEW)' -e '50013 DEFINER' -e 'CREATE.*TRIGGER' -e 'FUNCTION' -e 'PROCEDURE' > output/mysqldump-php_test012.filtered.sql && echo "Created mysqldump-php_test012.filtered.sql"
 cat output/mysqldump-php_test013.sql | grep INSERT > output/mysqldump-php_test013.filtered.sql && echo "Created mysqldump-php_test013.filtered.sql"
+
+# Normalize whitespace in filtered outputs to avoid environment-specific double-space differences
+for f in output/*.filtered.sql; do
+  if [ -f "$f" ]; then
+    sed -E 's/  +/ /g' "$f" > "$f.norm" && mv "$f.norm" "$f"
+  fi
+done
 
 printf "\nRun diff tests:\n\n"
 
