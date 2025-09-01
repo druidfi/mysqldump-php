@@ -268,28 +268,7 @@ class Mysqldump
      */
     private function getDatabaseStructureViews()
     {
-        $includedViews = $this->settings->getIncludedViews();
-
-        // Listing all views from database
-        if (empty($includedViews)) {
-            // include all views for now, blacklisting happens later
-                $stmtViews = $this->conn->query($this->db->showViews($this->connector->getDbName()));
-            foreach ($stmtViews as $row) {
-                $this->views[] = current($row);
-            }
-            $stmtViews->closeCursor();
-        } else {
-            // include only the tables mentioned in include-tables
-            $stmtViews2 = $this->conn->query($this->db->showViews($this->connector->getDbName()));
-            foreach ($stmtViews2 as $row) {
-                if (in_array(current($row), $includedViews, true)) {
-                    $this->views[] = current($row);
-                    $elem = array_search(current($row), $includedViews);
-                    unset($includedViews[$elem]);
-                }
-            }
-            $stmtViews2->closeCursor();
-        }
+        // No need to store view names; validation for include-views happens in iterateViews()
     }
 
     /**
@@ -297,14 +276,7 @@ class Mysqldump
      */
     private function getDatabaseStructureTriggers()
     {
-        // Listing all triggers from database
-        if (!$this->settings->skipTriggers()) {
-            $stmtTrig = $this->conn->query($this->db->showTriggers($this->connector->getDbName()));
-            foreach ($stmtTrig as $row) {
-                $this->triggers[] = $row['Trigger'];
-            }
-            $stmtTrig->closeCursor();
-        }
+        // No need to store trigger names; iteration happens in iterateTriggers()
     }
 
     /**
@@ -312,14 +284,7 @@ class Mysqldump
      */
     private function getDatabaseStructureProcedures()
     {
-        // Listing all procedures from database
-        if ($this->settings->isEnabled('routines')) {
-            $stmtProc = $this->conn->query($this->db->showProcedures($this->connector->getDbName()));
-            foreach ($stmtProc as $row) {
-                $this->procedures[] = $row['procedure_name'];
-            }
-            $stmtProc->closeCursor();
-        }
+        // No need to store procedure names; iteration happens in iterateProcedures()
     }
 
     /**
@@ -327,14 +292,7 @@ class Mysqldump
      */
     private function getDatabaseStructureFunctions()
     {
-        // Listing all functions from database
-        if ($this->settings->isEnabled('routines')) {
-            $stmtFunc = $this->conn->query($this->db->showFunctions($this->connector->getDbName()));
-            foreach ($stmtFunc as $row) {
-                $this->functions[] = $row['function_name'];
-            }
-            $stmtFunc->closeCursor();
-        }
+        // No need to store function names; iteration happens in iterateFunctions()
     }
 
     /**
@@ -342,14 +300,7 @@ class Mysqldump
      */
     private function getDatabaseStructureEvents()
     {
-        // Listing all events from database
-        if ($this->settings->isEnabled('events')) {
-            $stmtEvt = $this->conn->query($this->db->showEvents($this->connector->getDbName()));
-            foreach ($stmtEvt as $row) {
-                $this->events[] = $row['event_name'];
-            }
-            $stmtEvt->closeCursor();
-        }
+        // No need to store event names; iteration happens in iterateEvents()
     }
 
     /**
@@ -394,6 +345,88 @@ class Mysqldump
         }
     }
 
+    private function iterateViews(): \Generator
+    {
+        $included = $this->settings->getIncludedViews();
+        $restrict = !empty($included);
+        $stmt = $this->conn->query($this->db->showViews($this->connector->getDbName()));
+        $names = [];
+        foreach ($stmt as $row) {
+            $name = current($row);
+            if (!$restrict || in_array($name, $included, true)) {
+                $names[] = $name;
+            }
+        }
+        $stmt->closeCursor();
+        foreach ($names as $name) {
+            yield $name;
+        }
+    }
+
+    private function iterateTriggers(): \Generator
+    {
+        if ($this->settings->skipTriggers()) {
+            return; // empty generator
+        }
+        $stmt = $this->conn->query($this->db->showTriggers($this->connector->getDbName()));
+        $names = [];
+        foreach ($stmt as $row) {
+            $names[] = $row['Trigger'];
+        }
+        $stmt->closeCursor();
+        foreach ($names as $name) {
+            yield $name;
+        }
+    }
+
+    private function iterateProcedures(): \Generator
+    {
+        if (!$this->settings->isEnabled('routines')) {
+            return; // empty generator
+        }
+        $stmt = $this->conn->query($this->db->showProcedures($this->connector->getDbName()));
+        $names = [];
+        foreach ($stmt as $row) {
+            $names[] = $row['procedure_name'];
+        }
+        $stmt->closeCursor();
+        foreach ($names as $name) {
+            yield $name;
+        }
+    }
+
+    private function iterateFunctions(): \Generator
+    {
+        if (!$this->settings->isEnabled('routines')) {
+            return; // empty generator
+        }
+        $stmt = $this->conn->query($this->db->showFunctions($this->connector->getDbName()));
+        $names = [];
+        foreach ($stmt as $row) {
+            $names[] = $row['function_name'];
+        }
+        $stmt->closeCursor();
+        foreach ($names as $name) {
+            yield $name;
+        }
+    }
+
+    private function iterateEvents(): \Generator
+    {
+        if (!$this->settings->isEnabled('events')) {
+            return; // empty generator
+        }
+        $stmt = $this->conn->query($this->db->showEvents($this->connector->getDbName()));
+        $names = [];
+        foreach ($stmt as $row) {
+            $names[] = $row['event_name'];
+        }
+        $stmt->closeCursor();
+        foreach ($names as $name) {
+            yield $name;
+        }
+    }
+
     /**
      * Exports all the tables selected from database
      */
@@ -424,21 +457,19 @@ class Mysqldump
     private function exportViews()
     {
         if (false === $this->settings->isEnabled('no-create-info')) {
-            // Exporting views one by one
-            foreach ($this->views as $view) {
+            // First pass: stand-in tables for views
+            foreach ($this->iterateViews() as $view) {
                 if ($this->matches($view, $this->settings->getExcludedTables())) {
                     continue;
                 }
-
                 $this->tableColumnTypes[$view] = $this->getTableColumnTypes($view);
                 $this->getViewStructureTable($view);
             }
-
-            foreach ($this->views as $view) {
+            // Second pass: actual views
+            foreach ($this->iterateViews() as $view) {
                 if ($this->matches($view, $this->settings->getExcludedTables())) {
                     continue;
                 }
-
                 $this->getViewStructureView($view);
             }
         }
@@ -449,7 +480,7 @@ class Mysqldump
      */
     private function exportTriggers()
     {
-        foreach ($this->triggers as $trigger) {
+        foreach ($this->iterateTriggers() as $trigger) {
             $this->getTriggerStructure($trigger);
         }
     }
@@ -459,7 +490,7 @@ class Mysqldump
      */
     private function exportProcedures()
     {
-        foreach ($this->procedures as $procedure) {
+        foreach ($this->iterateProcedures() as $procedure) {
             $this->getProcedureStructure($procedure);
         }
     }
@@ -469,7 +500,7 @@ class Mysqldump
      */
     private function exportFunctions()
     {
-        foreach ($this->functions as $function) {
+        foreach ($this->iterateFunctions() as $function) {
             $this->getFunctionStructure($function);
         }
     }
@@ -480,7 +511,7 @@ class Mysqldump
      */
     private function exportEvents()
     {
-        foreach ($this->events as $event) {
+        foreach ($this->iterateEvents() as $event) {
             $this->getEventStructure($event);
         }
     }
