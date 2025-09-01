@@ -16,6 +16,19 @@ services:
     volumes:
       - ./docker-entrypoint-initdb.d/mariadb-init.sql:/docker-entrypoint-initdb.d/00-init.sql
 
+  php81:
+    container_name: mysqldump-php-81
+    build:
+      context: .
+      args:
+        PHP_SHORT_VERSION: 81
+    volumes:
+      - .:/app
+      - ./config/skip-ssl.cnf:/etc/my.cnf.d/skip-ssl.cnf
+    depends_on:
+      - mysql
+      - mariadb
+
   php82:
     container_name: mysqldump-php-82
     build:
