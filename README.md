@@ -175,6 +175,8 @@ All options:
   - MySQL docs [5.7](https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#option_mysqldump_hex-blob)
 - **insert-ignore**
   - MySQL docs [5.7](https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#option_mysqldump_insert-ignore)
+- **replace**
+  - Use REPLACE INTO instead of INSERT INTO statements. Cannot be used together with insert-ignore.
 - **lock-tables**
   - MySQL docs [5.7](https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#option_mysqldump_lock-tables)
 - **net_buffer_length**

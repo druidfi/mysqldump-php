@@ -32,6 +32,7 @@ class DumpSettingsTest extends TestCase
         $this->assertTrue($settings->isEnabled('disable-keys'));
         $this->assertFalse($settings->isEnabled('if-not-exists'));
         $this->assertFalse($settings->isEnabled('insert-ignore'));
+        $this->assertFalse($settings->isEnabled('replace'));
     }
     
     /**
@@ -207,5 +208,37 @@ class DumpSettingsTest extends TestCase
         
         $this->assertCount(1, $initCommands);
         $this->assertEquals("SET NAMES utf8", $initCommands[0]);
+    }
+
+    /**
+     * Test replace option defaults
+     */
+    public function testReplaceDefault()
+    {
+        $settings = new DumpSettings([]);
+        $this->assertFalse($settings->isEnabled('replace'));
+    }
+
+    /**
+     * Test replace option can be enabled
+     */
+    public function testReplaceEnabled()
+    {
+        $settings = new DumpSettings(['replace' => true]);
+        $this->assertTrue($settings->isEnabled('replace'));
+    }
+
+    /**
+     * Test that replace and insert-ignore cannot be used together
+     */
+    public function testReplaceAndInsertIgnoreMutualExclusion()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Cannot use both replace and insert-ignore options simultaneously');
+        
+        new DumpSettings([
+            'replace' => true,
+            'insert-ignore' => true
+        ]);
     }
 }

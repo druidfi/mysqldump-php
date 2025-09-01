@@ -66,8 +66,8 @@ This document contains a detailed list of actionable improvement tasks for the m
 
 12. [x] Enhance unit testing:
     - [x] Increase test coverage for core functionality
-    - [ ] Add tests for edge cases
-    - [ ] Implement proper mocking for dependencies
+    - [x] Add tests for edge cases
+    - [x] Implement proper mocking for dependencies
 
 13. [ ] Implement integration testing:
     - [ ] Test with different database versions

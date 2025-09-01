@@ -96,6 +96,19 @@ class Mysqldump
         return $this->writer->write($data);
     }
 
+    private function getInsertType(): string
+    {
+        if ($this->settings->isEnabled('replace')) {
+            return 'REPLACE';
+        }
+
+        if ($this->settings->isEnabled('insert-ignore')) {
+            return 'INSERT  IGNORE';
+        }
+
+        return 'INSERT';
+    }
+
     /**
      * Primary function, triggers dumping.
      *
@@ -765,7 +778,7 @@ class Mysqldump
         $resultSet = $this->conn->query($stmt);
         $resultSet->setFetchMode(PDO::FETCH_ASSOC);
 
-        $ignore = $this->settings->isEnabled('insert-ignore') ? '  IGNORE' : '';
+        $insertType = $this->getInsertType();
         $count = 0;
 
         $isInfoCallable = $this->infoCallable && is_callable($this->infoCallable);
@@ -782,14 +795,14 @@ class Mysqldump
             if ($onlyOnce || !$this->settings->isEnabled('extended-insert')) {
                 if ($this->settings->isEnabled('complete-insert') && count($colNames)) {
                     $line .= sprintf(
-                        'INSERT%s INTO `%s` (%s) VALUES (%s)',
-                        $ignore,
+                        '%s INTO `%s` (%s) VALUES (%s)',
+                        $insertType,
                         $tableName,
                         implode(', ', $colNames),
                         $valueList
                     );
                 } else {
-                    $line .= sprintf('INSERT%s INTO `%s` VALUES (%s)', $ignore, $tableName, $valueList);
+                    $line .= sprintf('%s INTO `%s` VALUES (%s)', $insertType, $tableName, $valueList);
                 }
                 $onlyOnce = false;
             } else {

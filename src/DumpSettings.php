@@ -33,6 +33,7 @@ class DumpSettings
         'events' => false,
         'hex-blob' => true, /* faster than escaped content */
         'insert-ignore' => false,
+        'replace' => false,
         'net_buffer_length' => 1000000,
         'no-autocommit' => true,
         'no-create-info' => false,
@@ -71,6 +72,10 @@ class DumpSettings
 
         if (!is_array($this->settings['include-tables']) || !is_array($this->settings['exclude-tables'])) {
             throw new Exception('Include-tables and exclude-tables should be arrays');
+        }
+
+        if ($this->settings['replace'] && $this->settings['insert-ignore']) {
+            throw new Exception('Cannot use both replace and insert-ignore options simultaneously');
         }
 
         // If no include-views is passed in, dump the same views as tables, mimic mysqldump behaviour.

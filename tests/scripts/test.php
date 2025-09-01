@@ -217,6 +217,20 @@ try {
 
     $dump->start("output/mysqldump-php_test014b.sql");
 
+    print "Create dump with PHP: mysql-php_test015.sql (replace)" . PHP_EOL;
+
+    $dump = new Mysqldump(
+        "mysql:host=$host;dbname=test001",
+        $user,
+        $pass,
+        [
+            "replace" => true,
+            "extended-insert" => false,
+        ]
+    );
+
+    $dump->start("output/mysqldump-php_test015.sql");
+
     exit(0);
 } catch (Exception $e) {
     print "Error: " . $e->getMessage() . PHP_EOL;
