@@ -12,12 +12,20 @@ $ret = 0;
 print "PHP version is ". phpversion() . PHP_EOL;
 print "PDO check: double field" . PHP_EOL . PHP_EOL;
 
-$db = new \PDO("mysql:host=$host;dbname=test001", $user, $pass, [
+$pdoOptions = [
     \PDO::ATTR_PERSISTENT => true,
     \PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false,
     \PDO::ATTR_STRINGIFY_FETCHES => true,
-]);
+];
+
+// Backward/forward compatibility for buffered query attribute across PHP 8.3–8.5
+if (class_exists('Pdo\\Mysql') && defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')) {
+    $pdoOptions[constant('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')] = false;
+} elseif (defined('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY')) {
+    $pdoOptions[constant('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY')] = false;
+}
+
+$db = new \PDO("mysql:host=$host;dbname=test001", $user, $pass, $pdoOptions);
 
 $q = $db->query('SELECT * FROM test000');
 $q->setFetchMode(\PDO::FETCH_ASSOC);
