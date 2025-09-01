@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * PHP version of mysqldump cli that comes with MySQL.
@@ -80,7 +81,7 @@ class Mysqldump
      *
      * @throws Exception
      */
-    private function connect()
+    private function connect(): void
     {
         $this->conn = $this->connector->connect();
         $this->db = $this->getAdapter($this->conn);
@@ -115,7 +116,7 @@ class Mysqldump
      * @param string|null $filename Name of file to write sql dump to
      * @throws Exception
      */
-    public function start(?string $filename = '')
+    public function start(?string $filename = ''): void
     {
         $destination = 'php://stdout';
 
@@ -241,7 +242,7 @@ class Mysqldump
     /**
      * Reads table names from database. Fills $this->tables array so they will be dumped later.
      */
-    private function getDatabaseStructureTables()
+    private function getDatabaseStructureTables(): void
     {
         // Optimize memory by not storing all table names; just validate included-tables
         $includedTables = $this->settings->getIncludedTables();
@@ -266,7 +267,7 @@ class Mysqldump
     /**
      * Reads view names from database. Fills $this->tables array so they will be dumped later.
      */
-    private function getDatabaseStructureViews()
+    private function getDatabaseStructureViews(): void
     {
         // No need to store view names; validation for include-views happens in iterateViews()
     }
@@ -274,7 +275,7 @@ class Mysqldump
     /**
      * Reads trigger names from database. Fills $this->tables array so they will be dumped later.
      */
-    private function getDatabaseStructureTriggers()
+    private function getDatabaseStructureTriggers(): void
     {
         // No need to store trigger names; iteration happens in iterateTriggers()
     }
@@ -282,7 +283,7 @@ class Mysqldump
     /**
      * Reads procedure names from database. Fills $this->tables array so they will be dumped later.
      */
-    private function getDatabaseStructureProcedures()
+    private function getDatabaseStructureProcedures(): void
     {
         // No need to store procedure names; iteration happens in iterateProcedures()
     }
@@ -290,7 +291,7 @@ class Mysqldump
     /**
      * Reads functions names from database. Fills $this->tables array so they will be dumped later.
      */
-    private function getDatabaseStructureFunctions()
+    private function getDatabaseStructureFunctions(): void
     {
         // No need to store function names; iteration happens in iterateFunctions()
     }
@@ -298,7 +299,7 @@ class Mysqldump
     /**
      * Reads event names from database. Fills $this->tables array so they will be dumped later.
      */
-    private function getDatabaseStructureEvents()
+    private function getDatabaseStructureEvents(): void
     {
         // No need to store event names; iteration happens in iterateEvents()
     }
@@ -430,7 +431,7 @@ class Mysqldump
     /**
      * Exports all the tables selected from database
      */
-    private function exportTables()
+    private function exportTables(): void
     {
         // Exporting tables one by one using streaming iteration to reduce memory footprint
         foreach ($this->iterateTables() as $table) {
@@ -454,7 +455,7 @@ class Mysqldump
     /**
      * Exports all the views found in database.
      */
-    private function exportViews()
+    private function exportViews(): void
     {
         if (false === $this->settings->isEnabled('no-create-info')) {
             // First pass: stand-in tables for views
@@ -478,7 +479,7 @@ class Mysqldump
     /**
      * Exports all the triggers found in database.
      */
-    private function exportTriggers()
+    private function exportTriggers(): void
     {
         foreach ($this->iterateTriggers() as $trigger) {
             $this->getTriggerStructure($trigger);
@@ -488,7 +489,7 @@ class Mysqldump
     /**
      * Exports all the procedures found in database.
      */
-    private function exportProcedures()
+    private function exportProcedures(): void
     {
         foreach ($this->iterateProcedures() as $procedure) {
             $this->getProcedureStructure($procedure);
@@ -498,7 +499,7 @@ class Mysqldump
     /**
      * Exports all the functions found in database.
      */
-    private function exportFunctions()
+    private function exportFunctions(): void
     {
         foreach ($this->iterateFunctions() as $function) {
             $this->getFunctionStructure($function);
@@ -509,7 +510,7 @@ class Mysqldump
      * Exports all the events found in database.
      * @throws Exception
      */
-    private function exportEvents()
+    private function exportEvents(): void
     {
         foreach ($this->iterateEvents() as $event) {
             $this->getEventStructure($event);
@@ -1047,12 +1048,12 @@ class Mysqldump
      * Keyed by table name, with the value as the conditions:
      * e.g. 'users' => 'date_registered > NOW() - INTERVAL 6 MONTH AND deleted=0'
      */
-    public function setTableWheres(array $tableWheres)
+    public function setTableWheres(array $tableWheres): void
     {
         $this->tableWheres = $tableWheres;
     }
 
-    public function getTableWhere(string $tableName)
+    public function getTableWhere(string $tableName): string|false
     {
         if (!empty($this->tableWheres[$tableName])) {
             return $this->tableWheres[$tableName];
@@ -1066,7 +1067,7 @@ class Mysqldump
     /**
      * Keyed by table name, with the value as the numeric limit: e.g. 'users' => 3000
      */
-    public function setTableLimits(array $tableLimits)
+    public function setTableLimits(array $tableLimits): void
     {
         $this->tableLimits = $tableLimits;
     }
@@ -1074,7 +1075,7 @@ class Mysqldump
     /**
      * Returns the LIMIT for the table. Must be numeric to be returned.
      */
-    public function getTableLimit(string $tableName)
+    public function getTableLimit(string $tableName): int|string|false
     {
         if (!isset($this->tableLimits[$tableName])) {
             return false;
@@ -1101,7 +1102,7 @@ class Mysqldump
      *
      * @throws Exception
      */
-    public function addTypeAdapter(string $adapterClassName)
+    public function addTypeAdapter(string $adapterClassName): void
     {
         if (!is_a($adapterClassName, TypeAdapterInterface::class, true)) {
             $message = sprintf('Adapter %s is not instance of %s', $adapterClassName, TypeAdapterInterface::class);
@@ -1114,7 +1115,7 @@ class Mysqldump
     /**
      * Set a callable that will be used to transform table rows.
      */
-    public function setTransformTableRowHook(callable $callable)
+    public function setTransformTableRowHook(callable $callable): void
     {
         $this->transformTableRowCallable = $callable;
     }
@@ -1122,7 +1123,7 @@ class Mysqldump
     /**
      * Set a callable that will be used to report dump information.
      */
-    public function setInfoHook(callable $callable)
+    public function setInfoHook(callable $callable): void
     {
         $this->infoCallable = $callable;
     }
