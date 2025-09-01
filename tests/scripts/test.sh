@@ -16,8 +16,10 @@ HOST=${1:-mysql}
 USER=example
 PASS=example
 # Force-disable SSL for local/container tests to avoid self-signed cert errors with newer images
-MYSQL_CMD="$MYSQL_BINARY $SSL_FLAGS -h $HOST -u $USER -p$PASS"
-MYSQLDUMP_CMD="$MYSQLDUMP_BINARY $SSL_FLAGS -h $HOST -u $USER -p$PASS"
+# Use MYSQL_PWD to avoid exposing password on command line (silences client warning in CI)
+export MYSQL_PWD="$PASS"
+MYSQL_CMD="$MYSQL_BINARY $SSL_FLAGS -h $HOST -u $USER"
+MYSQLDUMP_CMD="$MYSQLDUMP_BINARY $SSL_FLAGS -h $HOST -u $USER"
 
 major=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $1}'`
 medium=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $2}'`
