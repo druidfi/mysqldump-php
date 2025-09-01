@@ -14,39 +14,18 @@ use PDOException;
  */
 class DatabaseConnector
 {
-    /**
-     * @var string DSN connection string
-     */
     private string $dsn;
 
-    /**
-     * @var string|null Username for database connection
-     */
     private ?string $user;
 
-    /**
-     * @var string|null Password for database connection
-     */
     private ?string $pass;
 
-    /**
-     * @var array PDO options
-     */
     private array $pdoOptions;
 
-    /**
-     * @var string Database host
-     */
     private string $host;
 
-    /**
-     * @var string Database name
-     */
     private string $dbName;
 
-    /**
-     * @var PDO|null PDO connection
-     */
     private ?PDO $conn = null;
 
     /**
@@ -146,21 +125,11 @@ class DatabaseConnector
         return $this->conn;
     }
 
-    /**
-     * Get the database host.
-     *
-     * @return string
-     */
     public function getHost(): string
     {
         return $this->host;
     }
 
-    /**
-     * Get the database name.
-     *
-     * @return string
-     */
     public function getDbName(): string
     {
         return $this->dbName;

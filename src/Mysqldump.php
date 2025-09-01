@@ -18,6 +18,7 @@ namespace Druidfi\Mysqldump;
 
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterInterface;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterMysql;
+use Druidfi\Mysqldump\ObjectDumper as ObjectDumper;
 use Exception;
 use PDO;
 
@@ -173,12 +174,62 @@ class Mysqldump
             throw new Exception($message);
         }
 
-        $this->exportTables();
-        $this->exportTriggers();
-        $this->exportFunctions();
-        $this->exportProcedures();
-        $this->exportViews();
-        $this->exportEvents();
+        // Use dedicated dumpers for different object types
+        $tablesDumper = new ObjectDumper\TablesDumper(
+            function () { return $this->iterateTables(); },
+            function (string $name, array $arr) { return $this->matches($name, $arr); },
+            function (string $table) { $this->getTableStructure($table); },
+            function (string $table) { 
+                $no_data = $this->settings->isEnabled('no-data');
+                if (!$no_data) { 
+                    $this->listValues($table);
+                } elseif ($no_data || $this->matches($table, $this->settings->getNoData())) {
+                    return; 
+                } else {
+                    $this->listValues($table);
+                }
+            },
+            function () { return $this->settings->getExcludedTables(); },
+            function () { return $this->settings->getNoData(); }
+        );
+        $tablesDumper->dump();
+
+        $triggersDumper = new ObjectDumper\TriggersDumper(
+            function () { return $this->iterateTriggers(); },
+            function (string $name) { $this->getTriggerStructure($name); }
+        );
+        $triggersDumper->dump();
+
+        $routinesDumper = new ObjectDumper\RoutinesDumper(
+            function () { return $this->iterateProcedures(); },
+            function () { return $this->iterateFunctions(); },
+            function (string $name) { $this->getProcedureStructure($name); },
+            function (string $name) { $this->getFunctionStructure($name); }
+        );
+        $routinesDumper->dump();
+
+        $viewsDumper = new ObjectDumper\ViewsDumper(
+            function () { return $this->iterateViews(); },
+            function (string $name, array $arr) { return $this->matches($name, $arr); },
+            function (string $name) {
+                if ($this->settings->isEnabled('no-create-info')) { return; }
+                if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
+                $this->tableColumnTypes[$name] = $this->getTableColumnTypes($name);
+                $this->getViewStructureTable($name);
+            },
+            function (string $name) {
+                if ($this->settings->isEnabled('no-create-info')) { return; }
+                if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
+                $this->getViewStructureView($name);
+            }
+        );
+        $viewsDumper->dump();
+
+        $eventsDumper = new ObjectDumper\EventsDumper(
+            function () { return $this->iterateEvents(); },
+            function (string $name) { $this->getEventStructure($name); }
+        );
+        $eventsDumper->dump();
 
         // Restore saved parameters.
         $this->write($this->db->restoreParameters());
@@ -367,7 +418,8 @@ class Mysqldump
     private function iterateTriggers(): \Generator
     {
         if ($this->settings->skipTriggers()) {
-            return; // empty generator
+            yield from [];
+            return;
         }
         $stmt = $this->conn->query($this->db->showTriggers($this->connector->getDbName()));
         $names = [];
@@ -383,7 +435,8 @@ class Mysqldump
     private function iterateProcedures(): \Generator
     {
         if (!$this->settings->isEnabled('routines')) {
-            return; // empty generator
+            yield from [];
+            return;
         }
         $stmt = $this->conn->query($this->db->showProcedures($this->connector->getDbName()));
         $names = [];
@@ -399,7 +452,8 @@ class Mysqldump
     private function iterateFunctions(): \Generator
     {
         if (!$this->settings->isEnabled('routines')) {
-            return; // empty generator
+            yield from [];
+            return;
         }
         $stmt = $this->conn->query($this->db->showFunctions($this->connector->getDbName()));
         $names = [];
@@ -415,7 +469,8 @@ class Mysqldump
     private function iterateEvents(): \Generator
     {
         if (!$this->settings->isEnabled('events')) {
-            return; // empty generator
+            yield from [];
+            return;
         }
         $stmt = $this->conn->query($this->db->showEvents($this->connector->getDbName()));
         $names = [];
