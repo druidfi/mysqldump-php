@@ -243,25 +243,22 @@ class Mysqldump
      */
     private function getDatabaseStructureTables()
     {
+        // Optimize memory by not storing all table names; just validate included-tables
         $includedTables = $this->settings->getIncludedTables();
-
-        // Listing all tables from database
-        if (empty($includedTables)) {
-            // include all tables for now, blacklisting happens later
+        if (!empty($includedTables)) {
             foreach ($this->conn->query($this->db->showTables($this->connector->getDbName())) as $row) {
-                $this->tables[] = current($row);
-            }
-        } else {
-            // include only the tables mentioned in include-tables
-            foreach ($this->conn->query($this->db->showTables($this->connector->getDbName())) as $row) {
-                if (in_array(current($row), $includedTables, true)) {
-                    $this->tables[] = current($row);
-                    $elem = array_search(current($row), $includedTables);
-                    unset($includedTables[$elem]);
-                    $this->settings->setIncludedTables($includedTables);
+                $name = current($row);
+                if (in_array($name, $includedTables, true)) {
+                    $elem = array_search($name, $includedTables, true);
+                    if ($elem !== false) {
+                        unset($includedTables[$elem]);
+                    }
                 }
             }
+            // Update remaining included tables for the later missing-check
+            $this->settings->setIncludedTables($includedTables);
         }
+        // $this->tables is intentionally left empty to avoid retaining the full list in memory.
     }
 
     /**
@@ -362,12 +359,32 @@ class Mysqldump
     }
 
     /**
+     * Stream table names from the database without storing them in memory.
+     * Applies include-tables if provided, otherwise yields all tables.
+     */
+    private function iterateTables(): \Generator
+    {
+        $includedTables = $this->settings->getIncludedTables();
+        $restrict = !empty($includedTables);
+        foreach ($this->conn->query($this->db->showTables($this->connector->getDbName())) as $row) {
+            $name = current($row);
+            if ($restrict) {
+                if (in_array($name, $includedTables, true)) {
+                    yield $name;
+                }
+            } else {
+                yield $name;
+            }
+        }
+    }
+
+    /**
      * Exports all the tables selected from database
      */
     private function exportTables()
     {
-        // Exporting tables one by one
-        foreach ($this->tables as $table) {
+        // Exporting tables one by one using streaming iteration to reduce memory footprint
+        foreach ($this->iterateTables() as $table) {
             if ($this->matches($table, $this->settings->getExcludedTables())) {
                 continue;
             }
