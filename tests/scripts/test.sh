@@ -55,6 +55,12 @@ export MYSQL_PWD="$PASS"
 MYSQL_CMD="$MYSQL_BINARY $SSL_FLAGS -h $HOST -u $USER"
 MYSQLDUMP_CMD="$MYSQLDUMP_BINARY $SSL_FLAGS -h $HOST -u $USER"
 
+# Conditionally suppress MySQL 8 client warning on MariaDB servers only when using mysqldump
+IS_MARIADB=$($MYSQL_CMD -Bse "SELECT VERSION()" 2>/dev/null | grep -ic mariadb || true)
+if [[ "$MYSQLDUMP_BINARY" == "mysqldump" && ${IS_MARIADB:-0} -gt 0 ]]; then
+  MYSQLDUMP_CMD+=" --column-statistics=0"
+fi
+
 major=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $1}'`
 medium=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $2}'`
 minor=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $3}'`

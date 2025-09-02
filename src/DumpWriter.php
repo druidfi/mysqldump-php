@@ -14,14 +14,8 @@ use Exception;
  */
 class DumpWriter
 {
-    /**
-     * @var CompressInterface Compression manager
-     */
     private CompressInterface $io;
 
-    /**
-     * @var DumpSettings Settings for the dump
-     */
     private DumpSettings $settings;
 
     /**
@@ -64,11 +58,6 @@ class DumpWriter
         return $this->io->write($data);
     }
 
-    /**
-     * Close the output file.
-     *
-     * @return bool True on success
-     */
     public function close(): bool
     {
         return $this->io->close();
