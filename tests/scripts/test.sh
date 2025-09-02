@@ -1,5 +1,39 @@
 #!/bin/bash
 
+# Color and emoji helpers
+# Respect NO_COLOR and detect TTY; disable colors when not supported
+if [[ -t 1 && -z "${NO_COLOR}" ]]; then
+  BOLD='\033[1m'
+  DIM='\033[2m'
+  RED='\033[31m'
+  GREEN='\033[32m'
+  YELLOW='\033[33m'
+  BLUE='\033[34m'
+  MAGENTA='\033[35m'
+  CYAN='\033[36m'
+  RESET='\033[0m'
+else
+  BOLD=''
+  DIM=''
+  RED=''
+  GREEN=''
+  YELLOW=''
+  BLUE=''
+  MAGENTA=''
+  CYAN=''
+  RESET=''
+fi
+OK_EMOJI="✅"
+ERR_EMOJI="❌"
+WARN_EMOJI="⚠️"
+INFO_EMOJI="ℹ️"
+
+section() { echo -e "\n${BOLD}${CYAN}$1${RESET}\n"; }
+info() { echo -e "${DIM}${INFO_EMOJI} $1${RESET}"; }
+success() { echo -e "${GREEN}${OK_EMOJI} $1${RESET}"; }
+warn() { echo -e "${YELLOW}${WARN_EMOJI} $1${RESET}"; }
+error() { echo -e "${RED}${ERR_EMOJI} $1${RESET}"; }
+
 if command -v mariadb &> /dev/null; then
     MYSQL_BINARY="mariadb"
     MYSQLDUMP_BINARY="mariadb-dump"
@@ -25,7 +59,7 @@ major=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk
 medium=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $2}'`
 minor=`$MYSQL_CMD -e "SELECT @@version\G" | grep version |awk '{print $2}' | awk -F"." '{print $3}'`
 
-printf "\nTesting against MySQL server version $major.$medium.$minor on host '$HOST' with user '$USER'\n"
+section "Testing against MySQL server version $major.$medium.$minor on host '$HOST' with user '$USER'"
 
 function checksum_test001() {
 for i in 000 001 002 003 010 011 015 027 029 033 200; do
@@ -51,51 +85,51 @@ done
 
 index=0
 
-printf "\nImport source SQL dumps:\n\n"
+section "Import source SQL dumps"
 
 printf "Import test001.src.sql"
 $MYSQL_CMD < test001.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo "error test001.src.sql"; fi
+if [[ $errCode -ne 0 ]]; then error "Import failed: test001.src.sql"; fi
 
 printf "Import test002.src.sql"
 $MYSQL_CMD --default-character-set=utf8mb4 < test002.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo "error test002.src.sql"; fi
+if [[ $errCode -ne 0 ]]; then error "Import failed: test002.src.sql"; fi
 
 printf "Import test005.src.sql"
 $MYSQL_CMD < test005.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo "error test005.src.sql"; fi
+if [[ $errCode -ne 0 ]]; then error "Import failed: test005.src.sql"; fi
 
 printf "Import test006.src.sql"
 $MYSQL_CMD < test006.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo "error test006.src.sql"; fi
+if [[ $errCode -ne 0 ]]; then error "Import failed: test006.src.sql"; fi
 
 printf "Import test008.src.sql"
 $MYSQL_CMD < test008.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo "error test008.src.sql"; fi
+if [[ $errCode -ne 0 ]]; then error "Import failed: test008.src.sql"; fi
 
 printf "Import test009.src.sql"
 $MYSQL_CMD < test009.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo "error test001.src.sql"; fi
+if [[ $errCode -ne 0 ]]; then error "Import failed: test009.src.sql"; fi
 
 if [[ $major -eq 5 && $medium -ge 7 ]]; then
   printf "Import test010.src.sql"
   $MYSQL_CMD < test010.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-  if [[ $errCode -ne 0 ]]; then echo "error test010.src.sql"; fi
+  if [[ $errCode -ne 0 ]]; then error "Import failed: test010.src.sql"; fi
 else
   printf "Import test010.8.src.sql"
   $MYSQL_CMD < test010.8.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-  if [[ $errCode -ne 0 ]]; then echo "error test010.8.src.sql"; fi
+  if [[ $errCode -ne 0 ]]; then error "Import failed: test010.8.src.sql"; fi
 fi
 
 printf "Import test012.src.sql"
 $MYSQL_CMD < test012.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo "error test012.src.sql"; fi
+if [[ $errCode -ne 0 ]]; then error "Import failed: test012.src.sql"; fi
 
 printf "Import test014.src.sql"
 $MYSQL_CMD < test014.src.sql && echo " - done."; errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo "error test014.src.sql"; fi
+if [[ $errCode -ne 0 ]]; then error "Import failed: test014.src.sql"; fi
 
-printf "\nRun checksum tests:\n\n"
+section "Run checksum tests"
 
 printf "Create checksum: test001.src.checksum"
 checksum_test001 > output/test001.src.checksum && echo " - done."
@@ -104,7 +138,7 @@ checksum_test002 > output/test002.src.checksum && echo " - done."
 printf "Create checksum: test005.src.checksum"
 checksum_test005 > output/test005.src.checksum && echo " - done."
 
-printf "\nRun native mysqldump:\n\n"
+section "Run native mysqldump" 
 
 printf "Create dump: mysqldump_test001.sql"
 $MYSQLDUMP_CMD test001 \
@@ -162,16 +196,16 @@ $MYSQLDUMP_CMD test001 \
     > output/mysqldump_test013.sql && echo " - done."
 errCode=$?; ret[((index++))]=$errCode
 
-printf "\nRun mysqldump with PHP:\n\n"
+section "Run mysqldump with PHP" 
 
 # Uncomment following 2 lines if you wanna test PDO
 #php pdo_checks.php $HOST || { echo "ERROR running pdo_checks.php" && exit -1; }
 #errCode=$?; ret[((index++))]=$errCode
 
-php test.php $HOST || { echo "ERROR running test.php" && exit -1; }
+php test.php $HOST || { error "ERROR running test.php"; exit 1; }
 errCode=$?; ret[((index++))]=$errCode
 
-printf "\nImport generated SQL dumps...\n\n"
+section "Import generated SQL dumps" 
 
 printf "Import mysqldump-php_test001.sql"
 $MYSQL_CMD test001 < output/mysqldump-php_test001.sql && echo " - done."
@@ -189,7 +223,7 @@ printf "Import mysqldump-php_test009.sql"
 $MYSQL_CMD test009 < output/mysqldump-php_test009.sql && echo " - done."
 errCode=$?; ret[((index++))]=$errCode
 
-printf "\nRun checksum tests:\n\n"
+section "Run checksum tests" 
 
 printf "Create checksum: mysqldump-php_test001.checksum"
 checksum_test001 > output/mysqldump-php_test001.checksum && echo " - done."
@@ -198,7 +232,7 @@ checksum_test002 > output/mysqldump-php_test002.checksum && echo " - done."
 printf "Create checksum: mysqldump-php_test005.checksum"
 checksum_test005 > output/mysqldump-php_test005.checksum && echo " - done."
 
-printf "\nCreate filtered sql files:\n\n"
+section "Create filtered sql files" 
 
 cat test001.src.sql | grep ^INSERT > output/test001.filtered.sql && echo "Created test001.filtered.sql"
 cat test002.src.sql | grep ^INSERT > output/test002.filtered.sql && echo "Created test002.filtered.sql"
@@ -228,12 +262,12 @@ for f in output/*.filtered.sql; do
   fi
 done
 
-printf "\nRun diff tests:\n\n"
+section "Run diff tests" 
 
 test="Test#$index diff test001.filtered.sql mysqldump_test001.filtered.sql"
 diff output/test001.filtered.sql output/mysqldump_test001.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 #
 # THERE IS DIFF HERE!
@@ -241,59 +275,59 @@ if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
 test="Test#$index diff mysqldump_test001_complete.filtered.sql mysqldump-php_test001_complete.filtered.sql"
 diff output/mysqldump_test001_complete.filtered.sql output/mysqldump-php_test001_complete.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 test="Test#$index diff test002.filtered.sql mysqldump_test002.filtered.sql"
 diff output/test002.filtered.sql output/mysqldump_test002.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 test="Test#$index diff test001.filtered.sql mysqldump-php_test001.filtered.sql"
 diff output/test001.filtered.sql output/mysqldump-php_test001.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 test="Test#$index diff test002.filtered.sql mysqldump-php_test002.filtered.sql"
 diff output/test002.filtered.sql output/mysqldump-php_test002.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 test="Test#$index diff test001.src.checksum mysqldump-php_test001.checksum"
 diff output/test001.src.checksum output/mysqldump-php_test001.checksum
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 test="Test#$index diff test002.src.checksum mysqldump-php_test002.checksum"
 diff output/test002.src.checksum output/mysqldump-php_test002.checksum
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 test="Test#$index diff test005.src.checksum mysqldump-php_test005.checksum"
 diff output/test005.src.checksum output/mysqldump-php_test005.checksum
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 test="Test#$index diff mysqldump_test005.filtered.sql mysqldump-php_test005.filtered.sql"
 diff output/mysqldump_test005.filtered.sql output/mysqldump-php_test005.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 test="Test#$index diff test008.filtered.sql mysqldump-php_test008.filtered.sql"
 diff output/test008.filtered.sql output/mysqldump-php_test008.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 #test reset-auto-increment, make sure we don't find an AUTO_INCREMENT
 test="Test#$index cat mysqldump-php_test009.sql \| grep -i ENGINE \| grep AUTO_INCREMENT"
 cat output/mysqldump-php_test009.sql | grep -i ENGINE | (! grep AUTO_INCREMENT)
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 # test backup events
 test="Test#$index diff test010.filtered.sql mysqldump-php_test010.filtered.sql"
 diff output/test010.filtered.sql output/mysqldump-php_test010.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
-if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+if [[ $errCode -ne 0 ]]; then warn "$test"; fi
 
 # Test create views, events, trigger
 test="Test#$index diff mysqldump_test012.filtered.sql mysqldump-php_test012.filtered.sql"
@@ -313,15 +347,14 @@ diff output/mysqldump_test013.filtered.sql output/mysqldump-php_test013.filtered
 errCode=$?; ret[((index++))]=$errCode
 if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
 
-echo -e "\nDone $index tests\n"
+section "Done $index tests"
 
 retvalue=0
 for i in $(seq 0 $index) ; do
     if [[ ${ret[$i]} -ne 0 ]]; then
-        echo "Test#$i failed with ${ret[$i]}"
+        warn "Test#$i failed with exit code ${ret[$i]}"
         retvalue=${ret[$i]}
     fi
-    # total=$((${ret[$i]} + $total))
 done
 
 if [[ $retvalue -eq 0 ]]; then
@@ -329,9 +362,9 @@ if [[ $retvalue -eq 0 ]]; then
 #    rm output/*.filtered.sql 2> /dev/null
 #    rm output/mysqldump* 2> /dev/null
 
-    echo -e "\nAll tests were successfully"
+    success "All tests passed"
 else
-    echo -e "\nThere are errors. Exiting with code $retvalue"
+    error "There are errors. Exiting with code $retvalue"
 fi
 
 exit $retvalue
