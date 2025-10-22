@@ -7,7 +7,7 @@ This document contains a detailed list of actionable improvement tasks for the m
 1. [ ] Refactor the large Mysqldump class into smaller, more focused classes:
    - [x] Create a separate DatabaseConnector class to handle connection logic
    - [x] Create a separate DumpWriter class to handle file output
-   - [ ] Create separate classes for different database object types (Tables, Views, Triggers, etc.)
+   - [x] Create separate classes for different database object types (Tables, Views, Triggers, etc.)
 
 2. [ ] Implement a proper dependency injection system:
    - [ ] Use constructor injection for dependencies
@@ -19,7 +19,7 @@ This document contains a detailed list of actionable improvement tasks for the m
    - [ ] Implement proper exception hierarchies
 
 4. [ ] Implement interfaces for major components:
-   - [ ] Create a DumperInterface for different dumper implementations
+   - [x] Create a DumperInterface for different dumper implementations
    - [ ] Create a ConnectionInterface for different database connections
 
 ## Code Quality Improvements
