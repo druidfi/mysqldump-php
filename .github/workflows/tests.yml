@@ -44,23 +44,23 @@ jobs:
           # MySQL 8.0
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnami/mysql:8.0
+            database_image: bitnamilegacy/mysql:8.0.40
             php-version: 8.1
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnami/mysql:8.0
+            database_image: bitnamilegacy/mysql:8.0.40
             php-version: 8.2
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnami/mysql:8.0
+            database_image: bitnamilegacy/mysql:8.0.40
             php-version: 8.3
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnami/mysql:8.0
+            database_image: bitnamilegacy/mysql:8.0.40
             php-version: 8.4
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnami/mysql:8.0
+            database_image: bitnamilegacy/mysql:8.0.40
             php-version: 8.5
 
           # MariaDB 10.11 LTS
