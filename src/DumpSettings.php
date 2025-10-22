@@ -57,6 +57,25 @@ class DumpSettings
      */
     public function __construct(array $settings)
     {
+        // Validate settings using attributes before merging with defaults
+        ConfigValidator::validateAll($settings);
+
+        // Check for deprecated options and trigger warnings
+        foreach ($settings as $optionName => $value) {
+            $deprecation = ConfigValidator::checkDeprecated($optionName);
+            if ($deprecation !== null) {
+                $message = "Configuration option '{$optionName}' is deprecated";
+                if ($deprecation['since']) {
+                    $message .= " (since version {$deprecation['since']})";
+                }
+                $message .= ": {$deprecation['reason']}";
+                if ($deprecation['alternative']) {
+                    $message .= ". Use {$deprecation['alternative']} instead.";
+                }
+                trigger_error($message, E_USER_DEPRECATED);
+            }
+        }
+
         $this->settings = array_replace_recursive(self::$defaults, $settings);
 
         $this->settings['init_commands'][] = "SET NAMES " . $this->get('default-character-set');
