@@ -66,23 +66,23 @@ jobs:
           # MariaDB 10.11 LTS
           - os: ubuntu-22.04
             database: mariadb
-            database_image: bitnami/mariadb:10.11
+            database_image: bitnamilegacy/mariadb:10.11.9
             php-version: 8.1
           - os: ubuntu-22.04
             database: mariadb
-            database_image: bitnami/mariadb:10.11
+            database_image: bitnamilegacy/mariadb:10.11.9
             php-version: 8.2
           - os: ubuntu-22.04
             database: mariadb
-            database_image: bitnami/mariadb:10.11
+            database_image: bitnamilegacy/mariadb:10.11.9
             php-version: 8.3
           - os: ubuntu-22.04
             database: mariadb
-            database_image: bitnami/mariadb:10.11
+            database_image: bitnamilegacy/mariadb:10.11.9
             php-version: 8.4
           - os: ubuntu-22.04
             database: mariadb
-            database_image: bitnami/mariadb:10.11
+            database_image: bitnamilegacy/mariadb:10.11.9
             php-version: 8.5
 
     steps:
