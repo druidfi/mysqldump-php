@@ -497,9 +497,7 @@ class Mysqldump
             $this->getTableStructure($table);
             $no_data = $this->settings->isEnabled('no-data');
 
-            if (!$no_data) { // don't break compatibility with old trigger
-                $this->listValues($table);
-            } elseif ($no_data || $this->matches($table, $this->settings->getNoData())) {
+            if ($no_data || $this->matches($table, $this->settings->getNoData())) {
                 continue;
             } else {
                 $this->listValues($table);
