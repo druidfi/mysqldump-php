@@ -141,7 +141,7 @@ class Mysqldump
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 // Don't convert empty strings to SQL NULL values on data fetches.
                 PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
-                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false,
+                PDO::ATTR_USE_BUFFERED_QUERY => false,
             ], $this->pdoOptions);
 
             $this->conn = new PDO($this->dsn, $this->user, $this->pass, $options);
