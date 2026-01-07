@@ -178,8 +178,8 @@ class Mysqldump
         $tablesDumper = new ObjectDumper\TablesDumper(
             function () { return $this->iterateTables(); },
             function (string $name, array $arr) { return $this->matches($name, $arr); },
-            function (string $table) { $this->getTableStructure($table); },
-            function (string $table) { 
+            function (string $table): void { $this->getTableStructure($table); },
+            function (string $table): void { 
                 $no_data = $this->settings->isEnabled('no-data');
                 if (!$no_data) { 
                     $this->listValues($table);
@@ -196,28 +196,28 @@ class Mysqldump
 
         $triggersDumper = new ObjectDumper\TriggersDumper(
             function () { return $this->iterateTriggers(); },
-            function (string $name) { $this->getTriggerStructure($name); }
+            function (string $name): void { $this->getTriggerStructure($name); }
         );
         $triggersDumper->dump();
 
         $routinesDumper = new ObjectDumper\RoutinesDumper(
             function () { return $this->iterateProcedures(); },
             function () { return $this->iterateFunctions(); },
-            function (string $name) { $this->getProcedureStructure($name); },
-            function (string $name) { $this->getFunctionStructure($name); }
+            function (string $name): void { $this->getProcedureStructure($name); },
+            function (string $name): void { $this->getFunctionStructure($name); }
         );
         $routinesDumper->dump();
 
         $viewsDumper = new ObjectDumper\ViewsDumper(
             function () { return $this->iterateViews(); },
             function (string $name, array $arr) { return $this->matches($name, $arr); },
-            function (string $name) {
+            function (string $name): void {
                 if ($this->settings->isEnabled('no-create-info')) { return; }
                 if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
                 $this->tableColumnTypes[$name] = $this->getTableColumnTypes($name);
                 $this->getViewStructureTable($name);
             },
-            function (string $name) {
+            function (string $name): void {
                 if ($this->settings->isEnabled('no-create-info')) { return; }
                 if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
                 $this->getViewStructureView($name);
@@ -227,7 +227,7 @@ class Mysqldump
 
         $eventsDumper = new ObjectDumper\EventsDumper(
             function () { return $this->iterateEvents(); },
-            function (string $name) { $this->getEventStructure($name); }
+            function (string $name): void { $this->getEventStructure($name); }
         );
         $eventsDumper->dump();
 
