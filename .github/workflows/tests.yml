@@ -104,6 +104,13 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --optimize-autoloader --no-progress --no-interaction
 
+      - name: Run Rector
+        run: vendor/bin/rector process --dry-run --no-progress-bar --ansi
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan --error-format=github --no-progress --ansi
+        continue-on-error: true
+
       - name: Run PHPunit tests
         run: vendor/bin/phpunit
 
