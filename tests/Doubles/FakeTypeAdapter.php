@@ -31,7 +31,7 @@ class FakeTypeAdapter implements TypeAdapterInterface
     public function endDisableAutocommit(): string { return ''; }
     public function getDatabaseHeader(string $databaseName): string { return ''; }
     public function getVersion(): string { return 'fake'; }
-    public function lockTable(string $tableName): string { return ''; }
+    public function lockTable(string $tableName): void { }
     public function parseColumnType(array $colType): array { return []; }
     public function restoreParameters(): string { return ''; }
     public function setupTransaction(): string { return ''; }
@@ -52,5 +52,5 @@ class FakeTypeAdapter implements TypeAdapterInterface
     public function startAddLockTable(string $tableName): string { return ''; }
     public function startDisableAutocommit(): string { return ''; }
     public function startTransaction(): string { return ''; }
-    public function unlockTable(string $tableName): string { return ''; }
+    public function unlockTable(string $tableName): void { }
 }

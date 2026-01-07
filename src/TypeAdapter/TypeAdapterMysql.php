@@ -419,14 +419,14 @@ class TypeAdapterMysql implements TypeAdapterInterface
         return "COMMIT";
     }
 
-    public function lockTable(string $tableName): string
+    public function lockTable(string $tableName): void
     {
-        return $this->db->exec(sprintf("LOCK TABLES `%s` READ LOCAL", $tableName));
+        $this->db->exec(sprintf("LOCK TABLES `%s` READ LOCAL", $tableName));
     }
 
-    public function unlockTable(string $tableName): string
+    public function unlockTable(string $tableName): void
     {
-        return $this->db->exec("UNLOCK TABLES");
+        $this->db->exec("UNLOCK TABLES");
     }
 
     public function startAddLockTable(string $tableName): string

@@ -38,14 +38,6 @@ class Mysqldump
     private $transformColumnValueCallable;
     private $infoCallable;
 
-    // Internal data arrays.
-    private array $tables = [];
-    private array $views = [];
-    private array $triggers = [];
-    private array $procedures = [];
-    private array $functions = [];
-    private array $events = [];
-
     /**
      * Keyed on table name, with the value as the conditions.
      * e.g. - 'users' => 'date_registered > NOW() - INTERVAL 6 MONTH'
@@ -179,13 +171,9 @@ class Mysqldump
             function () { return $this->iterateTables(); },
             function (string $name, array $arr) { return $this->matches($name, $arr); },
             function (string $table): void { $this->getTableStructure($table); },
-            function (string $table): void { 
+            function (string $table): void {
                 $no_data = $this->settings->isEnabled('no-data');
-                if (!$no_data) { 
-                    $this->listValues($table);
-                } elseif ($no_data || $this->matches($table, $this->settings->getNoData())) {
-                    return; 
-                } else {
+                if (!$no_data && !$this->matches($table, $this->settings->getNoData())) {
                     $this->listValues($table);
                 }
             },
@@ -480,93 +468,6 @@ class Mysqldump
         $stmt->closeCursor();
         foreach ($names as $name) {
             yield $name;
-        }
-    }
-
-    /**
-     * Exports all the tables selected from database
-     */
-    private function exportTables(): void
-    {
-        // Exporting tables one by one using streaming iteration to reduce memory footprint
-        foreach ($this->iterateTables() as $table) {
-            if ($this->matches($table, $this->settings->getExcludedTables())) {
-                continue;
-            }
-
-            $this->getTableStructure($table);
-            $no_data = $this->settings->isEnabled('no-data');
-
-            if ($no_data || $this->matches($table, $this->settings->getNoData())) {
-                continue;
-            } else {
-                $this->listValues($table);
-            }
-        }
-    }
-
-    /**
-     * Exports all the views found in database.
-     */
-    private function exportViews(): void
-    {
-        if (false === $this->settings->isEnabled('no-create-info')) {
-            // First pass: stand-in tables for views
-            foreach ($this->iterateViews() as $view) {
-                if ($this->matches($view, $this->settings->getExcludedTables())) {
-                    continue;
-                }
-                $this->tableColumnTypes[$view] = $this->getTableColumnTypes($view);
-                $this->getViewStructureTable($view);
-            }
-            // Second pass: actual views
-            foreach ($this->iterateViews() as $view) {
-                if ($this->matches($view, $this->settings->getExcludedTables())) {
-                    continue;
-                }
-                $this->getViewStructureView($view);
-            }
-        }
-    }
-
-    /**
-     * Exports all the triggers found in database.
-     */
-    private function exportTriggers(): void
-    {
-        foreach ($this->iterateTriggers() as $trigger) {
-            $this->getTriggerStructure($trigger);
-        }
-    }
-
-    /**
-     * Exports all the procedures found in database.
-     */
-    private function exportProcedures(): void
-    {
-        foreach ($this->iterateProcedures() as $procedure) {
-            $this->getProcedureStructure($procedure);
-        }
-    }
-
-    /**
-     * Exports all the functions found in database.
-     */
-    private function exportFunctions(): void
-    {
-        foreach ($this->iterateFunctions() as $function) {
-            $this->getFunctionStructure($function);
-        }
-    }
-
-    /**
-     * Exports all the events found in database.
-     * @throws Exception
-     */
-    private function exportEvents(): void
-    {
-        foreach ($this->iterateEvents() as $event) {
-            $this->getEventStructure($event);
         }
     }
 
