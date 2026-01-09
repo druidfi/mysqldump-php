@@ -22,7 +22,7 @@ interface TypeAdapterInterface
     public function endDisableAutocommit(): string;
     public function getDatabaseHeader(string $databaseName): string;
     public function getVersion(): string;
-    public function lockTable(string $tableName): string;
+    public function lockTable(string $tableName): void;
     public function parseColumnType(array $colType): array;
     public function restoreParameters(): string;
     public function setupTransaction(): string;
@@ -43,5 +43,5 @@ interface TypeAdapterInterface
     public function startAddLockTable(string $tableName): string;
     public function startDisableAutocommit(): string;
     public function startTransaction(): string;
-    public function unlockTable(string $tableName): string;
+    public function unlockTable(string $tableName): void;
 }

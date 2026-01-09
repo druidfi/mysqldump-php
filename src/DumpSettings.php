@@ -156,7 +156,9 @@ class DumpSettings
 
     public function getNoData(): array
     {
-        return $this->settings['no-data'] ?? [];
+        $noData = $this->settings['no-data'] ?? [];
+        // Handle legacy boolean values
+        return is_array($noData) ? $noData : [];
     }
 
     public function isEnabled(string $option): bool

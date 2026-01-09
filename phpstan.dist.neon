@@ -1,0 +1,27 @@
+parameters:
+    level: 4
+    paths:
+        - src/
+        - tests/
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # Optional compression extensions - LZ4
+        -
+            message: '#Function lz4_compress_open not found#'
+            path: src/Compress/CompressLz4.php
+        -
+            message: '#Function lz4_compress_write not found#'
+            path: src/Compress/CompressLz4.php
+        -
+            message: '#Function lz4_compress_close not found#'
+            path: src/Compress/CompressLz4.php
+        # Optional compression extensions - Zstd
+        -
+            message: '#Function zstd_compress_stream_begin not found#'
+            path: src/Compress/CompressZstd.php
+        -
+            message: '#Function zstd_compress_stream_update not found#'
+            path: src/Compress/CompressZstd.php
+        -
+            message: '#Function zstd_compress_stream_end not found#'
+            path: src/Compress/CompressZstd.php
