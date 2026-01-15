@@ -137,13 +137,26 @@ class Mysqldump
     private function connect()
     {
         try {
-            $options = array_replace_recursive([
+            $defaultOptions = [
                 PDO::ATTR_PERSISTENT => true,
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 // Don't convert empty strings to SQL NULL values on data fetches.
                 PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
-                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false,
-            ], $this->pdoOptions);
+            ];
+
+            // Handle deprecated PDO::MYSQL_ATTR_USE_BUFFERED_QUERY in PHP 8.5.
+            // Prefer Pdo\Mysql::ATTR_USE_BUFFERED_QUERY when available; fall back otherwise.
+            if (class_exists('Pdo\\Mysql') && defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')) {
+                $mysqlBufferedQueryAttr = constant('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY');
+            } elseif (defined('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY')) {
+                $mysqlBufferedQueryAttr = constant('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY');
+            }
+
+            if ($mysqlBufferedQueryAttr !== null) {
+                $defaultOptions[$mysqlBufferedQueryAttr] = false;
+            }
+
+            $options = array_replace_recursive($defaultOptions, $this->pdoOptions);
 
             $this->conn = new PDO($this->dsn, $this->user, $this->pass, $options);
         } catch (PDOException $e) {
