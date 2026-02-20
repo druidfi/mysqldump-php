@@ -158,14 +158,6 @@ class Mysqldump
             $this->write($this->db->databases($this->connector->getDbName()));
         }
 
-        // If there still are some tables/views in include-tables array, that means that some tables or views weren't
-        // found. Give proper error and exit. This check will be removed once include-tables supports regexps.
-        if (0 < count($this->settings->getIncludedTables())) {
-            $name = implode(',', $this->settings->getIncludedTables());
-            $message = sprintf("Table '%s' not found in database", $name);
-            throw new Exception($message);
-        }
-
         // Use dedicated dumpers for different object types
         $tablesDumper = new ObjectDumper\TablesDumper(
             function () { return $this->iterateTables(); },
@@ -283,22 +275,25 @@ class Mysqldump
      */
     private function getDatabaseStructureTables(): void
     {
-        // Optimize memory by not storing all table names; just validate included-tables
+        // Validate that all include-tables entries actually exist in the database.
         $includedTables = $this->settings->getIncludedTables();
         if (!empty($includedTables)) {
+            $missingTables = $includedTables;
             $stmtTables = $this->conn->query($this->db->showTables($this->connector->getDbName()));
             foreach ($stmtTables as $row) {
                 $name = current($row);
-                if (in_array($name, $includedTables, true)) {
-                    $elem = array_search($name, $includedTables, true);
-                    if ($elem !== false) {
-                        unset($includedTables[$elem]);
-                    }
+                $elem = array_search($name, $missingTables, true);
+                if ($elem !== false) {
+                    unset($missingTables[$elem]);
                 }
             }
             $stmtTables->closeCursor();
-            // Update remaining included tables for the later missing-check
-            $this->settings->setIncludedTables($includedTables);
+            // If there still are some tables in $missingTables, they weren't found in the database.
+            // Give proper error and exit. This check will be removed once include-tables supports regexps.
+            if (!empty($missingTables)) {
+                $name = implode(',', $missingTables);
+                throw new Exception(sprintf("Table '%s' not found in database", $name));
+            }
         }
         // $this->tables is intentionally left empty to avoid retaining the full list in memory.
     }
