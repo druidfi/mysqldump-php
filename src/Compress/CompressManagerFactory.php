@@ -37,9 +37,7 @@ abstract class CompressManagerFactory
         $methodClass = __NAMESPACE__."\\"."Compress".$method;
 
         // Pass compression level to the constructor if the method supports it
-        if ($method === self::ZSTD && $level > 0) {
-            return new $methodClass($level);
-        } elseif ($method === self::LZ4 && $level > 0) {
+        if (in_array($method, [self::GZIP, self::ZSTD, self::LZ4], true) && $level > 0) {
             return new $methodClass($level);
         }
 

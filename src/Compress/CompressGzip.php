@@ -7,15 +7,19 @@ use Exception;
 class CompressGzip implements CompressInterface
 {
     private $fileHandler;
+    private int $level;
 
     /**
      * @throws Exception
      */
-    public function __construct()
+    public function __construct(int $level = 0)
     {
         if (!function_exists('gzopen')) {
             throw new Exception('Compression is enabled, but gzip lib is not installed or configured properly');
         }
+
+        // gzip level: 0 = default, 1-9 = fast to best
+        $this->level = ($level >= 1 && $level <= 9) ? $level : 0;
     }
 
     /**
@@ -23,7 +27,8 @@ class CompressGzip implements CompressInterface
      */
     public function open(string $filename): bool
     {
-        $this->fileHandler = gzopen($filename, 'wb');
+        $mode = $this->level > 0 ? 'wb' . $this->level : 'wb';
+        $this->fileHandler = gzopen($filename, $mode);
 
         if (false === $this->fileHandler) {
             throw new Exception('Output file is not writable');
