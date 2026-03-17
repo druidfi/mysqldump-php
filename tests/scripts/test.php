@@ -231,6 +231,21 @@ try {
 
     $dump->start("output/mysqldump-php_test015.sql");
 
+    print "Create dump with PHP: mysql-php_test016.sql (include-tables)" . PHP_EOL;
+
+    $dump = new Mysqldump(
+        "mysql:host=$host;dbname=test001",
+        $user,
+        $pass,
+        [
+            'include-tables' => ['test000'],
+            'extended-insert' => false,
+            'hex-blob' => true,
+        ]
+    );
+
+    $dump->start("output/mysqldump-php_test016.sql");
+
     exit(0);
 } catch (Exception $e) {
     print "Error: " . $e->getMessage() . PHP_EOL;
