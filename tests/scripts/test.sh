@@ -202,6 +202,14 @@ $MYSQLDUMP_CMD test001 \
     > output/mysqldump_test013.sql && echo " - done."
 errCode=$?; ret[((index++))]=$errCode
 
+printf "Create dump: mysqldump_test016.sql (include-tables: test000 only)"
+$MYSQLDUMP_CMD test001 test000 \
+    --no-autocommit \
+    --skip-extended-insert \
+    --hex-blob \
+    > output/mysqldump_test016.sql && echo " - done."
+errCode=$?; ret[((index++))]=$errCode
+
 section "Run mysqldump with PHP" 
 
 # Uncomment following 2 lines if you wanna test PDO
@@ -260,6 +268,8 @@ cat output/mysqldump-php_test010.sql | grep CREATE | grep EVENT > output/mysqldu
 
 cat output/mysqldump-php_test012.sql | grep -E -e '50001 (CREATE|VIEW)' -e '50013 DEFINER' -e 'CREATE.*TRIGGER' -e 'FUNCTION' -e 'PROCEDURE' > output/mysqldump-php_test012.filtered.sql && echo "Created mysqldump-php_test012.filtered.sql"
 cat output/mysqldump-php_test013.sql | grep INSERT > output/mysqldump-php_test013.filtered.sql && echo "Created mysqldump-php_test013.filtered.sql"
+cat output/mysqldump_test016.sql | grep ^INSERT > output/mysqldump_test016.filtered.sql && echo "Created mysqldump_test016.filtered.sql"
+cat output/mysqldump-php_test016.sql | grep ^INSERT > output/mysqldump-php_test016.filtered.sql && echo "Created mysqldump-php_test016.filtered.sql"
 
 # Normalize whitespace in filtered outputs to avoid environment-specific double-space differences
 for f in output/*.filtered.sql; do
@@ -352,6 +362,18 @@ test="Test#$index diff mysqldump_test013.filtered.sql mysqldump-php_test013.filt
 diff output/mysqldump_test013.filtered.sql output/mysqldump-php_test013.filtered.sql
 errCode=$?; ret[((index++))]=$errCode
 if [[ $errCode -ne 0 ]]; then echo -e "\n$test\n"; fi
+
+# test include-tables: INSERT data matches native dump for the included table
+test="Test#$index diff mysqldump_test016.filtered.sql mysqldump-php_test016.filtered.sql"
+diff output/mysqldump_test016.filtered.sql output/mysqldump-php_test016.filtered.sql
+errCode=$?; ret[((index++))]=$errCode
+if [[ $errCode -ne 0 ]]; then error "$test"; fi
+
+# test include-tables: other tables must NOT appear in the dump
+test="Test#$index include-tables: verify excluded tables absent from dump"
+! grep -q "INSERT INTO \`test001\`\|INSERT INTO \`test002\`\|INSERT INTO \`test003\`" output/mysqldump-php_test016.sql
+errCode=$?; ret[((index++))]=$errCode
+if [[ $errCode -ne 0 ]]; then error "$test"; fi
 
 section "Done $index tests"
 
