@@ -120,6 +120,21 @@ $dumper->setTableLimits([
     'users' => [20, 10], //MySql query equivalent "... LIMIT 20 OFFSET 10"
 ]);
 ```
+
+## SQL mode
+
+Environment variable `SQL_MODE` can be used to set it forcefully e.g.:
+
+```dotenv
+SQL_MODE=REAL_AS_FLOAT,PIPES_AS_CONCAT,IGNORE_SPACE,ONLY_FULL_GROUP_BY,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,STRICT_ALL_TABLES
+```
+
+This will do basically following:
+
+```php
+SET SESSION sql_mode='" . getenv('SQL_MODE') . "'";
+```
+
 ## Dump Settings
 
 Dump settings can be changed from default values with 4th argument for Mysqldump constructor:
