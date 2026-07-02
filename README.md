@@ -1,6 +1,6 @@
 # mysqldump-php
 
-[![Run tests](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml/badge.svg)](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml)
+[![Run tests](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml)
 [![Total Downloads](https://poser.pugx.org/druidfi/mysqldump-php/downloads)](https://packagist.org/packages/druidfi/mysqldump-php)
 [![Monthly Downloads](https://poser.pugx.org/druidfi/mysqldump-php/d/monthly)](https://packagist.org/packages/druidfi/mysqldump-php)
 [![Daily Downloads](https://poser.pugx.org/druidfi/mysqldump-php/d/daily)](https://packagist.org/packages/druidfi/mysqldump-php)
@@ -31,11 +31,11 @@ Out of the box, `mysqldump-php` supports backing up table structures, the data i
 
 ## Versions
 
-| Version | Branch | PHP       | Status |
-|---------|--------|-----------|--------|
-| 3.x     | `main` | 8.4+      | In development |
-| 2.x     | `2.x`  | 8.1+      | Maintenance |
-| 1.x     | `1.x`  | 7.4 / 8.0 | Legacy |
+| Version | Branch | PHP       | Status | Tests |
+|---------|--------|-----------|--------|-------|
+| 3.x     | `main` | 8.4+      | In development | [![Run tests](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml?query=branch%3Amain) |
+| 2.x     | `2.x`  | 8.1+      | Maintenance | [![Run tests](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml/badge.svg?branch=2.x)](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml?query=branch%3A2.x) |
+| 1.x     | `1.x`  | 7.4 / 8.0 | Legacy | |
 
 ## Installing
 
