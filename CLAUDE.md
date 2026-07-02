@@ -31,14 +31,15 @@ src/
 ├── DatabaseConnector.php      # PDO connection management
 ├── ConfigValidator.php        # Settings validation via reflection
 ├── ConfigOption.php           # Config constants with PHP 8 attributes
+├── InsertType.php             # Enum for INSERT/INSERT IGNORE/REPLACE
 ├── Attribute/                 # PHP 8 attribute definitions
-│   ├── Constraint.php         # Validation rules
+│   ├── Constraint.php         # Validation rules (values, ranges, backed enums)
 │   ├── DefaultValue.php       # Default values with descriptions
-│   ├── Deprecated.php         # Deprecation metadata
 │   ├── Injectable.php         # DI marker
 │   └── ValidatesValue.php     # Validation marker
 ├── Compress/                  # Compression implementations
 │   ├── CompressInterface.php  # Common interface
+│   ├── CompressMethod.php     # Enum of compression methods
 │   ├── CompressManagerFactory.php
 │   ├── CompressNone.php
 │   ├── CompressGzip.php
@@ -120,14 +121,15 @@ namespace Druidfi\Mysqldump;
 - Use union types where appropriate: `string|false`
 
 ### PHP 8 Attributes
-Configuration options use PHP 8 attributes for metadata:
+Configuration options use PHP 8 attributes for metadata. Deprecations use the
+native PHP 8.4 `#[\Deprecated]` attribute:
 ```php
 #[DefaultValue(value: 'None', description: 'Compression method')]
-#[Constraint(allowedValues: ['None', 'Gzip', 'Bzip2', 'Gzipstream', 'Zstd', 'Lz4'])]
-public const COMPRESS = 'compress';
+#[Constraint(enum: CompressMethod::class, message: 'Must be a valid compression method')]
+public const string COMPRESS = 'compress';
 
-#[Deprecated(reason: 'Renamed', since: '2.0', alternative: 'no-create-info')]
-public const DISABLE_FOREIGN_KEYS_CHECK = 'disable-foreign-keys-check';
+#[\Deprecated(message: 'use init_commands to set FOREIGN_KEY_CHECKS manually', since: '2.0')]
+public const string DISABLE_FOREIGN_KEYS_CHECK = 'disable-foreign-keys-check';
 ```
 
 ### Design Patterns Used
