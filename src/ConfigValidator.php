@@ -3,16 +3,16 @@ declare(strict_types=1);
 
 namespace Druidfi\Mysqldump;
 
+use Deprecated;
 use Druidfi\Mysqldump\Attribute\Constraint;
 use Druidfi\Mysqldump\Attribute\DefaultValue;
-use Druidfi\Mysqldump\Attribute\Deprecated;
 use Exception;
 use ReflectionClass;
 use ReflectionClassConstant;
 
 /**
  * Validates configuration options using PHP Attributes from ConfigOption class.
- * Reads DefaultValue, Constraint, and Deprecated attributes via reflection.
+ * Reads DefaultValue, Constraint, and native #[\Deprecated] attributes via reflection.
  */
 class ConfigValidator
 {
@@ -67,7 +67,7 @@ class ConfigValidator
             $data['constraint'] = $constraintAttrs[0]->newInstance();
         }
 
-        // Extract Deprecated attribute
+        // Extract native #[\Deprecated] attribute (PHP 8.4)
         $deprecatedAttrs = $constant->getAttributes(Deprecated::class);
         if (!empty($deprecatedAttrs)) {
             $data['deprecated'] = $deprecatedAttrs[0]->newInstance();
@@ -147,8 +147,8 @@ class ConfigValidator
 
     /**
      * Check if an option is deprecated and return deprecation info.
-     * 
-     * @return array{deprecated: bool, reason: string|null, alternative: string|null, since: string|null}|null
+     *
+     * @return array{deprecated: bool, message: string|null, since: string|null}|null
      */
     public static function checkDeprecated(string $optionName): ?array
     {
@@ -165,8 +165,7 @@ class ConfigValidator
 
         return [
             'deprecated' => true,
-            'reason' => $deprecated->reason,
-            'alternative' => $deprecated->alternative,
+            'message' => $deprecated->message,
             'since' => $deprecated->since,
         ];
     }

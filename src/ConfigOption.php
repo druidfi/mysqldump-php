@@ -5,7 +5,6 @@ namespace Druidfi\Mysqldump;
 
 use Druidfi\Mysqldump\Attribute\DefaultValue;
 use Druidfi\Mysqldump\Attribute\Constraint;
-use Druidfi\Mysqldump\Attribute\Deprecated;
 
 /**
  * Represents configuration options with metadata using PHP 8 Attributes.
@@ -126,9 +125,8 @@ class ConfigOption
     public const string WHERE = 'where';
 
     #[DefaultValue(value: true, description: 'Disable foreign key checks (deprecated)')]
-    #[Deprecated(
-        reason: 'This option is deprecated and may be removed in a future version',
-        alternative: 'Use init_commands to set FOREIGN_KEY_CHECKS manually',
+    #[\Deprecated(
+        message: 'use init_commands to set FOREIGN_KEY_CHECKS manually',
         since: '2.0'
     )]
     public const string DISABLE_FOREIGN_KEYS_CHECK = 'disable-foreign-keys-check';

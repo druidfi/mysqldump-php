@@ -66,11 +66,10 @@ class DumpSettings
             if ($deprecation !== null) {
                 $message = "Configuration option '{$optionName}' is deprecated";
                 if ($deprecation['since']) {
-                    $message .= " (since version {$deprecation['since']})";
+                    $message .= " since version {$deprecation['since']}";
                 }
-                $message .= ": {$deprecation['reason']}";
-                if ($deprecation['alternative']) {
-                    $message .= ". Use {$deprecation['alternative']} instead.";
+                if ($deprecation['message']) {
+                    $message .= ", {$deprecation['message']}";
                 }
                 trigger_error($message, E_USER_DEPRECATED);
             }

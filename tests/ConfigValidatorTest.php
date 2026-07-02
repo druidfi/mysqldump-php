@@ -94,8 +94,7 @@ class ConfigValidatorTest extends TestCase
         
         $this->assertIsArray($result);
         $this->assertTrue($result['deprecated']);
-        $this->assertStringContainsString('deprecated', $result['reason']);
-        $this->assertStringContainsString('init_commands', $result['alternative']);
+        $this->assertStringContainsString('init_commands', $result['message']);
         $this->assertEquals('2.0', $result['since']);
     }
 
