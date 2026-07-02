@@ -91,17 +91,17 @@ class Mysqldump
         return $this->writer->write($data);
     }
 
-    private function getInsertType(): string
+    private function getInsertType(): InsertType
     {
         if ($this->settings->isEnabled('replace')) {
-            return 'REPLACE';
+            return InsertType::Replace;
         }
 
         if ($this->settings->isEnabled('insert-ignore')) {
-            return 'INSERT  IGNORE';
+            return InsertType::InsertIgnore;
         }
 
-        return 'INSERT';
+        return InsertType::Insert;
     }
 
     /**
@@ -802,7 +802,7 @@ class Mysqldump
         $resultSet = $this->conn->query($stmt);
         $resultSet->setFetchMode(PDO::FETCH_ASSOC);
 
-        $insertType = $this->getInsertType();
+        $insertType = $this->getInsertType()->value;
         $count = 0;
 
         $isInfoCallable = $this->infoCallable !== null;

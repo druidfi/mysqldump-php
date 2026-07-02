@@ -114,6 +114,15 @@ class ConfigValidator
             return; // No constraint defined
         }
 
+        // Validate against a backed enum's values
+        if ($constraint->enum !== null) {
+            if (!is_string($value) || $constraint->enum::tryFrom($value) === null) {
+                $allowed = implode(', ', array_column($constraint->enum::cases(), 'value'));
+                $message = $constraint->message ?? "Invalid value for '{$optionName}'. Allowed: {$allowed}";
+                throw new Exception($message);
+            }
+        }
+
         // Validate allowed values
         if ($constraint->allowedValues !== null) {
             if (!in_array($value, $constraint->allowedValues, true)) {

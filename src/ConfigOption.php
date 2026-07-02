@@ -5,6 +5,7 @@ namespace Druidfi\Mysqldump;
 
 use Druidfi\Mysqldump\Attribute\DefaultValue;
 use Druidfi\Mysqldump\Attribute\Constraint;
+use Druidfi\Mysqldump\Compress\CompressMethod;
 
 /**
  * Represents configuration options with metadata using PHP 8 Attributes.
@@ -26,7 +27,7 @@ class ConfigOption
     public const string INCLUDE_VIEWS = 'include-views';
 
     #[DefaultValue(value: 'None', description: 'Compression method to use')]
-    #[Constraint(allowedValues: ['None', 'Gzip', 'Bzip2', 'Zstandard', 'LZ4'], message: 'Must be a valid compression method')]
+    #[Constraint(enum: CompressMethod::class, message: 'Must be a valid compression method')]
     public const string COMPRESS = 'compress';
 
     #[DefaultValue(value: 0, description: 'Compression level (0-9)')]
