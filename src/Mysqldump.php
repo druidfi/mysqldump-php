@@ -31,7 +31,8 @@ class Mysqldump
     private readonly DumpWriter $writer;
     private TypeAdapterInterface $db;
 
-    private static string $adapterClass = TypeAdapterMysql::class;
+    /** @var class-string<TypeAdapterInterface> */
+    private string $adapterClass = TypeAdapterMysql::class;
 
     private readonly DumpSettings $settings;
     private array $tableColumnTypes = [];
@@ -83,7 +84,7 @@ class Mysqldump
 
     public function getAdapter(PDO $conn): TypeAdapterInterface
     {
-        return new self::$adapterClass($conn, $this->settings);
+        return new ($this->adapterClass)($conn, $this->settings);
     }
 
     private function write(string $data): int
@@ -1041,8 +1042,9 @@ class Mysqldump
     }
 
     /**
-     * Add TypeAdapter
+     * Set the TypeAdapter class used by this instance.
      *
+     * @param class-string<TypeAdapterInterface> $adapterClassName
      * @throws Exception
      */
     public function addTypeAdapter(string $adapterClassName): void
@@ -1052,7 +1054,7 @@ class Mysqldump
             throw new Exception($message);
         }
 
-        self::$adapterClass = $adapterClassName;
+        $this->adapterClass = $adapterClassName;
     }
 
     /**
