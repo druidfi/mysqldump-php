@@ -8,9 +8,10 @@ use PDO;
 
 class FakeTypeAdapter implements TypeAdapterInterface
 {
-    public function __construct(PDO $conn, DumpSettings $settings)
-    {
-        // Do nothing; test double
+    public function __construct(
+        public readonly PDO $conn,
+        public readonly DumpSettings $settings,
+    ) {
     }
 
     public function addDropDatabase(string $databaseName): string { return ''; }

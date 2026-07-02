@@ -20,7 +20,6 @@ class ConfigValidatorTest extends TestCase
         $defaults = ConfigValidator::getDefaults();
 
         // Check that defaults are loaded from DefaultValue attributes
-        $this->assertIsArray($defaults);
         $this->assertArrayHasKey('compress', $defaults);
         $this->assertEquals('None', $defaults['compress']);
         $this->assertArrayHasKey('compress-level', $defaults);

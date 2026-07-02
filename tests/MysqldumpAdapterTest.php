@@ -27,6 +27,7 @@ class MysqldumpAdapterTest extends TestCase
         $pdo = new PDO('sqlite::memory:');
         $adapter = $dump->getAdapter($pdo);
         $this->assertInstanceOf(FakeTypeAdapter::class, $adapter);
+        $this->assertSame($pdo, $adapter->conn);
     }
 
     public function testGetTableWhereReturnsFalseWhenUnset()
