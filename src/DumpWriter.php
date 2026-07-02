@@ -16,16 +16,13 @@ class DumpWriter
 {
     private CompressInterface $io;
 
-    private DumpSettings $settings;
-
     /**
      * Constructor of DumpWriter.
      *
      * @param DumpSettings $settings Settings for the dump
      */
-    public function __construct(DumpSettings $settings)
+    public function __construct(private readonly DumpSettings $settings)
     {
-        $this->settings = $settings;
     }
 
     /**

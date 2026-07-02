@@ -6,22 +6,15 @@ namespace Druidfi\Mysqldump;
 use Exception;
 use PDO;
 use PDOException;
+use SensitiveParameter;
 
 /**
  * Class DatabaseConnector
- * 
+ *
  * Handles database connection logic for mysqldump-php.
  */
 class DatabaseConnector
 {
-    private string $dsn;
-
-    private ?string $user;
-
-    private ?string $pass;
-
-    private array $pdoOptions;
-
     private string $host;
 
     private string $dbName;
@@ -38,15 +31,13 @@ class DatabaseConnector
      * @throws Exception
      */
     public function __construct(
-        string $dsn = '',
-        ?string $user = null,
-        ?string $pass = null,
-        array $pdoOptions = []
+        private readonly string $dsn = '',
+        private readonly ?string $user = null,
+        #[SensitiveParameter]
+        private readonly ?string $pass = null,
+        private readonly array $pdoOptions = []
     ) {
-        $this->dsn = $this->parseDsn($dsn);
-        $this->user = $user;
-        $this->pass = $pass;
-        $this->pdoOptions = $pdoOptions;
+        $this->parseDsn($dsn);
     }
 
     /**
@@ -57,10 +48,9 @@ class DatabaseConnector
      *   mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
      *
      * @param string $dsn dsn string to parse
-     * @return string The parsed DSN
      * @throws Exception
      */
-    private function parseDsn(string $dsn): string
+    private function parseDsn(string $dsn): void
     {
         if (empty($dsn) || !($pos = strpos($dsn, ':'))) {
             throw new Exception('Empty DSN string');
@@ -91,8 +81,6 @@ class DatabaseConnector
 
         $this->host = (!empty($data['host'])) ? $data['host'] : $data['unix_socket'];
         $this->dbName = $data['dbname'];
-
-        return $dsn;
     }
 
     /**
