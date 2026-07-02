@@ -1,4 +1,9 @@
-CREATE USER IF NOT EXISTS 'example'@'%' IDENTIFIED WITH mysql_native_password BY 'example';
+-- The container entrypoint may have already created this user with the
+-- server default plugin (caching_sha2_password on MySQL 8.4), so force
+-- mysql_native_password with ALTER USER: the MariaDB client used in tests
+-- cannot authenticate with caching_sha2_password over plain TCP.
+CREATE USER IF NOT EXISTS 'example'@'%';
+ALTER USER 'example'@'%' IDENTIFIED WITH mysql_native_password BY 'example';
 GRANT ALL ON *.* TO 'example'@'%';
 
 CREATE DATABASE IF NOT EXISTS test001;
