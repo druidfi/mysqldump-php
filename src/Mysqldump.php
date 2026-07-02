@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Druidfi\Mysqldump;
 
+use Closure;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterInterface;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterMysql;
 use Druidfi\Mysqldump\ObjectDumper as ObjectDumper;
@@ -34,9 +35,9 @@ class Mysqldump
 
     private DumpSettings $settings;
     private array $tableColumnTypes = [];
-    private $transformTableRowCallable;
-    private $transformColumnValueCallable;
-    private $infoCallable;
+    private ?Closure $transformTableRowCallable = null;
+    private ?Closure $transformColumnValueCallable = null;
+    private ?Closure $infoCallable = null;
 
     /**
      * Keyed on table name, with the value as the conditions.
@@ -343,19 +344,12 @@ class Mysqldump
      */
     private function matches(string $table, array $arr): bool
     {
-        $match = false;
-
-        foreach ($arr as $pattern) {
-            if ('/' != $pattern[0]) {
-                continue;
-            }
-
-            if (1 == preg_match($pattern, $table)) {
-                $match = true;
-            }
-        }
-
-        return in_array($table, $arr) || $match;
+        return in_array($table, $arr, true) || array_any(
+            $arr,
+            fn ($pattern) => is_string($pattern)
+                && str_starts_with($pattern, '/')
+                && preg_match($pattern, $table) === 1
+        );
     }
 
     /**
@@ -471,7 +465,7 @@ class Mysqldump
      *
      * @param string $tableName Name of table to export
      */
-    private function getTableStructure(string $tableName)
+    private function getTableStructure(string $tableName): void
     {
         if (!$this->settings->isEnabled('no-create-info')) {
             $ret = '';
@@ -537,7 +531,7 @@ class Mysqldump
      *
      * @param string $viewName Name of view to export
      */
-    private function getViewStructureTable(string $viewName)
+    private function getViewStructureTable(string $viewName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = (
@@ -592,7 +586,7 @@ class Mysqldump
     /**
      * View structure extractor, create view.
      */
-    private function getViewStructureView(string $viewName)
+    private function getViewStructureView(string $viewName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = sprintf(
@@ -624,7 +618,7 @@ class Mysqldump
      *
      * @param string $triggerName Name of trigger to export
      */
-    private function getTriggerStructure(string $triggerName)
+    private function getTriggerStructure(string $triggerName): void
     {
         $stmt = $this->db->showCreateTrigger($triggerName);
 
@@ -647,7 +641,7 @@ class Mysqldump
      *
      * @param string $procedureName Name of procedure to export
      */
-    private function getProcedureStructure(string $procedureName)
+    private function getProcedureStructure(string $procedureName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = "--" . PHP_EOL .
@@ -672,7 +666,7 @@ class Mysqldump
      *
      * @param string $functionName Name of function to export
      */
-    private function getFunctionStructure(string $functionName)
+    private function getFunctionStructure(string $functionName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = "--" . PHP_EOL .
@@ -698,7 +692,7 @@ class Mysqldump
      * @param string $eventName Name of event to export
      * @throws Exception
      */
-    private function getEventStructure(string $eventName)
+    private function getEventStructure(string $eventName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = "--" . PHP_EOL .
@@ -771,7 +765,7 @@ class Mysqldump
      *
      * @param string $tableName Name of table to export
      */
-    private function listValues(string $tableName)
+    private function listValues(string $tableName): void
     {
         $this->prepareListValues($tableName);
 
@@ -811,7 +805,7 @@ class Mysqldump
         $insertType = $this->getInsertType();
         $count = 0;
 
-        $isInfoCallable = $this->infoCallable && is_callable($this->infoCallable);
+        $isInfoCallable = $this->infoCallable !== null;
         if ($isInfoCallable) {
             ($this->infoCallable)('table', ['name' => $tableName, 'completed' => false, 'rowCount' => $count]);
         }
@@ -871,7 +865,7 @@ class Mysqldump
      *
      * @param string $tableName Name of table to export
      */
-    private function prepareListValues(string $tableName)
+    private function prepareListValues(string $tableName): void
     {
         if (!$this->settings->skipComments()) {
             $this->write(
@@ -905,7 +899,7 @@ class Mysqldump
      * @param string $tableName Name of table to export.
      * @param integer $count Number of rows inserted.
      */
-    private function endListValues(string $tableName, int $count = 0)
+    private function endListValues(string $tableName, int $count = 0): void
     {
         if ($this->settings->isEnabled('disable-keys')) {
             $this->write($this->db->endAddDisableKeys($tableName));
@@ -1066,7 +1060,7 @@ class Mysqldump
      */
     public function setTransformTableRowHook(callable $callable): void
     {
-        $this->transformTableRowCallable = $callable;
+        $this->transformTableRowCallable = $callable(...);
     }
 
     /**
@@ -1074,14 +1068,14 @@ class Mysqldump
      */
     public function setInfoHook(callable $callable): void
     {
-        $this->infoCallable = $callable;
+        $this->infoCallable = $callable(...);
     }
 
     /**
      * Set a callable that will be used to transform column values.
      */
-    public function setTransformColumnValueHook(callable $callable)
+    public function setTransformColumnValueHook(callable $callable): void
     {
-        $this->transformColumnValueCallable = $callable;
+        $this->transformColumnValueCallable = $callable(...);
     }
 }
