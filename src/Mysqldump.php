@@ -1044,7 +1044,7 @@ class Mysqldump
     /**
      * Set the TypeAdapter class used by this instance.
      *
-     * @param class-string<TypeAdapterInterface> $adapterClassName
+     * @param class-string $adapterClassName Must implement TypeAdapterInterface (validated at runtime)
      * @throws Exception
      */
     public function addTypeAdapter(string $adapterClassName): void
