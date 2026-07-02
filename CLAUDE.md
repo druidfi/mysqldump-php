@@ -52,7 +52,20 @@ tests/
 ├── Doubles/                   # Test doubles
 └── scripts/                   # Integration test scripts
     ├── test.sh                # Main integration test runner
-    └── test*.src.sql          # SQL test fixtures
+    ├── test.php               # PHP-side dump runner used by test.sh
+    ├── pdo_checks.php         # PDO environment sanity checks
+    ├── test*.src.sql          # SQL test fixtures
+    └── output/                # Generated and expected dump outputs
+
+docs/
+└── tasks.md                   # Improvement roadmap (checkbox task list)
+
+# Root-level Docker test setup
+Dockerfile                     # PHP test container (PHP_SHORT_VERSION build arg)
+compose.yaml                   # Services: mysql, mariadb, php81..php85
+config/skip-ssl.cnf            # MySQL client config for test containers
+docker-entrypoint-initdb.d/    # DB init scripts (mysql-init.sql, mariadb-init.sql)
+.env.mysql                     # Shared DB credentials for compose services
 ```
 
 ## Development Commands
@@ -74,7 +87,8 @@ vendor/bin/rector process --dry-run
 cd tests/scripts && ./test.sh 127.0.0.1
 
 # Docker-based testing
-docker compose up mysql php81  # or php82, php83, php84, php85
+docker compose up mysql php81    # or php82, php83, php84, php85
+docker compose up mariadb php81  # same, against MariaDB
 ```
 
 ## Key Coding Conventions
@@ -151,6 +165,8 @@ vendor/bin/phpstan
 - Configured in `phpstan.dist.neon`
 - Ignores errors for optional extensions (ext-zstd, ext-lz4)
 - Analyzes `src/` and `tests/`
+- **Not a direct dependency**: `phpstan/phpstan` is not in `require-dev`; it is available transitively via `rector/rector`
+- **Advisory in CI**: the PHPStan step runs with `continue-on-error: true`, so failures do not block PRs
 
 ### Rector
 ```bash
@@ -181,12 +197,18 @@ $dump->start(?string $filename);
 
 // Data filtering
 $dump->setTableWheres(array $tableWheres);
+$dump->getTableWhere(string $tableName);
 $dump->setTableLimits(array $tableLimits);
+$dump->getTableLimit(string $tableName);
 
 // Data transformation hooks
 $dump->setTransformTableRowHook(callable $hook);
 $dump->setTransformColumnValueHook(callable $hook);
 $dump->setInfoHook(callable $hook);
+
+// Type adapter extension
+$dump->addTypeAdapter(string $adapterClassName);
+$dump->getAdapter(PDO $conn);
 ```
 
 ### Error Handling
@@ -224,6 +246,7 @@ $dump->setInfoHook(callable $hook);
 | `phpstan.dist.neon` | Static analysis configuration |
 | `rector.php` | Code modernization rules |
 | `.github/workflows/tests.yml` | CI/CD pipeline |
+| `docs/tasks.md` | Improvement roadmap (refactoring direction, e.g. planned custom exceptions) |
 
 ## Gotchas
 
