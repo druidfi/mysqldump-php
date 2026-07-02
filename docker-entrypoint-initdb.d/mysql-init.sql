@@ -1,4 +1,4 @@
-CREATE USER IF NOT EXISTS 'example'@'%' IDENTIFIED WITH mysql_native_password BY 'example';
+CREATE USER IF NOT EXISTS 'example'@'%' IDENTIFIED BY 'example';
 GRANT ALL ON *.* TO 'example'@'%';
 
 CREATE DATABASE IF NOT EXISTS test001;

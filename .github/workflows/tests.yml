@@ -28,7 +28,6 @@ jobs:
           MYSQL_DATABASE: example
           MYSQL_USER: example
           MYSQL_PASSWORD: example
-          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
         ports:
           # Opens port 3306 on service container and host
           # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
@@ -49,6 +48,16 @@ jobs:
           - os: ubuntu-24.04
             database: mysql
             database_image: bitnamilegacy/mysql:8.0.40
+            php-version: 8.5
+
+          # MySQL 8.4 LTS
+          - os: ubuntu-24.04
+            database: mysql
+            database_image: bitnamilegacy/mysql:8.4.5
+            php-version: 8.4
+          - os: ubuntu-24.04
+            database: mysql
+            database_image: bitnamilegacy/mysql:8.4.5
             php-version: 8.5
 
           # MariaDB 10.11 LTS

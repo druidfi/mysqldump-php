@@ -9,7 +9,7 @@ This file provides guidance for AI assistants working with the mysqldump-php cod
 - **Package**: `druidfi/mysqldump-php`
 - **License**: GPL-3.0-or-later
 - **PHP**: ^8.4 with PDO extension
-- **Databases**: MySQL 8.0+, MariaDB 10.11+
+- **Databases**: MySQL 8.0+ (including 8.4 LTS), MariaDB 10.11+
 
 ## Branches & Versioning
 
@@ -72,7 +72,7 @@ docs/
 
 # Root-level Docker test setup
 Dockerfile                     # PHP test container (PHP_SHORT_VERSION build arg)
-compose.yaml                   # Services: mysql, mariadb, php84, php85
+compose.yaml                   # Services: mysql, mysql84, mariadb, php84, php85
 config/skip-ssl.cnf            # MySQL client config for test containers
 docker-entrypoint-initdb.d/    # DB init scripts (mysql-init.sql, mariadb-init.sql)
 .env.mysql                     # Shared DB credentials for compose services
@@ -97,7 +97,7 @@ vendor/bin/rector process --dry-run
 cd tests/scripts && ./test.sh 127.0.0.1
 
 # Docker-based testing
-docker compose up mysql php84    # or php85
+docker compose up mysql php84    # or php85; mysql84 for MySQL 8.4 LTS
 docker compose up mariadb php84  # same, against MariaDB
 ```
 
@@ -163,8 +163,8 @@ Druidfi\Mysqldump\
 ### CI Matrix
 Tests run on:
 - PHP: 8.4, 8.5
-- Databases: MySQL 8.0, MariaDB 10.11
-- Total: 4 combinations
+- Databases: MySQL 8.0, MySQL 8.4 LTS, MariaDB 10.11
+- Total: 6 combinations
 
 The `2.x` branch keeps the wider PHP 8.1–8.5 matrix (10 combinations).
 
