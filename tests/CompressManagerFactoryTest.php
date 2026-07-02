@@ -2,7 +2,11 @@
 
 namespace Druidfi\Mysqldump\Tests;
 
+use Druidfi\Mysqldump\Compress\CompressBzip2;
+use Druidfi\Mysqldump\Compress\CompressGzip;
+use Druidfi\Mysqldump\Compress\CompressGzipstream;
 use Druidfi\Mysqldump\Compress\CompressManagerFactory;
+use Druidfi\Mysqldump\Compress\CompressNone;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Exception;
@@ -14,16 +18,16 @@ class CompressManagerFactoryTest extends TestCase
     {
         // Test only methods that don't require uncommon extensions
         $common = [
-            CompressManagerFactory::NONE,
-            CompressManagerFactory::GZIP,
-            CompressManagerFactory::BZIP2,
-            CompressManagerFactory::GZIPSTREAM,
+            CompressManagerFactory::NONE => CompressNone::class,
+            CompressManagerFactory::GZIP => CompressGzip::class,
+            CompressManagerFactory::BZIP2 => CompressBzip2::class,
+            CompressManagerFactory::GZIPSTREAM => CompressGzipstream::class,
         ];
 
-        foreach ($common as $method) {
+        foreach ($common as $method => $expectedClass) {
             try {
                 $instance = CompressManagerFactory::create($method, 3);
-                $this->assertIsObject($instance, "Factory did not return object for $method");
+                $this->assertInstanceOf($expectedClass, $instance, "Factory did not return $expectedClass for $method");
             } catch (Exception $e) {
                 // If environment lacks required functions, skip gracefully
                 $this->markTestSkipped("Skipping $method due to missing extension: {$e->getMessage()}");
