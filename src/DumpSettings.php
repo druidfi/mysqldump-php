@@ -8,9 +8,9 @@ use Exception;
 
 class DumpSettings
 {
-    // List of available connection strings.
-    const UTF8    = 'utf8';
-    const UTF8MB4 = 'utf8mb4';
+    // List of available character sets.
+    public const string UTF8    = 'utf8';
+    public const string UTF8MB4 = 'utf8mb4';
 
     private static array $defaults = [
         'include-tables' => [],
