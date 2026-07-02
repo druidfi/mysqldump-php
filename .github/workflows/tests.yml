@@ -45,18 +45,6 @@ jobs:
           - os: ubuntu-24.04
             database: mysql
             database_image: bitnamilegacy/mysql:8.0.40
-            php-version: 8.1
-          - os: ubuntu-24.04
-            database: mysql
-            database_image: bitnamilegacy/mysql:8.0.40
-            php-version: 8.2
-          - os: ubuntu-24.04
-            database: mysql
-            database_image: bitnamilegacy/mysql:8.0.40
-            php-version: 8.3
-          - os: ubuntu-24.04
-            database: mysql
-            database_image: bitnamilegacy/mysql:8.0.40
             php-version: 8.4
           - os: ubuntu-24.04
             database: mysql
@@ -64,18 +52,6 @@ jobs:
             php-version: 8.5
 
           # MariaDB 10.11 LTS
-          - os: ubuntu-22.04
-            database: mariadb
-            database_image: bitnamilegacy/mariadb:10.11.9
-            php-version: 8.1
-          - os: ubuntu-22.04
-            database: mariadb
-            database_image: bitnamilegacy/mariadb:10.11.9
-            php-version: 8.2
-          - os: ubuntu-22.04
-            database: mariadb
-            database_image: bitnamilegacy/mariadb:10.11.9
-            php-version: 8.3
           - os: ubuntu-22.04
             database: mariadb
             database_image: bitnamilegacy/mariadb:10.11.9

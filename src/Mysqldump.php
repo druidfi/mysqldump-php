@@ -946,10 +946,10 @@ class Mysqldump
     {
         $colStmt = [];
         foreach ($this->tableColumnTypes[$tableName] as $colName => $colType) {
-            // TODO handle bug where PHP 8.1 returns double field wrong
             if ($colType['is_virtual']) {
                 $this->settings->setCompleteInsert();
-            } elseif ($colType['type'] == 'double' && PHP_VERSION_ID > 80100) {
+            } elseif ($colType['type'] == 'double') {
+                // PHP 8.1+ returns double fields with float precision issues; dump via CONCAT
                 $colStmt[] = sprintf("CONCAT(`%s`) AS `%s`", $colName, $colName);
             } elseif ($colType['type'] === 'bit' && $this->settings->isEnabled('hex-blob')) {
                 $colStmt[] = sprintf("LPAD(HEX(`%s`),2,'0') AS `%s`", $colName, $colName);

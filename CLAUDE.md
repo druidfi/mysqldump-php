@@ -8,8 +8,18 @@ This file provides guidance for AI assistants working with the mysqldump-php cod
 
 - **Package**: `druidfi/mysqldump-php`
 - **License**: GPL-3.0-or-later
-- **PHP**: ^8.1 with PDO extension
+- **PHP**: ^8.4 with PDO extension
 - **Databases**: MySQL 8.0+, MariaDB 10.11+
+
+## Branches & Versioning
+
+| Version | Branch | PHP       | Status |
+|---------|--------|-----------|--------|
+| 3.x     | `main` | 8.4+      | In development (`dev-main` aliased as `3.x-dev`) |
+| 2.x     | `2.x`  | 8.1+      | Maintenance; 2.0.x releases are tagged from here |
+| 1.x     | `1.x`  | 7.4 / 8.0 | Legacy |
+
+Bug fixes relevant to both lines land on `main` first and are backported to `2.x`.
 
 ## Codebase Structure
 
@@ -62,7 +72,7 @@ docs/
 
 # Root-level Docker test setup
 Dockerfile                     # PHP test container (PHP_SHORT_VERSION build arg)
-compose.yaml                   # Services: mysql, mariadb, php81..php85
+compose.yaml                   # Services: mysql, mariadb, php84, php85
 config/skip-ssl.cnf            # MySQL client config for test containers
 docker-entrypoint-initdb.d/    # DB init scripts (mysql-init.sql, mariadb-init.sql)
 .env.mysql                     # Shared DB credentials for compose services
@@ -87,8 +97,8 @@ vendor/bin/rector process --dry-run
 cd tests/scripts && ./test.sh 127.0.0.1
 
 # Docker-based testing
-docker compose up mysql php81    # or php82, php83, php84, php85
-docker compose up mariadb php81  # same, against MariaDB
+docker compose up mysql php84    # or php85
+docker compose up mariadb php84  # same, against MariaDB
 ```
 
 ## Key Coding Conventions
@@ -152,9 +162,11 @@ Druidfi\Mysqldump\
 
 ### CI Matrix
 Tests run on:
-- PHP: 8.1, 8.2, 8.3, 8.4, 8.5
+- PHP: 8.4, 8.5
 - Databases: MySQL 8.0, MariaDB 10.11
-- Total: 10 combinations
+- Total: 4 combinations
+
+The `2.x` branch keeps the wider PHP 8.1–8.5 matrix (10 combinations).
 
 ## Static Analysis
 
@@ -166,14 +178,14 @@ vendor/bin/phpstan
 - Ignores errors for optional extensions (ext-zstd, ext-lz4)
 - Analyzes `src/` and `tests/`
 - **Not a direct dependency**: `phpstan/phpstan` is not in `require-dev`; it is available transitively via `rector/rector`
-- **Advisory in CI**: the PHPStan step runs with `continue-on-error: true`, so failures do not block PRs
+- **Blocking in CI**: PHPStan failures fail the build
 
 ### Rector
 ```bash
 vendor/bin/rector process --dry-run
 ```
 - Configured in `rector.php`
-- Target: PHP 8.1
+- Target: PHP 8.4
 - Used for code modernization checks
 
 ## Architecture Notes
