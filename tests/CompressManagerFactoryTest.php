@@ -14,7 +14,7 @@ use Exception;
 #[CoversClass(CompressManagerFactory::class)]
 class CompressManagerFactoryTest extends TestCase
 {
-    public function testCreateCommonMethods()
+    public function testCreateCommonMethods(): void
     {
         // Test only methods that don't require uncommon extensions
         $common = [
@@ -35,7 +35,7 @@ class CompressManagerFactoryTest extends TestCase
         }
     }
 
-    public function testCreateInvalidMethodThrows()
+    public function testCreateInvalidMethodThrows(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Compression method (Invalid) is not defined yet');

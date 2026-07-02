@@ -26,14 +26,14 @@ use PDO;
 class Mysqldump
 {
     // Database
-    private DatabaseConnector $connector;
+    private readonly DatabaseConnector $connector;
     private ?PDO $conn = null;
-    private DumpWriter $writer;
+    private readonly DumpWriter $writer;
     private TypeAdapterInterface $db;
 
     private static string $adapterClass = TypeAdapterMysql::class;
 
-    private DumpSettings $settings;
+    private readonly DumpSettings $settings;
     private array $tableColumnTypes = [];
     private ?Closure $transformTableRowCallable = null;
     private ?Closure $transformColumnValueCallable = null;
@@ -161,8 +161,8 @@ class Mysqldump
 
         // Use dedicated dumpers for different object types
         $tablesDumper = new ObjectDumper\TablesDumper(
-            function () { return $this->iterateTables(); },
-            function (string $name, array $arr) { return $this->matches($name, $arr); },
+            fn(): \Generator => $this->iterateTables(),
+            fn(string $name, array $arr): bool => $this->matches($name, $arr),
             function (string $table): void { $this->getTableStructure($table); },
             function (string $table): void {
                 $no_data = $this->settings->isEnabled('no-data');
@@ -170,28 +170,28 @@ class Mysqldump
                     $this->listValues($table);
                 }
             },
-            function () { return $this->settings->getExcludedTables(); },
-            function () { return $this->settings->getNoData(); }
+            fn(): array => $this->settings->getExcludedTables(),
+            fn(): array => $this->settings->getNoData()
         );
         $tablesDumper->dump();
 
         $triggersDumper = new ObjectDumper\TriggersDumper(
-            function () { return $this->iterateTriggers(); },
+            fn(): \Generator => $this->iterateTriggers(),
             function (string $name): void { $this->getTriggerStructure($name); }
         );
         $triggersDumper->dump();
 
         $routinesDumper = new ObjectDumper\RoutinesDumper(
-            function () { return $this->iterateProcedures(); },
-            function () { return $this->iterateFunctions(); },
+            fn(): \Generator => $this->iterateProcedures(),
+            fn(): \Generator => $this->iterateFunctions(),
             function (string $name): void { $this->getProcedureStructure($name); },
             function (string $name): void { $this->getFunctionStructure($name); }
         );
         $routinesDumper->dump();
 
         $viewsDumper = new ObjectDumper\ViewsDumper(
-            function () { return $this->iterateViews(); },
-            function (string $name, array $arr) { return $this->matches($name, $arr); },
+            fn(): \Generator => $this->iterateViews(),
+            fn(string $name, array $arr): bool => $this->matches($name, $arr),
             function (string $name): void {
                 if ($this->settings->isEnabled('no-create-info')) { return; }
                 if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
@@ -207,7 +207,7 @@ class Mysqldump
         $viewsDumper->dump();
 
         $eventsDumper = new ObjectDumper\EventsDumper(
-            function () { return $this->iterateEvents(); },
+            fn(): \Generator => $this->iterateEvents(),
             function (string $name): void { $this->getEventStructure($name); }
         );
         $eventsDumper->dump();
@@ -346,7 +346,7 @@ class Mysqldump
     {
         return in_array($table, $arr, true) || array_any(
             $arr,
-            fn ($pattern) => is_string($pattern)
+            fn ($pattern): bool => is_string($pattern)
                 && str_starts_with($pattern, '/')
                 && preg_match($pattern, $table) === 1
         );

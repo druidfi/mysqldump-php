@@ -7,21 +7,12 @@ use Closure;
 
 class ViewsDumper implements DumperInterface
 {
-    private Closure $iterateViews;
-    private Closure $matches;
-    private Closure $getViewStructureTable;
-    private Closure $getViewStructureView;
-
     public function __construct(
-        Closure $iterateViews,
-        Closure $matches,
-        Closure $getViewStructureTable,
-        Closure $getViewStructureView
+        private readonly Closure $iterateViews,
+        private readonly Closure $matches,
+        private readonly Closure $getViewStructureTable,
+        private readonly Closure $getViewStructureView
     ) {
-        $this->iterateViews = $iterateViews;
-        $this->matches = $matches;
-        $this->getViewStructureTable = $getViewStructureTable;
-        $this->getViewStructureView = $getViewStructureView;
     }
 
     public function dump(): void

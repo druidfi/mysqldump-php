@@ -10,21 +10,12 @@ use Closure;
  */
 class RoutinesDumper implements DumperInterface
 {
-    private Closure $iterateProcedures;
-    private Closure $iterateFunctions;
-    private Closure $getProcedureStructure;
-    private Closure $getFunctionStructure;
-
     public function __construct(
-        Closure $iterateProcedures,
-        Closure $iterateFunctions,
-        Closure $getProcedureStructure,
-        Closure $getFunctionStructure
+        private readonly Closure $iterateProcedures,
+        private readonly Closure $iterateFunctions,
+        private readonly Closure $getProcedureStructure,
+        private readonly Closure $getFunctionStructure
     ) {
-        $this->iterateProcedures = $iterateProcedures;
-        $this->iterateFunctions = $iterateFunctions;
-        $this->getProcedureStructure = $getProcedureStructure;
-        $this->getFunctionStructure = $getFunctionStructure;
     }
 
     public function dump(): void

@@ -7,7 +7,7 @@ use Exception;
 class CompressLz4 implements CompressInterface
 {
     private $fileHandler;
-    private int $compressionLevel;
+    private readonly int $compressionLevel;
 
     /**
      * @throws Exception

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Mysqldump::class)]
 class MysqldumpTest extends TestCase
 {
-    public function testTableSpecificWhereConditionsWork()
+    public function testTableSpecificWhereConditionsWork(): void
     {
         $dump = new Mysqldump('mysql:host=localhost;dbname=test', 'testing', 'testing', [
             'where' => 'defaultWhere'
@@ -32,7 +32,7 @@ class MysqldumpTest extends TestCase
         );
     }
 
-    public function testDSNWorks()
+    public function testDSNWorks(): void
     {
         $user = 'user';
         $pass = 'password';
@@ -52,31 +52,31 @@ class MysqldumpTest extends TestCase
         $this->assertEquals($dbName, $this->getPrivateFromObject($connector, 'dbName'), 'dbName is not set correctly');
     }
 
-    public function testDSNStringExits()
+    public function testDSNStringExits(): void
     {
         $this->expectException(\Exception::class);
         $dump = new Mysqldump('', 'testing', 'testing');
     }
 
-    public function testHostExits()
+    public function testHostExits(): void
     {
         $this->expectException(\Exception::class);
         $dump = new Mysqldump('mysql: dbname=test;', 'testing', 'testing');
     }
 
-    public function testDBTypeExists()
+    public function testDBTypeExists(): void
     {
         $this->expectException(\Exception::class);
         $dump = new Mysqldump('host=localhost; dbname=test;', 'testing', 'testing');
     }
 
-    public function testDBNameExists()
+    public function testDBNameExists(): void
     {
         $this->expectException(\Exception::class);
         $dump = new Mysqldump('mysql: host=localhost', 'testing', 'testing');
     }
 
-    public function testTableSpecificLimitsWork()
+    public function testTableSpecificLimitsWork(): void
     {
         $dump = new Mysqldump('mysql: host=localhost; dbname=test;', 'testing', 'testing');
 
@@ -104,14 +104,12 @@ class MysqldumpTest extends TestCase
     private function getPrivate(Mysqldump $dump, $var)
     {
         $reflectionProperty = new \ReflectionProperty(Mysqldump::class, $var);
-        $reflectionProperty->setAccessible(true);
         return $reflectionProperty->getValue($dump);
     }
 
     private function getPrivateFromObject($object, $var)
     {
-        $reflectionProperty = new \ReflectionProperty(get_class($object), $var);
-        $reflectionProperty->setAccessible(true);
+        $reflectionProperty = new \ReflectionProperty($object::class, $var);
         return $reflectionProperty->getValue($object);
     }
 }

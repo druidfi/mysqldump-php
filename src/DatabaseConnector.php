@@ -66,7 +66,7 @@ class DatabaseConnector
 
         foreach (explode(';', substr($dsn, $pos + 1)) as $kvp) {
             if (str_contains($kvp, '=')) {
-                list($param, $value) = explode('=', $kvp);
+                [$param, $value] = explode('=', $kvp);
                 $data[trim(strtolower($param))] = $value;
             }
         }
@@ -107,7 +107,7 @@ class DatabaseConnector
             // Handle deprecated PDO::MYSQL_ATTR_USE_BUFFERED_QUERY in PHP 8.5.
             // Prefer Pdo\Mysql::ATTR_USE_BUFFERED_QUERY when available; fall back otherwise.
             $mysqlBufferedQueryAttr = null;
-            if (class_exists('Pdo\\Mysql') && defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')) {
+            if (class_exists(\Pdo\Mysql::class) && defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')) {
                 $mysqlBufferedQueryAttr = constant('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY');
             } elseif (defined('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY')) {
                 $mysqlBufferedQueryAttr = constant('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY');

@@ -12,7 +12,7 @@ use PDO;
 #[CoversClass(Mysqldump::class)]
 class MysqldumpAdapterTest extends TestCase
 {
-    public function testAddTypeAdapterRejectsInvalidClass()
+    public function testAddTypeAdapterRejectsInvalidClass(): void
     {
         $dump = new Mysqldump('mysql:host=localhost;dbname=test', 'user', 'pass');
         $this->expectException(Exception::class);
@@ -20,7 +20,7 @@ class MysqldumpAdapterTest extends TestCase
         $dump->addTypeAdapter(\stdClass::class);
     }
 
-    public function testGetAdapterUsesConfiguredAdapter()
+    public function testGetAdapterUsesConfiguredAdapter(): void
     {
         $dump = new Mysqldump('mysql:host=localhost;dbname=test', 'user', 'pass');
         $dump->addTypeAdapter(FakeTypeAdapter::class);
@@ -30,7 +30,7 @@ class MysqldumpAdapterTest extends TestCase
         $this->assertSame($pdo, $adapter->conn);
     }
 
-    public function testGetTableWhereReturnsFalseWhenUnset()
+    public function testGetTableWhereReturnsFalseWhenUnset(): void
     {
         $dump = new Mysqldump('mysql:host=localhost;dbname=test', 'user', 'pass');
         $this->assertFalse($dump->getTableWhere('unknown_table'));

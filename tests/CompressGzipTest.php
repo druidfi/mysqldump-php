@@ -84,7 +84,6 @@ class CompressGzipTest extends TestCase
     private function getLevel(CompressGzip $gzip): int
     {
         $ref = new \ReflectionProperty(CompressGzip::class, 'level');
-        $ref->setAccessible(true);
         return $ref->getValue($gzip);
     }
 }

@@ -7,15 +7,10 @@ use Closure;
 
 class TriggersDumper implements DumperInterface
 {
-    private Closure $iterateTriggers;
-    private Closure $getTriggerStructure;
-
     public function __construct(
-        Closure $iterateTriggers,
-        Closure $getTriggerStructure
+        private readonly Closure $iterateTriggers,
+        private readonly Closure $getTriggerStructure
     ) {
-        $this->iterateTriggers = $iterateTriggers;
-        $this->getTriggerStructure = $getTriggerStructure;
     }
 
     public function dump(): void
