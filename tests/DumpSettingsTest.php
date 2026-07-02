@@ -3,12 +3,11 @@
 namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\DumpSettings;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Exception;
 
-/**
- * @covers \Druidfi\Mysqldump\DumpSettings
- */
+#[CoversClass(DumpSettings::class)]
 class DumpSettingsTest extends TestCase
 {
     /**

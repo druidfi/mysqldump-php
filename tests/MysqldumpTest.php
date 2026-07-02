@@ -3,13 +3,12 @@
 namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\Mysqldump;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(Mysqldump::class)]
 class MysqldumpTest extends TestCase
 {
-    /**
-     * @covers Mysqldump
-     */
     public function testTableSpecificWhereConditionsWork()
     {
         $dump = new Mysqldump('mysql:host=localhost;dbname=test', 'testing', 'testing', [
@@ -33,9 +32,6 @@ class MysqldumpTest extends TestCase
         );
     }
 
-    /**
-     * @covers Mysqldump
-     */
     public function testDSNWorks()
     {
         $user = 'user';
@@ -56,45 +52,30 @@ class MysqldumpTest extends TestCase
         $this->assertEquals($dbName, $this->getPrivateFromObject($connector, 'dbName'), 'dbName is not set correctly');
     }
 
-  /**
-     * @covers Mysqldump
-     */
     public function testDSNStringExits()
     {
         $this->expectException(\Exception::class);
         $dump = new Mysqldump('', 'testing', 'testing');
     }
 
-    /**
-     * @covers Mysqldump
-     */
     public function testHostExits()
     {
         $this->expectException(\Exception::class);
         $dump = new Mysqldump('mysql: dbname=test;', 'testing', 'testing');
     }
 
-    /**
-     * @covers Mysqldump
-     */
     public function testDBTypeExists()
     {
         $this->expectException(\Exception::class);
         $dump = new Mysqldump('host=localhost; dbname=test;', 'testing', 'testing');
     }
 
-    /**
-     * @covers Mysqldump
-     */
     public function testDBNameExists()
     {
         $this->expectException(\Exception::class);
         $dump = new Mysqldump('mysql: host=localhost', 'testing', 'testing');
     }
 
-    /**
-     * @covers Mysqldump
-     */
     public function testTableSpecificLimitsWork()
     {
         $dump = new Mysqldump('mysql: host=localhost; dbname=test;', 'testing', 'testing');

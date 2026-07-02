@@ -4,13 +4,12 @@ namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\Mysqldump;
 use Druidfi\Mysqldump\Tests\Doubles\FakeTypeAdapter;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Exception;
 use PDO;
 
-/**
- * @covers \Druidfi\Mysqldump
- */
+#[CoversClass(Mysqldump::class)]
 class MysqldumpAdapterTest extends TestCase
 {
     public function testAddTypeAdapterRejectsInvalidClass()

@@ -3,12 +3,11 @@
 namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\Compress\CompressManagerFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Exception;
 
-/**
- * @covers \Druidfi\Mysqldump\Compress\CompressManagerFactory
- */
+#[CoversClass(CompressManagerFactory::class)]
 class CompressManagerFactoryTest extends TestCase
 {
     public function testCreateCommonMethods()

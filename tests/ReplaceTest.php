@@ -4,13 +4,12 @@ namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\DumpSettings;
 use Druidfi\Mysqldump\Mysqldump;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Exception;
 
-/**
- * @covers \Druidfi\Mysqldump\Mysqldump
- * @covers \Druidfi\Mysqldump\DumpSettings
- */
+#[CoversClass(Mysqldump::class)]
+#[CoversClass(DumpSettings::class)]
 class ReplaceTest extends TestCase
 {
     /**

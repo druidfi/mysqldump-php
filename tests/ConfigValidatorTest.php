@@ -5,12 +5,14 @@ namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\ConfigValidator;
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Tests that ConfigValidator properly reads and uses PHP Attributes
  * from ConfigOption class for validation and deprecation checking.
  */
+#[CoversClass(ConfigValidator::class)]
 class ConfigValidatorTest extends TestCase
 {
     public function testGetDefaultsReturnsAttributeValues(): void
