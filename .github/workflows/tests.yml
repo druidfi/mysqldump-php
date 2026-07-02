@@ -6,8 +6,8 @@ permissions:
 on:
   push:
     branches:
-      # Push events on main branch
-      - main
+      # Push events on 2.x maintenance branch
+      - 2.x
   pull_request:
 
 jobs:
