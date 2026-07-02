@@ -11,3 +11,4 @@
 /tests/scripts/output/*.sql
 /vendor/
 /.phpunit.result.cache
+/.phpunit.cache/

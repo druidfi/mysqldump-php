@@ -6,11 +6,11 @@ namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\Compress\CompressGzip;
 use Druidfi\Mysqldump\Compress\CompressManagerFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers \Druidfi\Mysqldump\Compress\CompressGzip
- */
+#[CoversClass(CompressGzip::class)]
 class CompressGzipTest extends TestCase
 {
     public function testDefaultLevelIsZero(): void
@@ -19,9 +19,7 @@ class CompressGzipTest extends TestCase
         $this->assertSame(0, $this->getLevel($gzip));
     }
 
-    /**
-     * @dataProvider validLevelProvider
-     */
+    #[DataProvider('validLevelProvider')]
     public function testValidLevelIsStored(int $level): void
     {
         $gzip = new CompressGzip($level);
@@ -33,9 +31,7 @@ class CompressGzipTest extends TestCase
         return [[1], [5], [9]];
     }
 
-    /**
-     * @dataProvider outOfRangeLevelProvider
-     */
+    #[DataProvider('outOfRangeLevelProvider')]
     public function testOutOfRangeLevelFallsBackToDefault(int $level): void
     {
         $gzip = new CompressGzip($level);

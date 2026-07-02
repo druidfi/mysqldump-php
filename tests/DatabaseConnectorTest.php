@@ -3,12 +3,11 @@
 namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\DatabaseConnector;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Exception;
 
-/**
- * @covers \Druidfi\Mysqldump\DatabaseConnector
- */
+#[CoversClass(DatabaseConnector::class)]
 class DatabaseConnectorTest extends TestCase
 {
     public function testParseDsnValidHostAndDbname()
