@@ -17,12 +17,14 @@ codebase; items that are done are kept checked for history.
    - [ ] Deduplicate the six near-identical `iterate*()` generators into one shared helper
          (query + column extraction + optional include filter)
 
-2. [ ] Improve dependency wiring:
-   - [ ] Fix `Mysqldump::$adapterClass` being `static` — `addTypeAdapter()` leaks the adapter
-         across all instances in the same process; make it an instance property
-   - [ ] Pass ObjectDumper dependencies more explicitly instead of six positional closures
-         (e.g. a small context object or named-argument value object)
-   - [ ] Reconsider `PDO::ATTR_PERSISTENT => true` as a hardcoded default in DatabaseConnector
+2. [x] Improve dependency wiring:
+   - [x] Fix `Mysqldump::$adapterClass` being `static` — now an instance property, with a
+         regression test that `addTypeAdapter()` no longer leaks across instances
+   - [x] Pass ObjectDumper dependencies more explicitly — dumpers are constructed with named
+         arguments; a separate context class was considered and skipped as over-engineering
+   - [x] `PDO::ATTR_PERSISTENT => true` removed from the connection defaults — one-shot dumps
+         gain nothing from persistence and recycled handles can carry over session state;
+         opt back in via the `pdoOptions` constructor argument
 
 3. [ ] Improve error handling:
    - [ ] Create custom exception classes (e.g. `ConnectionException`, `ConfigurationException`,
