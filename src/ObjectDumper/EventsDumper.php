@@ -7,15 +7,10 @@ use Closure;
 
 class EventsDumper implements DumperInterface
 {
-    private Closure $iterateEvents;
-    private Closure $getEventStructure;
-
     public function __construct(
-        Closure $iterateEvents,
-        Closure $getEventStructure
+        private readonly Closure $iterateEvents,
+        private readonly Closure $getEventStructure
     ) {
-        $this->iterateEvents = $iterateEvents;
-        $this->getEventStructure = $getEventStructure;
     }
 
     public function dump(): void

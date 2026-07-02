@@ -8,9 +8,9 @@ use Exception;
 
 class DumpSettings
 {
-    // List of available connection strings.
-    const UTF8    = 'utf8';
-    const UTF8MB4 = 'utf8mb4';
+    // List of available character sets.
+    public const string UTF8    = 'utf8';
+    public const string UTF8MB4 = 'utf8mb4';
 
     private static array $defaults = [
         'include-tables' => [],
@@ -66,11 +66,10 @@ class DumpSettings
             if ($deprecation !== null) {
                 $message = "Configuration option '{$optionName}' is deprecated";
                 if ($deprecation['since']) {
-                    $message .= " (since version {$deprecation['since']})";
+                    $message .= " since version {$deprecation['since']}";
                 }
-                $message .= ": {$deprecation['reason']}";
-                if ($deprecation['alternative']) {
-                    $message .= ". Use {$deprecation['alternative']} instead.";
+                if ($deprecation['message']) {
+                    $message .= ", {$deprecation['message']}";
                 }
                 trigger_error($message, E_USER_DEPRECATED);
             }

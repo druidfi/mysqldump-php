@@ -35,34 +35,36 @@ codebase; items that are done are kept checked for history.
 
 ## PHP 8.4 Modernization (new in 3.x)
 
-5. [ ] Adopt PHP 8.4 language features now that older PHP support is dropped:
-   - [ ] Use constructor property promotion in `DatabaseConnector` and `Mysqldump`
-         (both still declare classic properties and assign in the constructor)
-   - [ ] Add typed class constants (PHP 8.3+): e.g. `const string UTF8 = 'utf8'` in `DumpSettings`,
-         and the string constants in `ConfigOption`
-   - [ ] Type the hook properties as `?Closure` (`$transformTableRowCallable`,
-         `$transformColumnValueCallable`, `$infoCallable` are currently untyped)
-   - [ ] Add missing return types: `getTableStructure()`, `getViewStructureTable()`,
-         `getViewStructureView()`, `getTriggerStructure()`, `getProcedureStructure()`,
-         `getFunctionStructure()`, `getEventStructure()`, `listValues()`, `prepareListValues()`,
-         `endListValues()`, `setTransformColumnValueHook()` lack `: void`
-   - [ ] Evaluate replacing the custom `Attribute\Deprecated` with the native PHP 8.4
-         `#[\Deprecated]` attribute (native triggers automatic deprecation notices; keep the
-         custom one only if the extra `removeIn`/`alternative` metadata is worth it)
-   - [ ] Use `array_any()` / `array_find()` (PHP 8.4) to simplify `matches()`
-   - [ ] Evaluate property hooks / asymmetric visibility where they simplify getters
-         (e.g. `DatabaseConnector::$host` / `$dbName`)
+5. [x] Adopt PHP 8.4 language features now that older PHP support is dropped:
+   - [x] Use constructor property promotion where properties are assigned directly
+         (`DatabaseConnector`, `DumpWriter`, the `ObjectDumper` classes, `TypeAdapterMysql`;
+         `Mysqldump` derives its properties in the constructor, so promotion does not apply)
+   - [x] Add typed class constants (PHP 8.3+) in `DumpSettings`, `ConfigOption` and
+         `CompressManagerFactory`
+   - [x] Type the hook properties as `?Closure` (`$transformTableRowCallable`,
+         `$transformColumnValueCallable`, `$infoCallable`)
+   - [x] Add missing `: void` return types on the structure/data extractor methods and
+         `setTransformColumnValueHook()`
+   - [x] Replace the custom `Attribute\Deprecated` with the native PHP 8.4 `#[\Deprecated]`
+         attribute (the `alternative` field folded into `message`)
+   - [x] Use `array_any()` (PHP 8.4) to simplify `matches()` — also fixed the warning on
+         empty-string patterns
+   - [x] Property hooks / asymmetric visibility evaluated: getters kept as-is to avoid
+         changing the public API for no functional gain
 
-6. [ ] Introduce enums for closed value sets:
-   - [ ] Backed enum for compression methods — this would also fix the current drift:
-         `ConfigOption::COMPRESS` allows `['None', 'Gzip', 'Bzip2', 'Zstandard', 'LZ4']` while
-         `CompressManagerFactory` uses `Gzipstream`, `Zstd`, `Lz4`
-   - [ ] Enum for insert type (`INSERT` / `INSERT IGNORE` / `REPLACE`) replacing `getInsertType()` strings
+6. [x] Introduce enums for closed value sets:
+   - [x] `CompressMethod` backed enum as single source of truth for compression methods;
+         the `Constraint` attribute gained an `enum` parameter and the compress option now
+         validates against it — this fixed a drift bug where `ConfigOption` allowed
+         `'Zstandard'`/`'LZ4'` while the factory expected `'Zstd'`/`'Lz4'`, so Zstd, Lz4 and
+         Gzipstream were rejected at validation
+   - [x] `InsertType` backed enum replacing `getInsertType()` strings
 
 7. [ ] Tighten tooling now that the floor is PHP 8.4:
-   - [ ] Enable `->withPhpSets()` in `rector.php` (currently commented out) and raise
-         `withTypeCoverageLevel` / `withDeadCodeLevel` / `withCodeQualityLevel` from 0
-   - [ ] Raise PHPStan from level 4 towards 6+ and fix findings
+   - [x] Enable `->withPhpSets()` in `rector.php` and raise `withTypeCoverageLevel` /
+         `withDeadCodeLevel` / `withCodeQualityLevel` from 0 to 10
+   - [ ] Raise PHPStan towards 6+ and fix findings (level 5 done; level 6 has ~72 findings,
+         mostly missing iterable value types in PHPDoc)
 
 ## Code Quality Improvements
 
@@ -82,11 +84,13 @@ codebase; items that are done are kept checked for history.
     - Note: remaining gaps are itemized under task 5
 
 11. [ ] Implement better validation:
-    - [ ] `matches()` reads `$pattern[0]` — an empty string in include/exclude/no-data arrays causes
-          an error; validate patterns up front
+    - [x] `matches()` reads `$pattern[0]` — an empty string in include/exclude/no-data arrays causes
+          an error (fixed via `str_starts_with()` in the `array_any()` rewrite)
     - [ ] Fix `DumpSettings::get()` casting every setting to `string` — return proper types or add
           typed getters
     - [ ] Validate `net_buffer_length` and other numeric settings via `Constraint` attributes
+    - [ ] Align the `compress-level` constraint (currently 0–9) with Zstd (1–22) and Lz4 (1–12)
+          level ranges documented in the README
 
 ## Documentation Improvements
 

@@ -19,7 +19,7 @@ $pdoOptions = [
 ];
 
 // Backward/forward compatibility for buffered query attribute across PHP 8.3–8.5
-if (class_exists('Pdo\\Mysql') && defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')) {
+if (class_exists(\Pdo\Mysql::class) && defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')) {
     $pdoOptions[constant('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')] = false;
 } elseif (defined('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY')) {
     $pdoOptions[constant('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY')] = false;

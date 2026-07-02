@@ -13,7 +13,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test that default settings are properly initialized
      */
-    public function testDefaultSettings()
+    public function testDefaultSettings(): void
     {
         $settings = new DumpSettings([]);
 
@@ -37,7 +37,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test that custom settings override defaults
      */
-    public function testCustomSettings()
+    public function testCustomSettings(): void
     {
         $customSettings = [
             'compress' => 'Gzip',
@@ -74,7 +74,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test that invalid settings throw exceptions
      */
-    public function testInvalidSettings()
+    public function testInvalidSettings(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unexpected value in dumpSettings');
@@ -85,7 +85,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test that invalid include/exclude tables throw exceptions
      */
-    public function testInvalidTableSettings()
+    public function testInvalidTableSettings(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Include-tables and exclude-tables should be arrays');
@@ -96,7 +96,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test that include-views defaults to include-tables if not set
      */
-    public function testIncludeViewsDefault()
+    public function testIncludeViewsDefault(): void
     {
         $settings = new DumpSettings(['include-tables' => ['users', 'posts']]);
         
@@ -106,7 +106,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test that include-views can be set separately from include-tables
      */
-    public function testIncludeViewsCustom()
+    public function testIncludeViewsCustom(): void
     {
         $settings = new DumpSettings([
             'include-tables' => ['users', 'posts'],
@@ -119,7 +119,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test the setIncludedTables method
      */
-    public function testSetIncludedTables()
+    public function testSetIncludedTables(): void
     {
         $settings = new DumpSettings([]);
         $settings->setIncludedTables(['users', 'posts']);
@@ -130,7 +130,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test the setCompleteInsert method
      */
-    public function testSetCompleteInsert()
+    public function testSetCompleteInsert(): void
     {
         $settings = new DumpSettings([]);
         $this->assertFalse($settings->isEnabled('complete-insert'));
@@ -145,7 +145,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test the skip* methods
      */
-    public function testSkipMethods()
+    public function testSkipMethods(): void
     {
         $settings = new DumpSettings([
             'skip-comments' => true,
@@ -173,7 +173,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test the get method
      */
-    public function testGetMethod()
+    public function testGetMethod(): void
     {
         $settings = new DumpSettings(['net_buffer_length' => 500000]);
         
@@ -183,7 +183,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test the getInitCommands method
      */
-    public function testGetInitCommands()
+    public function testGetInitCommands(): void
     {
         // Default init commands
         $settings = new DumpSettings([]);
@@ -212,7 +212,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test replace option defaults
      */
-    public function testReplaceDefault()
+    public function testReplaceDefault(): void
     {
         $settings = new DumpSettings([]);
         $this->assertFalse($settings->isEnabled('replace'));
@@ -221,7 +221,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test replace option can be enabled
      */
-    public function testReplaceEnabled()
+    public function testReplaceEnabled(): void
     {
         $settings = new DumpSettings(['replace' => true]);
         $this->assertTrue($settings->isEnabled('replace'));
@@ -230,7 +230,7 @@ class DumpSettingsTest extends TestCase
     /**
      * Test that replace and insert-ignore cannot be used together
      */
-    public function testReplaceAndInsertIgnoreMutualExclusion()
+    public function testReplaceAndInsertIgnoreMutualExclusion(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Cannot use both replace and insert-ignore options simultaneously');

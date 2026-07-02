@@ -6,22 +6,15 @@ namespace Druidfi\Mysqldump;
 use Exception;
 use PDO;
 use PDOException;
+use SensitiveParameter;
 
 /**
  * Class DatabaseConnector
- * 
+ *
  * Handles database connection logic for mysqldump-php.
  */
 class DatabaseConnector
 {
-    private string $dsn;
-
-    private ?string $user;
-
-    private ?string $pass;
-
-    private array $pdoOptions;
-
     private string $host;
 
     private string $dbName;
@@ -38,15 +31,13 @@ class DatabaseConnector
      * @throws Exception
      */
     public function __construct(
-        string $dsn = '',
-        ?string $user = null,
-        ?string $pass = null,
-        array $pdoOptions = []
+        private readonly string $dsn = '',
+        private readonly ?string $user = null,
+        #[SensitiveParameter]
+        private readonly ?string $pass = null,
+        private readonly array $pdoOptions = []
     ) {
-        $this->dsn = $this->parseDsn($dsn);
-        $this->user = $user;
-        $this->pass = $pass;
-        $this->pdoOptions = $pdoOptions;
+        $this->parseDsn($dsn);
     }
 
     /**
@@ -57,10 +48,9 @@ class DatabaseConnector
      *   mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
      *
      * @param string $dsn dsn string to parse
-     * @return string The parsed DSN
      * @throws Exception
      */
-    private function parseDsn(string $dsn): string
+    private function parseDsn(string $dsn): void
     {
         if (empty($dsn) || !($pos = strpos($dsn, ':'))) {
             throw new Exception('Empty DSN string');
@@ -76,7 +66,7 @@ class DatabaseConnector
 
         foreach (explode(';', substr($dsn, $pos + 1)) as $kvp) {
             if (str_contains($kvp, '=')) {
-                list($param, $value) = explode('=', $kvp);
+                [$param, $value] = explode('=', $kvp);
                 $data[trim(strtolower($param))] = $value;
             }
         }
@@ -91,8 +81,6 @@ class DatabaseConnector
 
         $this->host = (!empty($data['host'])) ? $data['host'] : $data['unix_socket'];
         $this->dbName = $data['dbname'];
-
-        return $dsn;
     }
 
     /**
@@ -119,7 +107,7 @@ class DatabaseConnector
             // Handle deprecated PDO::MYSQL_ATTR_USE_BUFFERED_QUERY in PHP 8.5.
             // Prefer Pdo\Mysql::ATTR_USE_BUFFERED_QUERY when available; fall back otherwise.
             $mysqlBufferedQueryAttr = null;
-            if (class_exists('Pdo\\Mysql') && defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')) {
+            if (class_exists(\Pdo\Mysql::class) && defined('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY')) {
                 $mysqlBufferedQueryAttr = constant('Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY');
             } elseif (defined('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY')) {
                 $mysqlBufferedQueryAttr = constant('PDO::MYSQL_ATTR_USE_BUFFERED_QUERY');

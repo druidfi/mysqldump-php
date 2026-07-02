@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Druidfi\Mysqldump;
 
+use Closure;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterInterface;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterMysql;
 use Druidfi\Mysqldump\ObjectDumper as ObjectDumper;
@@ -25,18 +26,18 @@ use PDO;
 class Mysqldump
 {
     // Database
-    private DatabaseConnector $connector;
+    private readonly DatabaseConnector $connector;
     private ?PDO $conn = null;
-    private DumpWriter $writer;
+    private readonly DumpWriter $writer;
     private TypeAdapterInterface $db;
 
     private static string $adapterClass = TypeAdapterMysql::class;
 
-    private DumpSettings $settings;
+    private readonly DumpSettings $settings;
     private array $tableColumnTypes = [];
-    private $transformTableRowCallable;
-    private $transformColumnValueCallable;
-    private $infoCallable;
+    private ?Closure $transformTableRowCallable = null;
+    private ?Closure $transformColumnValueCallable = null;
+    private ?Closure $infoCallable = null;
 
     /**
      * Keyed on table name, with the value as the conditions.
@@ -90,17 +91,17 @@ class Mysqldump
         return $this->writer->write($data);
     }
 
-    private function getInsertType(): string
+    private function getInsertType(): InsertType
     {
         if ($this->settings->isEnabled('replace')) {
-            return 'REPLACE';
+            return InsertType::Replace;
         }
 
         if ($this->settings->isEnabled('insert-ignore')) {
-            return 'INSERT  IGNORE';
+            return InsertType::InsertIgnore;
         }
 
-        return 'INSERT';
+        return InsertType::Insert;
     }
 
     /**
@@ -160,8 +161,8 @@ class Mysqldump
 
         // Use dedicated dumpers for different object types
         $tablesDumper = new ObjectDumper\TablesDumper(
-            function () { return $this->iterateTables(); },
-            function (string $name, array $arr) { return $this->matches($name, $arr); },
+            fn(): \Generator => $this->iterateTables(),
+            fn(string $name, array $arr): bool => $this->matches($name, $arr),
             function (string $table): void { $this->getTableStructure($table); },
             function (string $table): void {
                 $no_data = $this->settings->isEnabled('no-data');
@@ -169,28 +170,28 @@ class Mysqldump
                     $this->listValues($table);
                 }
             },
-            function () { return $this->settings->getExcludedTables(); },
-            function () { return $this->settings->getNoData(); }
+            fn(): array => $this->settings->getExcludedTables(),
+            fn(): array => $this->settings->getNoData()
         );
         $tablesDumper->dump();
 
         $triggersDumper = new ObjectDumper\TriggersDumper(
-            function () { return $this->iterateTriggers(); },
+            fn(): \Generator => $this->iterateTriggers(),
             function (string $name): void { $this->getTriggerStructure($name); }
         );
         $triggersDumper->dump();
 
         $routinesDumper = new ObjectDumper\RoutinesDumper(
-            function () { return $this->iterateProcedures(); },
-            function () { return $this->iterateFunctions(); },
+            fn(): \Generator => $this->iterateProcedures(),
+            fn(): \Generator => $this->iterateFunctions(),
             function (string $name): void { $this->getProcedureStructure($name); },
             function (string $name): void { $this->getFunctionStructure($name); }
         );
         $routinesDumper->dump();
 
         $viewsDumper = new ObjectDumper\ViewsDumper(
-            function () { return $this->iterateViews(); },
-            function (string $name, array $arr) { return $this->matches($name, $arr); },
+            fn(): \Generator => $this->iterateViews(),
+            fn(string $name, array $arr): bool => $this->matches($name, $arr),
             function (string $name): void {
                 if ($this->settings->isEnabled('no-create-info')) { return; }
                 if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
@@ -206,7 +207,7 @@ class Mysqldump
         $viewsDumper->dump();
 
         $eventsDumper = new ObjectDumper\EventsDumper(
-            function () { return $this->iterateEvents(); },
+            fn(): \Generator => $this->iterateEvents(),
             function (string $name): void { $this->getEventStructure($name); }
         );
         $eventsDumper->dump();
@@ -343,19 +344,12 @@ class Mysqldump
      */
     private function matches(string $table, array $arr): bool
     {
-        $match = false;
-
-        foreach ($arr as $pattern) {
-            if ('/' != $pattern[0]) {
-                continue;
-            }
-
-            if (1 == preg_match($pattern, $table)) {
-                $match = true;
-            }
-        }
-
-        return in_array($table, $arr) || $match;
+        return in_array($table, $arr, true) || array_any(
+            $arr,
+            fn ($pattern): bool => is_string($pattern)
+                && str_starts_with($pattern, '/')
+                && preg_match($pattern, $table) === 1
+        );
     }
 
     /**
@@ -471,7 +465,7 @@ class Mysqldump
      *
      * @param string $tableName Name of table to export
      */
-    private function getTableStructure(string $tableName)
+    private function getTableStructure(string $tableName): void
     {
         if (!$this->settings->isEnabled('no-create-info')) {
             $ret = '';
@@ -537,7 +531,7 @@ class Mysqldump
      *
      * @param string $viewName Name of view to export
      */
-    private function getViewStructureTable(string $viewName)
+    private function getViewStructureTable(string $viewName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = (
@@ -592,7 +586,7 @@ class Mysqldump
     /**
      * View structure extractor, create view.
      */
-    private function getViewStructureView(string $viewName)
+    private function getViewStructureView(string $viewName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = sprintf(
@@ -624,7 +618,7 @@ class Mysqldump
      *
      * @param string $triggerName Name of trigger to export
      */
-    private function getTriggerStructure(string $triggerName)
+    private function getTriggerStructure(string $triggerName): void
     {
         $stmt = $this->db->showCreateTrigger($triggerName);
 
@@ -647,7 +641,7 @@ class Mysqldump
      *
      * @param string $procedureName Name of procedure to export
      */
-    private function getProcedureStructure(string $procedureName)
+    private function getProcedureStructure(string $procedureName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = "--" . PHP_EOL .
@@ -672,7 +666,7 @@ class Mysqldump
      *
      * @param string $functionName Name of function to export
      */
-    private function getFunctionStructure(string $functionName)
+    private function getFunctionStructure(string $functionName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = "--" . PHP_EOL .
@@ -698,7 +692,7 @@ class Mysqldump
      * @param string $eventName Name of event to export
      * @throws Exception
      */
-    private function getEventStructure(string $eventName)
+    private function getEventStructure(string $eventName): void
     {
         if (!$this->settings->skipComments()) {
             $ret = "--" . PHP_EOL .
@@ -771,7 +765,7 @@ class Mysqldump
      *
      * @param string $tableName Name of table to export
      */
-    private function listValues(string $tableName)
+    private function listValues(string $tableName): void
     {
         $this->prepareListValues($tableName);
 
@@ -808,10 +802,10 @@ class Mysqldump
         $resultSet = $this->conn->query($stmt);
         $resultSet->setFetchMode(PDO::FETCH_ASSOC);
 
-        $insertType = $this->getInsertType();
+        $insertType = $this->getInsertType()->value;
         $count = 0;
 
-        $isInfoCallable = $this->infoCallable && is_callable($this->infoCallable);
+        $isInfoCallable = $this->infoCallable !== null;
         if ($isInfoCallable) {
             ($this->infoCallable)('table', ['name' => $tableName, 'completed' => false, 'rowCount' => $count]);
         }
@@ -871,7 +865,7 @@ class Mysqldump
      *
      * @param string $tableName Name of table to export
      */
-    private function prepareListValues(string $tableName)
+    private function prepareListValues(string $tableName): void
     {
         if (!$this->settings->skipComments()) {
             $this->write(
@@ -905,7 +899,7 @@ class Mysqldump
      * @param string $tableName Name of table to export.
      * @param integer $count Number of rows inserted.
      */
-    private function endListValues(string $tableName, int $count = 0)
+    private function endListValues(string $tableName, int $count = 0): void
     {
         if ($this->settings->isEnabled('disable-keys')) {
             $this->write($this->db->endAddDisableKeys($tableName));
@@ -1066,7 +1060,7 @@ class Mysqldump
      */
     public function setTransformTableRowHook(callable $callable): void
     {
-        $this->transformTableRowCallable = $callable;
+        $this->transformTableRowCallable = $callable(...);
     }
 
     /**
@@ -1074,14 +1068,14 @@ class Mysqldump
      */
     public function setInfoHook(callable $callable): void
     {
-        $this->infoCallable = $callable;
+        $this->infoCallable = $callable(...);
     }
 
     /**
      * Set a callable that will be used to transform column values.
      */
-    public function setTransformColumnValueHook(callable $callable)
+    public function setTransformColumnValueHook(callable $callable): void
     {
-        $this->transformColumnValueCallable = $callable;
+        $this->transformColumnValueCallable = $callable(...);
     }
 }

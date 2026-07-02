@@ -10,9 +10,6 @@ class TypeAdapterMysql implements TypeAdapterInterface
 {
     const DEFINER_RE = 'DEFINER=`(?:[^`]|``)*`@`(?:[^`]|``)*`';
 
-    protected PDO $db;
-    protected DumpSettings $settings;
-
     // Numerical Mysql types
     public array $mysqlTypes = [
         'numerical' => [
@@ -48,11 +45,8 @@ class TypeAdapterMysql implements TypeAdapterInterface
         ]
     ];
 
-    public function __construct(PDO $conn, DumpSettings $settings)
+    public function __construct(protected PDO $db, protected DumpSettings $settings)
     {
-        $this->db = $conn;
-        $this->settings = $settings;
-
         // Execute init commands once connected
         foreach ($this->settings->getInitCommands() as $stmt) {
             $this->db->exec($stmt);
@@ -128,7 +122,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
         }
 
         if ($this->settings->isEnabled('if-not-exists')) {
-            $createTable = preg_replace('/^CREATE TABLE/', 'CREATE TABLE IF NOT EXISTS', $createTable);
+            $createTable = preg_replace('/^CREATE TABLE/', 'CREATE TABLE IF NOT EXISTS', (string) $createTable);
         }
 
         return "/*!40101 SET @saved_cs_client     = @@character_set_client */;".PHP_EOL.
@@ -504,7 +498,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
     public function parseColumnType(array $colType): array
     {
         $colInfo = [];
-        $colParts = explode(" ", $colType['Type']);
+        $colParts = explode(" ", (string) $colType['Type']);
 
         if ($fparen = strpos($colParts[0], "(")) {
             $colInfo['type'] = substr($colParts[0], 0, $fparen);
@@ -518,8 +512,8 @@ class TypeAdapterMysql implements TypeAdapterInterface
         // for virtual columns that are of type 'Extra', column type
         // could by "STORED GENERATED" or "VIRTUAL GENERATED"
         // MySQL reference: https://dev.mysql.com/doc/refman/5.7/en/create-table-generated-columns.html
-        $colInfo['is_virtual'] = strpos($colType['Extra'], "VIRTUAL GENERATED") !== false
-            || strpos($colType['Extra'], "STORED GENERATED") !== false;
+        $colInfo['is_virtual'] = str_contains((string) $colType['Extra'], "VIRTUAL GENERATED")
+            || str_contains((string) $colType['Extra'], "STORED GENERATED");
 
         return $colInfo;
     }

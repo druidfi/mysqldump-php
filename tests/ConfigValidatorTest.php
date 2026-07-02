@@ -35,6 +35,17 @@ class ConfigValidatorTest extends TestCase
         ConfigValidator::validate('compress', 'Gzip');
     }
 
+    public function testValidateAcceptsAllFactoryCompressMethods(): void
+    {
+        // Every method the factory can create must pass validation
+        // (Gzipstream, Zstd and Lz4 were rejected before CompressMethod existed)
+        $this->expectNotToPerformAssertions();
+
+        foreach (['None', 'Gzip', 'Bzip2', 'Gzipstream', 'Zstd', 'Lz4'] as $method) {
+            ConfigValidator::validate('compress', $method);
+        }
+    }
+
     public function testValidateRejectsInvalidCompressValue(): void
     {
         $this->expectException(Exception::class);
@@ -94,8 +105,7 @@ class ConfigValidatorTest extends TestCase
         
         $this->assertIsArray($result);
         $this->assertTrue($result['deprecated']);
-        $this->assertStringContainsString('deprecated', $result['reason']);
-        $this->assertStringContainsString('init_commands', $result['alternative']);
+        $this->assertStringContainsString('init_commands', $result['message']);
         $this->assertEquals('2.0', $result['since']);
     }
 

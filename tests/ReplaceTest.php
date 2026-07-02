@@ -15,7 +15,7 @@ class ReplaceTest extends TestCase
     /**
      * Test that replace option generates REPLACE INTO statements
      */
-    public function testReplaceGeneratesCorrectSQL()
+    public function testReplaceGeneratesCorrectSQL(): void
     {
         // This is a basic test to verify the getInsertType method logic
         // In a full integration test, you would connect to a test database
@@ -29,7 +29,7 @@ class ReplaceTest extends TestCase
     /**
      * Test that insert-ignore option still works as expected
      */
-    public function testInsertIgnoreStillWorks()
+    public function testInsertIgnoreStillWorks(): void
     {
         $settings = new DumpSettings(['insert-ignore' => true]);
         $this->assertFalse($settings->isEnabled('replace'));
@@ -39,7 +39,7 @@ class ReplaceTest extends TestCase
     /**
      * Test default behavior (normal INSERT)
      */
-    public function testDefaultInsert()
+    public function testDefaultInsert(): void
     {
         $settings = new DumpSettings([]);
         $this->assertFalse($settings->isEnabled('replace'));
@@ -49,7 +49,7 @@ class ReplaceTest extends TestCase
     /**
      * Test that replace and insert-ignore cannot be used together
      */
-    public function testMutualExclusivity()
+    public function testMutualExclusivity(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Cannot use both replace and insert-ignore options simultaneously');

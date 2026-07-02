@@ -11,13 +11,6 @@ use Closure;
  */
 class TablesDumper implements DumperInterface
 {
-    private Closure $iterateTables;
-    private Closure $matches;
-    private Closure $getTableStructure;
-    private Closure $listValues;
-    private Closure $getExcludedTables;
-    private Closure $getNoData;
-
     /**
      * @param Closure $iterateTables yields table names
      * @param Closure $matches function(string $name, array $excluded): bool
@@ -27,19 +20,13 @@ class TablesDumper implements DumperInterface
      * @param Closure $getNoData function(): array|bool returns no-data setting
      */
     public function __construct(
-        Closure $iterateTables,
-        Closure $matches,
-        Closure $getTableStructure,
-        Closure $listValues,
-        Closure $getExcludedTables,
-        Closure $getNoData
+        private readonly Closure $iterateTables,
+        private readonly Closure $matches,
+        private readonly Closure $getTableStructure,
+        private readonly Closure $listValues,
+        private readonly Closure $getExcludedTables,
+        private readonly Closure $getNoData
     ) {
-        $this->iterateTables = $iterateTables;
-        $this->matches = $matches;
-        $this->getTableStructure = $getTableStructure;
-        $this->listValues = $listValues;
-        $this->getExcludedTables = $getExcludedTables;
-        $this->getNoData = $getNoData;
     }
 
     public function dump(): void

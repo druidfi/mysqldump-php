@@ -46,12 +46,14 @@ class CompressGzipTest extends TestCase
     public function testFactoryPassesLevelToGzip(): void
     {
         $gzip = CompressManagerFactory::create(CompressManagerFactory::GZIP, 7);
+        $this->assertInstanceOf(CompressGzip::class, $gzip);
         $this->assertSame(7, $this->getLevel($gzip));
     }
 
     public function testFactoryWithDefaultLevelCreatesGzipWithLevelZero(): void
     {
         $gzip = CompressManagerFactory::create(CompressManagerFactory::GZIP);
+        $this->assertInstanceOf(CompressGzip::class, $gzip);
         $this->assertSame(0, $this->getLevel($gzip));
     }
 
@@ -84,7 +86,6 @@ class CompressGzipTest extends TestCase
     private function getLevel(CompressGzip $gzip): int
     {
         $ref = new \ReflectionProperty(CompressGzip::class, 'level');
-        $ref->setAccessible(true);
         return $ref->getValue($gzip);
     }
 }
