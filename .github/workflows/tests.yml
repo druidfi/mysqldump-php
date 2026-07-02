@@ -109,7 +109,6 @@ jobs:
 
       - name: Run PHPStan
         run: vendor/bin/phpstan --error-format=github --no-progress --ansi
-        continue-on-error: true
 
       - name: Run PHPunit tests
         run: vendor/bin/phpunit
