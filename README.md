@@ -251,6 +251,11 @@ docker compose exec -w /app/tests/scripts php82 ./test.sh mysql
 docker compose exec -w /app/tests/scripts php83 ./test.sh mysql
 docker compose exec -w /app/tests/scripts php84 ./test.sh mysql
 docker compose exec -w /app/tests/scripts php85 ./test.sh mysql
+docker compose exec -w /app/tests/scripts php81 ./test.sh mysql84
+docker compose exec -w /app/tests/scripts php82 ./test.sh mysql84
+docker compose exec -w /app/tests/scripts php83 ./test.sh mysql84
+docker compose exec -w /app/tests/scripts php84 ./test.sh mysql84
+docker compose exec -w /app/tests/scripts php85 ./test.sh mysql84
 docker compose exec -w /app/tests/scripts php81 ./test.sh mariadb
 docker compose exec -w /app/tests/scripts php82 ./test.sh mariadb
 docker compose exec -w /app/tests/scripts php83 ./test.sh mariadb

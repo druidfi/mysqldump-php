@@ -62,7 +62,7 @@ docs/
 
 # Root-level Docker test setup
 Dockerfile                     # PHP test container (PHP_SHORT_VERSION build arg)
-compose.yaml                   # Services: mysql, mariadb, php81..php85
+compose.yaml                   # Services: mysql, mysql84, mariadb, php81..php85
 config/skip-ssl.cnf            # MySQL client config for test containers
 docker-entrypoint-initdb.d/    # DB init scripts (mysql-init.sql, mariadb-init.sql)
 .env.mysql                     # Shared DB credentials for compose services
@@ -153,8 +153,8 @@ Druidfi\Mysqldump\
 ### CI Matrix
 Tests run on:
 - PHP: 8.1, 8.2, 8.3, 8.4, 8.5
-- Databases: MySQL 8.0, MariaDB 10.11
-- Total: 10 combinations
+- Databases: MySQL 8.0, MySQL 8.4 LTS, MariaDB 10.11
+- Total: 15 combinations
 
 ## Static Analysis
 
@@ -166,7 +166,7 @@ vendor/bin/phpstan
 - Ignores errors for optional extensions (ext-zstd, ext-lz4)
 - Analyzes `src/` and `tests/`
 - **Not a direct dependency**: `phpstan/phpstan` is not in `require-dev`; it is available transitively via `rector/rector`
-- **Advisory in CI**: the PHPStan step runs with `continue-on-error: true`, so failures do not block PRs
+- **Blocking in CI**: PHPStan failures fail the build
 
 ### Rector
 ```bash

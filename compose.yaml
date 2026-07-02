@@ -8,6 +8,17 @@ services:
     volumes:
       - ./docker-entrypoint-initdb.d/mysql-init.sql:/docker-entrypoint-initdb.d/00-init.sql
 
+  mysql84:
+    container_name: mysqldump-php-mysql-84
+    image: mysql:8.4
+    # mysql_native_password is disabled by default in 8.4; the test user
+    # still needs it (see docker-entrypoint-initdb.d/mysql-init.sql)
+    command: --mysql-native-password=ON
+    env_file:
+      - .env.mysql
+    volumes:
+      - ./docker-entrypoint-initdb.d/mysql-init.sql:/docker-entrypoint-initdb.d/00-init.sql
+
   mariadb:
     container_name: mysqldump-php-mariadb-10
     image: mariadb:10.11
