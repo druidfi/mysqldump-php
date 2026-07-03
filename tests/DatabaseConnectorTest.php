@@ -5,7 +5,7 @@ namespace Druidfi\Mysqldump\Tests;
 use Druidfi\Mysqldump\DatabaseConnector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConnectionException;
 
 #[CoversClass(DatabaseConnector::class)]
 class DatabaseConnectorTest extends TestCase
@@ -28,14 +28,14 @@ class DatabaseConnectorTest extends TestCase
 
     public function testEmptyDsnThrows(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConnectionException::class);
         $this->expectExceptionMessage('Empty DSN string');
         new DatabaseConnector('', 'user', 'pass');
     }
 
     public function testMissingDbTypeThrows(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConnectionException::class);
         // Due to current implementation treating colon at position 0 as empty DSN
         $this->expectExceptionMessage('Empty DSN string');
         new DatabaseConnector(':host=localhost;dbname=test', 'user', 'pass');
@@ -43,14 +43,14 @@ class DatabaseConnectorTest extends TestCase
 
     public function testMissingHostThrows(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConnectionException::class);
         $this->expectExceptionMessage('Missing host from DSN string');
         new DatabaseConnector('mysql:dbname=test', 'user', 'pass');
     }
 
     public function testMissingDbnameThrows(): void    
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConnectionException::class);
         $this->expectExceptionMessage('Missing database name from DSN string');
         new DatabaseConnector('mysql:host=localhost', 'user', 'pass');
     }

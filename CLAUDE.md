@@ -37,6 +37,11 @@ src/
 │   ├── DefaultValue.php       # Default values with descriptions
 │   ├── Injectable.php         # DI marker
 │   └── ValidatesValue.php     # Validation marker
+├── Exception/                 # Custom exception hierarchy
+│   ├── MysqldumpException.php # Base class (extends native Exception)
+│   ├── ConnectionException.php    # DSN parsing / PDO connection failures
+│   ├── ConfigurationException.php # Invalid or conflicting dump settings
+│   └── DumpException.php      # I/O and server errors during the dump
 ├── Compress/                  # Compression implementations
 │   ├── CompressInterface.php  # Common interface
 │   ├── CompressMethod.php     # Enum of compression methods
@@ -226,9 +231,11 @@ $dump->getAdapter(PDO $conn);
 ```
 
 ### Error Handling
-- Uses standard `Exception` class (no custom hierarchy yet)
-- PDO connection errors caught and re-thrown with context
-- Validation errors from `ConfigValidator` have specific messages
+- Custom exception hierarchy in `src/Exception/`: `ConnectionException`,
+  `ConfigurationException` and `DumpException` extend `MysqldumpException`,
+  which extends the native `Exception` (so `catch (Exception)` still works)
+- PDO connection errors caught and re-thrown as `ConnectionException` with context
+- Validation errors from `ConfigValidator` throw `ConfigurationException` with specific messages
 
 ## Common Tasks
 
@@ -260,7 +267,7 @@ $dump->getAdapter(PDO $conn);
 | `phpstan.dist.neon` | Static analysis configuration |
 | `rector.php` | Code modernization rules |
 | `.github/workflows/tests.yml` | CI/CD pipeline |
-| `docs/tasks.md` | Improvement roadmap (refactoring direction, e.g. planned custom exceptions) |
+| `docs/tasks.md` | Improvement roadmap (checkbox task list) |
 
 ## Gotchas
 

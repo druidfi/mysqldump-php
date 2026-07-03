@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Druidfi\Mysqldump\Tests;
 
 use Druidfi\Mysqldump\ConfigValidator;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -48,7 +48,7 @@ class ConfigValidatorTest extends TestCase
 
     public function testValidateRejectsInvalidCompressValue(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Must be a valid compression method');
         
         ConfigValidator::validate('compress', 'InvalidCompression');
@@ -63,7 +63,7 @@ class ConfigValidatorTest extends TestCase
 
     public function testValidateRejectsCompressionLevelTooLow(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Compression level must be between 0 and 22');
 
         ConfigValidator::validate('compress-level', -1);
@@ -71,7 +71,7 @@ class ConfigValidatorTest extends TestCase
 
     public function testValidateRejectsCompressionLevelTooHigh(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Compression level must be between 0 and 22');
 
         ConfigValidator::validate('compress-level', 23);
@@ -86,7 +86,7 @@ class ConfigValidatorTest extends TestCase
 
     public function testValidateRejectsInvalidCharacterSet(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Must be utf8 or utf8mb4');
         
         ConfigValidator::validate('default-character-set', 'latin1');
@@ -129,7 +129,7 @@ class ConfigValidatorTest extends TestCase
             'compress' => 'InvalidMethod',
         ];
 
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Must be a valid compression method');
         
         ConfigValidator::validateAll($settings);
@@ -145,7 +145,7 @@ class ConfigValidatorTest extends TestCase
 
     public function testValidateNetBufferLengthMinConstraint(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Net buffer length must be at least 1024');
         
         ConfigValidator::validate('net_buffer_length', 512);

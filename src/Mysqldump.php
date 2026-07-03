@@ -20,7 +20,10 @@ use Closure;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterInterface;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterMysql;
 use Druidfi\Mysqldump\ObjectDumper as ObjectDumper;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
+use Druidfi\Mysqldump\Exception\ConnectionException;
+use Druidfi\Mysqldump\Exception\DumpException;
+use Druidfi\Mysqldump\Exception\MysqldumpException;
 use PDO;
 
 class Mysqldump
@@ -59,7 +62,7 @@ class Mysqldump
      * @param string|null $pass SQL account password
      * @param array<string, mixed> $settings SQL database settings
      * @param array<int, mixed> $pdoOptions PDO configured attributes
-     * @throws Exception
+     * @throws ConfigurationException
      */
     public function __construct(
         string  $dsn = '',
@@ -78,7 +81,7 @@ class Mysqldump
     /**
      * Connect with PDO using the DatabaseConnector.
      *
-     * @throws Exception
+     * @throws ConnectionException
      */
     private function connect(): void
     {
@@ -113,7 +116,7 @@ class Mysqldump
      * Primary function, triggers dumping.
      *
      * @param string|null $filename Name of file to write sql dump to
-     * @throws Exception
+     * @throws MysqldumpException
      */
     public function start(?string $filename = ''): void
     {
@@ -288,7 +291,7 @@ class Mysqldump
         $missingTables = array_diff($includedTables, $existingTables);
 
         if (!empty($missingTables)) {
-            throw new Exception(sprintf("Table '%s' not found in database", implode(',', $missingTables)));
+            throw new ConfigurationException(sprintf("Table '%s' not found in database", implode(',', $missingTables)));
         }
     }
 
@@ -614,7 +617,7 @@ class Mysqldump
      * Event structure extractor.
      *
      * @param string $eventName Name of event to export
-     * @throws Exception
+     * @throws DumpException
      */
     private function getEventStructure(string $eventName): void
     {
@@ -975,13 +978,13 @@ class Mysqldump
      * Set the TypeAdapter class used by this instance.
      *
      * @param class-string $adapterClassName Must implement TypeAdapterInterface (validated at runtime)
-     * @throws Exception
+     * @throws ConfigurationException
      */
     public function addTypeAdapter(string $adapterClassName): void
     {
         if (!is_a($adapterClassName, TypeAdapterInterface::class, true)) {
             $message = sprintf('Adapter %s is not instance of %s', $adapterClassName, TypeAdapterInterface::class);
-            throw new Exception($message);
+            throw new ConfigurationException($message);
         }
 
         $this->adapterClass = $adapterClassName;

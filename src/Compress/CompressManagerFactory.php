@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Druidfi\Mysqldump\Compress;
 
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
 
 abstract class CompressManagerFactory
 {
@@ -17,7 +17,7 @@ abstract class CompressManagerFactory
     public const string LZ4 = 'Lz4';
 
     /**
-     * @throws Exception
+     * @throws ConfigurationException
      */
     public static function create(string $method, int $level = 0): CompressInterface
     {

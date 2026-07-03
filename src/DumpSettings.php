@@ -5,7 +5,7 @@ namespace Druidfi\Mysqldump;
 
 use Druidfi\Mysqldump\Compress\CompressManagerFactory;
 use Druidfi\Mysqldump\Compress\CompressMethod;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
 
 class DumpSettings
 {
@@ -57,7 +57,7 @@ class DumpSettings
 
     /**
      * @param array<string, mixed> $settings
-     * @throws Exception
+     * @throws ConfigurationException
      */
     public function __construct(array $settings)
     {
@@ -90,15 +90,15 @@ class DumpSettings
         $diff = array_diff(array_keys($this->settings), array_keys(self::$defaults));
 
         if (count($diff) > 0) {
-            throw new Exception("Unexpected value in dumpSettings: (" . implode(",", $diff) . ")");
+            throw new ConfigurationException("Unexpected value in dumpSettings: (" . implode(",", $diff) . ")");
         }
 
         if (!is_array($this->settings['include-tables']) || !is_array($this->settings['exclude-tables'])) {
-            throw new Exception('Include-tables and exclude-tables should be arrays');
+            throw new ConfigurationException('Include-tables and exclude-tables should be arrays');
         }
 
         if ($this->settings['replace'] && $this->settings['insert-ignore']) {
-            throw new Exception('Cannot use both replace and insert-ignore options simultaneously');
+            throw new ConfigurationException('Cannot use both replace and insert-ignore options simultaneously');
         }
 
         // Method-specific upper bound: Gzip 1-9, Lz4 1-12, Zstd 1-22.
@@ -107,7 +107,7 @@ class DumpSettings
             $method = CompressMethod::fromName($this->getCompressMethod());
             $maxLevel = $method->maxLevel();
             if ($maxLevel !== null && $level > $maxLevel) {
-                throw new Exception(
+                throw new ConfigurationException(
                     sprintf('Compression level %d is out of range for %s (1-%d)', $level, $method->value, $maxLevel)
                 );
             }
