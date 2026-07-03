@@ -12,10 +12,10 @@ codebase; items that are done are kept checked for history.
    - [x] Create separate classes for different database object types (Tables, Views, Triggers, etc.)
    - [ ] Extract table data dumping (`listValues()`, `prepareListValues()`, `endListValues()`,
          `prepareColumnValues()`, `getColumnStmt()`, `getColumnNames()`) into a dedicated class
-   - [ ] Remove the vestigial `getDatabaseStructure*()` methods: five are empty no-ops and
-         `getDatabaseStructureTables()` only validates include-tables (rename to `validateIncludedTables()`)
-   - [ ] Deduplicate the six near-identical `iterate*()` generators into one shared helper
-         (query + column extraction + optional include filter)
+   - [x] Remove the vestigial `getDatabaseStructure*()` methods: five were empty no-ops and
+         `getDatabaseStructureTables()` only validated include-tables (now `validateIncludedTables()`)
+   - [x] Deduplicate the six near-identical `iterate*()` generators into one shared
+         `iterateObjectNames()` helper (query + column extraction + optional include filter)
 
 2. [x] Improve dependency wiring:
    - [x] Fix `Mysqldump::$adapterClass` being `static` — now an instance property, with a
@@ -99,8 +99,8 @@ codebase; items that are done are kept checked for history.
 
 12. [ ] Improve code documentation:
     - [ ] Document `@throws` consistently once custom exceptions exist (task 3)
-    - [ ] Remove stale PHPDoc (e.g. `getDatabaseStructure*` docblocks say "Fills $this->tables array",
-          which no longer exists)
+    - [x] Remove stale PHPDoc — the `getDatabaseStructure*` docblocks claiming to fill a
+          non-existent `$this->tables` array went away with the methods themselves (task 1)
 
 13. [ ] Improve user documentation (README already covers install, hooks, settings, privileges):
     - [x] Document 2.x → 3.x upgrade / breaking changes (README "Upgrading from 2.x to 3.x")
@@ -133,8 +133,9 @@ codebase; items that are done are kept checked for history.
 17. [ ] Optimize memory usage:
     - [x] Review and optimize large data structures
     - [x] Use generators for large result sets
-    - [ ] Make the `iterate*()` generators truly streaming — they currently buffer all names into
-          an array before yielding
+    - [x] `iterate*()` generator buffering reviewed and kept as deliberate: only object *names*
+          are buffered (tiny), and the cursor must be closed before consumers run their own
+          queries per object — documented in `iterateObjectNames()`
     - [ ] Review `$tableColumnTypes` growth on databases with many tables/columns
 
 ## Security Improvements
