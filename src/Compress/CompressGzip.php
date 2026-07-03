@@ -6,6 +6,7 @@ use Exception;
 
 class CompressGzip implements CompressInterface
 {
+    /** @var resource|false */
     private $fileHandler;
     private readonly int $level;
 

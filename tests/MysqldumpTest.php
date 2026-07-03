@@ -101,13 +101,13 @@ class MysqldumpTest extends TestCase
         $this->assertFalse($dump->getTableLimit('table_with_invalid_range_limit3'));
     }
 
-    private function getPrivate(Mysqldump $dump, $var)
+    private function getPrivate(Mysqldump $dump, string $var): mixed
     {
         $reflectionProperty = new \ReflectionProperty(Mysqldump::class, $var);
         return $reflectionProperty->getValue($dump);
     }
 
-    private function getPrivateFromObject($object, $var)
+    private function getPrivateFromObject(object $object, string $var): mixed
     {
         $reflectionProperty = new \ReflectionProperty($object::class, $var);
         return $reflectionProperty->getValue($object);

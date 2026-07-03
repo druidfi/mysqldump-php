@@ -88,7 +88,7 @@ composer install
 # Run PHPUnit tests
 vendor/bin/phpunit
 
-# Run static analysis (level 4)
+# Run static analysis (level 6)
 vendor/bin/phpstan
 
 # Run code modernization check (dry-run)
@@ -172,7 +172,7 @@ The `2.x` branch keeps the wider PHP 8.1–8.5 matrix (10 combinations).
 
 ## Static Analysis
 
-### PHPStan (Level 4)
+### PHPStan (Level 6)
 ```bash
 vendor/bin/phpstan
 ```

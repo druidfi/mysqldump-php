@@ -35,6 +35,7 @@ class Mysqldump
     private string $adapterClass = TypeAdapterMysql::class;
 
     private readonly DumpSettings $settings;
+    /** @var array<string, array<string, array<string, mixed>>> */
     private array $tableColumnTypes = [];
     private ?Closure $transformTableRowCallable = null;
     private ?Closure $transformColumnValueCallable = null;
@@ -43,8 +44,11 @@ class Mysqldump
     /**
      * Keyed on table name, with the value as the conditions.
      * e.g. - 'users' => 'date_registered > NOW() - INTERVAL 6 MONTH'
+     *
+     * @var array<string, string>
      */
     private array $tableWheres = [];
+    /** @var array<string, mixed> */
     private array $tableLimits = [];
 
     /**
@@ -53,8 +57,8 @@ class Mysqldump
      * @param string $dsn PDO DSN connection string
      * @param string|null $user SQL account username
      * @param string|null $pass SQL account password
-     * @param array $settings SQL database settings
-     * @param array $pdoOptions PDO configured attributes
+     * @param array<string, mixed> $settings SQL database settings
+     * @param array<int, mixed> $pdoOptions PDO configured attributes
      * @throws Exception
      */
     public function __construct(
@@ -290,6 +294,8 @@ class Mysqldump
 
     /**
      * Compare if $table name matches with a definition inside $arr.
+     *
+     * @param string[] $arr
      */
     private function matches(string $table, array $arr): bool
     {
@@ -309,7 +315,7 @@ class Mysqldump
      *
      * @param string $query SHOW statement listing the objects
      * @param string|null $column Result column holding the name; null takes the first column
-     * @param array $included When non-empty, only these names are yielded
+     * @param string[] $included When non-empty, only these names are yielded
      */
     private function iterateObjectNames(string $query, ?string $column = null, array $included = []): \Generator
     {
@@ -421,7 +427,7 @@ class Mysqldump
      * Store column types to create data dumps and for Stand-In tables.
      *
      * @param string $tableName Name of table to export
-     * @return array type column types detailed
+     * @return array<string, array<string, mixed>> type column types detailed
      */
     private function getTableColumnTypes(string $tableName): array
     {
@@ -634,7 +640,8 @@ class Mysqldump
      * Prepare values for output.
      *
      * @param string $tableName Name of table which contains rows
-     * @param array $row Associative array of column names and values to be quoted
+     * @param array<string, mixed> $row Associative array of column names and values to be quoted
+     * @return array<int, mixed> quoted values ready for the VALUES list
      */
     private function prepareColumnValues(string $tableName, array $row): array
     {
@@ -852,7 +859,7 @@ class Mysqldump
      *
      * @param string $tableName Name of table to get columns
      *
-     * @return array SQL sentence with columns for select
+     * @return string[] SQL sentence with columns for select
      */
     protected function getColumnStmt(string $tableName): array
     {
@@ -880,7 +887,7 @@ class Mysqldump
      *
      * @param string $tableName Name of table to get columns
      *
-     * @return array columns for sql sentence for insert
+     * @return string[] columns for sql sentence for insert
      */
     private function getColumnNames(string $tableName): array
     {
@@ -899,6 +906,8 @@ class Mysqldump
 
     /**
      * Get table column types.
+     *
+     * @return array<string, array<string, array<string, mixed>>>
      */
     protected function tableColumnTypes(): array
     {
@@ -908,6 +917,8 @@ class Mysqldump
     /**
      * Keyed by table name, with the value as the conditions:
      * e.g. 'users' => 'date_registered > NOW() - INTERVAL 6 MONTH AND deleted=0'
+     *
+     * @param array<string, string> $tableWheres
      */
     public function setTableWheres(array $tableWheres): void
     {
@@ -927,6 +938,8 @@ class Mysqldump
 
     /**
      * Keyed by table name, with the value as the numeric limit: e.g. 'users' => 3000
+     *
+     * @param array<string, mixed> $tableLimits
      */
     public function setTableLimits(array $tableLimits): void
     {

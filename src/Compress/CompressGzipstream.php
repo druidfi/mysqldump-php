@@ -6,7 +6,9 @@ use Exception;
 
 class CompressGzipstream implements CompressInterface
 {
+    /** @var resource|false */
     private $fileHandler;
+    /** @var \DeflateContext|false */
     private $compressContext;
 
     /**

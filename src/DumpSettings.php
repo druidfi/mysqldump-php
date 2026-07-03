@@ -13,6 +13,7 @@ class DumpSettings
     public const string UTF8    = 'utf8';
     public const string UTF8MB4 = 'utf8mb4';
 
+    /** @var array<string, mixed> */
     private static array $defaults = [
         'include-tables' => [],
         'exclude-tables' => [],
@@ -51,9 +52,11 @@ class DumpSettings
         /* deprecated */
         'disable-foreign-keys-check' => true
     ];
+    /** @var array<string, mixed> */
     private array $settings;
 
     /**
+     * @param array<string, mixed> $settings
      * @throws Exception
      */
     public function __construct(array $settings)
@@ -131,31 +134,49 @@ class DumpSettings
         return $this->settings['default-character-set'];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function getDefaults(): array
     {
         return self::$defaults;
     }
 
+    /**
+     * @return string[]
+     */
     public function getExcludedTables(): array
     {
         return $this->settings['exclude-tables'] ?? [];
     }
 
+    /**
+     * @return string[]
+     */
     public function getIncludedTables(): array
     {
         return $this->settings['include-tables'] ?? [];
     }
 
+    /**
+     * @param string[] $tables
+     */
     public function setIncludedTables(array $tables): void
     {
         $this->settings['include-tables'] = $tables;
     }
 
+    /**
+     * @return string[]
+     */
     public function getIncludedViews(): array
     {
         return $this->settings['include-views'] ?? [];
     }
 
+    /**
+     * @return string[]
+     */
     public function getInitCommands(): array
     {
         return $this->settings['init_commands'] ?? [];
@@ -166,6 +187,9 @@ class DumpSettings
         return $this->settings['net_buffer_length'];
     }
 
+    /**
+     * @return string[]
+     */
     public function getNoData(): array
     {
         $noData = $this->settings['no-data'] ?? [];

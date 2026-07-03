@@ -6,6 +6,7 @@ use Exception;
 
 class CompressZstd implements CompressInterface
 {
+    /** @var resource|false */
     private $fileHandler;
     private readonly int $compressionLevel;
 

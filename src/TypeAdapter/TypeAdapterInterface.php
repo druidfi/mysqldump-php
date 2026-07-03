@@ -8,12 +8,25 @@ interface TypeAdapterInterface
     public function addDropTrigger(string $triggerName): string;
     public function backupParameters(): string;
     public function commitTransaction(): string;
+
+    /** @param array<string, mixed> $row Row from the corresponding SHOW CREATE statement */
     public function createEvent(array $row): string;
+
+    /** @param array<string, mixed> $row Row from the corresponding SHOW CREATE statement */
     public function createFunction(array $row): string;
+
+    /** @param array<string, mixed> $row Row from the corresponding SHOW CREATE statement */
     public function createProcedure(array $row): string;
+
+    /** @param array<string, mixed> $row Row from the corresponding SHOW CREATE statement */
     public function createTable(array $row): string;
+
+    /** @param array<string, mixed> $row Row from the corresponding SHOW CREATE statement */
     public function createTrigger(array $row): string;
+
+    /** @param array<string, mixed> $row Row from the corresponding SHOW CREATE statement */
     public function createView(array $row): string;
+
     public function databases(string $databaseName): string;
     public function dropTable(string $tableName): string;
     public function dropView(string $viewName): string;
@@ -23,7 +36,13 @@ interface TypeAdapterInterface
     public function getDatabaseHeader(string $databaseName): string;
     public function getVersion(): string;
     public function lockTable(string $tableName): void;
+
+    /**
+     * @param array<string, mixed> $colType Row from "SHOW COLUMNS FROM tableName"
+     * @return array<string, mixed> Column metadata (type, is_numeric, is_blob, is_virtual, ...)
+     */
     public function parseColumnType(array $colType): array;
+
     public function restoreParameters(): string;
     public function setupTransaction(): string;
     public function showColumns(string $tableName): string;
