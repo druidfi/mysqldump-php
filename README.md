@@ -37,6 +37,33 @@ Out of the box, `mysqldump-php` supports backing up table structures, the data i
 | 2.x     | `2.x`  | 8.1+      | Maintenance | [![Run tests](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml/badge.svg?branch=2.x)](https://github.com/druidfi/mysqldump-php/actions/workflows/tests.yml?query=branch%3A2.x) |
 | 1.x     | `1.x`  | 7.4 / 8.0 | Legacy | |
 
+## Upgrading from 2.x to 3.x
+
+The dump output and the day-to-day API — constructor, `start()`, the transform/info hooks,
+`setTableWheres()`/`setTableLimits()` and the dump settings with their defaults — are unchanged
+from 2.x. The following changes may require action:
+
+- **PHP 8.4 or newer is required** (2.x supports PHP 8.1+).
+- **Connections are no longer persistent by default.** 2.x always set
+  `PDO::ATTR_PERSISTENT => true`. If you relied on persistent connections, pass
+  `PDO::ATTR_PERSISTENT => true` in the `$pdoOptions` constructor argument.
+- **`Mysqldump::addTypeAdapter()` no longer affects other instances.** In 2.x the adapter class
+  was stored statically and leaked into every `Mysqldump` instance in the same process. Call
+  `addTypeAdapter()` on each instance that needs a custom adapter.
+- **`CompressManagerFactory::$methods` was removed.** Use the `CompressMethod` enum, or the
+  unchanged class constants such as `CompressManagerFactory::GZIP`.
+- **The `Druidfi\Mysqldump\Attribute\Deprecated` attribute class was removed.** Deprecations now
+  use the native PHP 8.4 `#[\Deprecated]` attribute.
+- **`ConfigValidator::checkDeprecated()` return value changed.** The `reason` and `alternative`
+  keys were replaced by a single `message` key (`deprecated` and `since` are unchanged).
+- **`compress-level` is validated per method.** Levels up to the method maximum are accepted
+  (Gzip 1-9, Lz4 1-12, Zstd 1-22) where 2.x rejected everything above 9, and a level above the
+  method maximum now throws with a method-specific message.
+
+Also fixed in 3.x with no action needed: 2.x settings validation rejected the `Zstd`, `Lz4` and
+`Gzipstream` compression methods due to a mismatch between the allowed values and the factory;
+they now validate correctly.
+
 ## Installing
 
 Install using [Composer](https://getcomposer.org/):
