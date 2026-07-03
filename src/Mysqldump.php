@@ -148,13 +148,7 @@ class Mysqldump
             }
         }
 
-        // Get table, view, trigger, procedures, functions and events structures from database.
-        $this->getDatabaseStructureTables();
-        $this->getDatabaseStructureViews();
-        $this->getDatabaseStructureTriggers();
-        $this->getDatabaseStructureProcedures();
-        $this->getDatabaseStructureFunctions();
-        $this->getDatabaseStructureEvents();
+        $this->validateIncludedTables();
 
         if ($this->settings->isEnabled('databases')) {
             $this->write($this->db->databases($this->connector->getDbName()));
@@ -273,71 +267,25 @@ class Mysqldump
     }
 
     /**
-     * Reads table names from database. Fills $this->tables array so they will be dumped later.
+     * Validate that all include-tables entries actually exist in the database.
+     * This check will be removed once include-tables supports regexps.
      */
-    private function getDatabaseStructureTables(): void
+    private function validateIncludedTables(): void
     {
-        // Validate that all include-tables entries actually exist in the database.
         $includedTables = $this->settings->getIncludedTables();
-        if (!empty($includedTables)) {
-            $missingTables = $includedTables;
-            $stmtTables = $this->conn->query($this->db->showTables($this->connector->getDbName()));
-            foreach ($stmtTables as $row) {
-                $name = current($row);
-                $elem = array_search($name, $missingTables, true);
-                if ($elem !== false) {
-                    unset($missingTables[$elem]);
-                }
-            }
-            $stmtTables->closeCursor();
-            // If there still are some tables in $missingTables, they weren't found in the database.
-            // Give proper error and exit. This check will be removed once include-tables supports regexps.
-            if (!empty($missingTables)) {
-                $name = implode(',', $missingTables);
-                throw new Exception(sprintf("Table '%s' not found in database", $name));
-            }
+
+        if (empty($includedTables)) {
+            return;
         }
-        // $this->tables is intentionally left empty to avoid retaining the full list in memory.
-    }
 
-    /**
-     * Reads view names from database. Fills $this->tables array so they will be dumped later.
-     */
-    private function getDatabaseStructureViews(): void
-    {
-        // No need to store view names; validation for include-views happens in iterateViews()
-    }
+        $existingTables = iterator_to_array($this->iterateObjectNames(
+            $this->db->showTables($this->connector->getDbName())
+        ));
+        $missingTables = array_diff($includedTables, $existingTables);
 
-    /**
-     * Reads trigger names from database. Fills $this->tables array so they will be dumped later.
-     */
-    private function getDatabaseStructureTriggers(): void
-    {
-        // No need to store trigger names; iteration happens in iterateTriggers()
-    }
-
-    /**
-     * Reads procedure names from database. Fills $this->tables array so they will be dumped later.
-     */
-    private function getDatabaseStructureProcedures(): void
-    {
-        // No need to store procedure names; iteration happens in iterateProcedures()
-    }
-
-    /**
-     * Reads functions names from database. Fills $this->tables array so they will be dumped later.
-     */
-    private function getDatabaseStructureFunctions(): void
-    {
-        // No need to store function names; iteration happens in iterateFunctions()
-    }
-
-    /**
-     * Reads event names from database. Fills $this->tables array so they will be dumped later.
-     */
-    private function getDatabaseStructureEvents(): void
-    {
-        // No need to store event names; iteration happens in iterateEvents()
+        if (!empty($missingTables)) {
+            throw new Exception(sprintf("Table '%s' not found in database", implode(',', $missingTables)));
+        }
     }
 
     /**
@@ -354,110 +302,79 @@ class Mysqldump
     }
 
     /**
-     * Stream table names from the database without storing them in memory.
-     * Applies include-tables if provided, otherwise yields all tables.
+     * Yield object names of one type from the database.
+     *
+     * Names are buffered and the cursor closed before yielding, so the connection
+     * is free for the queries the consumer runs while dumping each object.
+     *
+     * @param string $query SHOW statement listing the objects
+     * @param string|null $column Result column holding the name; null takes the first column
+     * @param array $included When non-empty, only these names are yielded
      */
-    private function iterateTables(): \Generator
+    private function iterateObjectNames(string $query, ?string $column = null, array $included = []): \Generator
     {
-        $includedTables = $this->settings->getIncludedTables();
-        $restrict = !empty($includedTables);
-        $stmt = $this->conn->query($this->db->showTables($this->connector->getDbName()));
+        $stmt = $this->conn->query($query);
         $names = [];
+
         foreach ($stmt as $row) {
-            $name = current($row);
-            if (!$restrict || in_array($name, $includedTables, true)) {
+            $name = $column === null ? current($row) : $row[$column];
+            if (empty($included) || in_array($name, $included, true)) {
                 $names[] = $name;
             }
         }
+
         $stmt->closeCursor();
-        foreach ($names as $name) {
-            yield $name;
-        }
+
+        yield from $names;
+    }
+
+    private function iterateTables(): \Generator
+    {
+        yield from $this->iterateObjectNames(
+            $this->db->showTables($this->connector->getDbName()),
+            included: $this->settings->getIncludedTables()
+        );
     }
 
     private function iterateViews(): \Generator
     {
-        $included = $this->settings->getIncludedViews();
-        $restrict = !empty($included);
-        $stmt = $this->conn->query($this->db->showViews($this->connector->getDbName()));
-        $names = [];
-        foreach ($stmt as $row) {
-            $name = current($row);
-            if (!$restrict || in_array($name, $included, true)) {
-                $names[] = $name;
-            }
-        }
-        $stmt->closeCursor();
-        foreach ($names as $name) {
-            yield $name;
-        }
+        yield from $this->iterateObjectNames(
+            $this->db->showViews($this->connector->getDbName()),
+            included: $this->settings->getIncludedViews()
+        );
     }
 
     private function iterateTriggers(): \Generator
     {
-        if ($this->settings->skipTriggers()) {
-            yield from [];
-            return;
-        }
-        $stmt = $this->conn->query($this->db->showTriggers($this->connector->getDbName()));
-        $names = [];
-        foreach ($stmt as $row) {
-            $names[] = $row['Trigger'];
-        }
-        $stmt->closeCursor();
-        foreach ($names as $name) {
-            yield $name;
+        if (!$this->settings->skipTriggers()) {
+            yield from $this->iterateObjectNames($this->db->showTriggers($this->connector->getDbName()), 'Trigger');
         }
     }
 
     private function iterateProcedures(): \Generator
     {
-        if (!$this->settings->isEnabled('routines')) {
-            yield from [];
-            return;
-        }
-        $stmt = $this->conn->query($this->db->showProcedures($this->connector->getDbName()));
-        $names = [];
-        foreach ($stmt as $row) {
-            $names[] = $row['procedure_name'];
-        }
-        $stmt->closeCursor();
-        foreach ($names as $name) {
-            yield $name;
+        if ($this->settings->isEnabled('routines')) {
+            yield from $this->iterateObjectNames(
+                $this->db->showProcedures($this->connector->getDbName()),
+                'procedure_name'
+            );
         }
     }
 
     private function iterateFunctions(): \Generator
     {
-        if (!$this->settings->isEnabled('routines')) {
-            yield from [];
-            return;
-        }
-        $stmt = $this->conn->query($this->db->showFunctions($this->connector->getDbName()));
-        $names = [];
-        foreach ($stmt as $row) {
-            $names[] = $row['function_name'];
-        }
-        $stmt->closeCursor();
-        foreach ($names as $name) {
-            yield $name;
+        if ($this->settings->isEnabled('routines')) {
+            yield from $this->iterateObjectNames(
+                $this->db->showFunctions($this->connector->getDbName()),
+                'function_name'
+            );
         }
     }
 
     private function iterateEvents(): \Generator
     {
-        if (!$this->settings->isEnabled('events')) {
-            yield from [];
-            return;
-        }
-        $stmt = $this->conn->query($this->db->showEvents($this->connector->getDbName()));
-        $names = [];
-        foreach ($stmt as $row) {
-            $names[] = $row['event_name'];
-        }
-        $stmt->closeCursor();
-        foreach ($names as $name) {
-            yield $name;
+        if ($this->settings->isEnabled('events')) {
+            yield from $this->iterateObjectNames($this->db->showEvents($this->connector->getDbName()), 'event_name');
         }
     }
 
