@@ -30,8 +30,8 @@ class ConfigOption
     #[Constraint(enum: CompressMethod::class, message: 'Must be a valid compression method')]
     public const string COMPRESS = 'compress';
 
-    #[DefaultValue(value: 0, description: 'Compression level (0-9)')]
-    #[Constraint(min: 0, max: 9, message: 'Compression level must be between 0 and 9')]
+    #[DefaultValue(value: 0, description: 'Compression level (0 = method default)')]
+    #[Constraint(min: 0, max: 22, message: 'Compression level must be between 0 and 22')]
     public const string COMPRESS_LEVEL = 'compress-level';
 
     #[DefaultValue(value: [], description: 'Initial SQL commands to execute')]

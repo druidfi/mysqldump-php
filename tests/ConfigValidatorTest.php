@@ -64,17 +64,17 @@ class ConfigValidatorTest extends TestCase
     public function testValidateRejectsCompressionLevelTooLow(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Compression level must be between 0 and 9');
-        
+        $this->expectExceptionMessage('Compression level must be between 0 and 22');
+
         ConfigValidator::validate('compress-level', -1);
     }
 
     public function testValidateRejectsCompressionLevelTooHigh(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Compression level must be between 0 and 9');
-        
-        ConfigValidator::validate('compress-level', 10);
+        $this->expectExceptionMessage('Compression level must be between 0 and 22');
+
+        ConfigValidator::validate('compress-level', 23);
     }
 
     public function testValidateAcceptsValidCharacterSet(): void

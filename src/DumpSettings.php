@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Druidfi\Mysqldump;
 
 use Druidfi\Mysqldump\Compress\CompressManagerFactory;
+use Druidfi\Mysqldump\Compress\CompressMethod;
 use Exception;
 
 class DumpSettings
@@ -95,6 +96,18 @@ class DumpSettings
 
         if ($this->settings['replace'] && $this->settings['insert-ignore']) {
             throw new Exception('Cannot use both replace and insert-ignore options simultaneously');
+        }
+
+        // Method-specific upper bound: Gzip 1-9, Lz4 1-12, Zstd 1-22.
+        $level = $this->getCompressLevel();
+        if ($level > 0) {
+            $method = CompressMethod::fromName($this->getCompressMethod());
+            $maxLevel = $method->maxLevel();
+            if ($maxLevel !== null && $level > $maxLevel) {
+                throw new Exception(
+                    sprintf('Compression level %d is out of range for %s (1-%d)', $level, $method->value, $maxLevel)
+                );
+            }
         }
 
         // If no include-views is passed in, dump the same views as tables, mimic mysqldump behaviour.

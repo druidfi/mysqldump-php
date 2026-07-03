@@ -96,9 +96,11 @@ class DatabaseConnector
         }
 
         try {
-            // Build default PDO options with compatibility for PHP 8.5 deprecations
+            // Build default PDO options with compatibility for PHP 8.5 deprecations.
+            // Persistent connections are intentionally not enabled by default: a dump
+            // is a one-shot operation and a recycled handle may carry over session
+            // state; opt in via the pdoOptions constructor argument if needed.
             $defaultOptions = [
-                PDO::ATTR_PERSISTENT => true,
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 // Don't convert empty strings to SQL NULL values on data fetches.
                 PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,

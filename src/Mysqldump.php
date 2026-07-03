@@ -31,7 +31,8 @@ class Mysqldump
     private readonly DumpWriter $writer;
     private TypeAdapterInterface $db;
 
-    private static string $adapterClass = TypeAdapterMysql::class;
+    /** @var class-string<TypeAdapterInterface> */
+    private string $adapterClass = TypeAdapterMysql::class;
 
     private readonly DumpSettings $settings;
     private array $tableColumnTypes = [];
@@ -83,7 +84,7 @@ class Mysqldump
 
     public function getAdapter(PDO $conn): TypeAdapterInterface
     {
-        return new self::$adapterClass($conn, $this->settings);
+        return new ($this->adapterClass)($conn, $this->settings);
     }
 
     private function write(string $data): int
@@ -161,44 +162,44 @@ class Mysqldump
 
         // Use dedicated dumpers for different object types
         $tablesDumper = new ObjectDumper\TablesDumper(
-            fn(): \Generator => $this->iterateTables(),
-            fn(string $name, array $arr): bool => $this->matches($name, $arr),
-            function (string $table): void { $this->getTableStructure($table); },
-            function (string $table): void {
+            iterateTables: fn(): \Generator => $this->iterateTables(),
+            matches: fn(string $name, array $arr): bool => $this->matches($name, $arr),
+            getTableStructure: function (string $table): void { $this->getTableStructure($table); },
+            listValues: function (string $table): void {
                 $no_data = $this->settings->isEnabled('no-data');
                 if (!$no_data && !$this->matches($table, $this->settings->getNoData())) {
                     $this->listValues($table);
                 }
             },
-            fn(): array => $this->settings->getExcludedTables(),
-            fn(): array => $this->settings->getNoData()
+            getExcludedTables: fn(): array => $this->settings->getExcludedTables(),
+            getNoData: fn(): array => $this->settings->getNoData()
         );
         $tablesDumper->dump();
 
         $triggersDumper = new ObjectDumper\TriggersDumper(
-            fn(): \Generator => $this->iterateTriggers(),
-            function (string $name): void { $this->getTriggerStructure($name); }
+            iterateTriggers: fn(): \Generator => $this->iterateTriggers(),
+            getTriggerStructure: function (string $name): void { $this->getTriggerStructure($name); }
         );
         $triggersDumper->dump();
 
         $routinesDumper = new ObjectDumper\RoutinesDumper(
-            fn(): \Generator => $this->iterateProcedures(),
-            fn(): \Generator => $this->iterateFunctions(),
-            function (string $name): void { $this->getProcedureStructure($name); },
-            function (string $name): void { $this->getFunctionStructure($name); }
+            iterateProcedures: fn(): \Generator => $this->iterateProcedures(),
+            iterateFunctions: fn(): \Generator => $this->iterateFunctions(),
+            getProcedureStructure: function (string $name): void { $this->getProcedureStructure($name); },
+            getFunctionStructure: function (string $name): void { $this->getFunctionStructure($name); }
         );
         $routinesDumper->dump();
 
         $viewsDumper = new ObjectDumper\ViewsDumper(
-            fn(): \Generator => $this->iterateViews(),
-            fn(string $name, array $arr): bool => $this->matches($name, $arr),
-            function (string $name): void {
+            iterateViews: fn(): \Generator => $this->iterateViews(),
+            matches: fn(string $name, array $arr): bool => $this->matches($name, $arr),
+            getViewStructureTable: function (string $name): void {
                 if ($this->settings->isEnabled('no-create-info')) { return; }
                 if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
                 $this->tableColumnTypes[$name] = $this->getTableColumnTypes($name);
                 $this->getViewStructureTable($name);
             },
-            function (string $name): void {
+            getViewStructureView: function (string $name): void {
                 if ($this->settings->isEnabled('no-create-info')) { return; }
                 if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
                 $this->getViewStructureView($name);
@@ -207,8 +208,8 @@ class Mysqldump
         $viewsDumper->dump();
 
         $eventsDumper = new ObjectDumper\EventsDumper(
-            fn(): \Generator => $this->iterateEvents(),
-            function (string $name): void { $this->getEventStructure($name); }
+            iterateEvents: fn(): \Generator => $this->iterateEvents(),
+            getEventStructure: function (string $name): void { $this->getEventStructure($name); }
         );
         $eventsDumper->dump();
 
@@ -1041,8 +1042,9 @@ class Mysqldump
     }
 
     /**
-     * Add TypeAdapter
+     * Set the TypeAdapter class used by this instance.
      *
+     * @param class-string $adapterClassName Must implement TypeAdapterInterface (validated at runtime)
      * @throws Exception
      */
     public function addTypeAdapter(string $adapterClassName): void
@@ -1052,7 +1054,7 @@ class Mysqldump
             throw new Exception($message);
         }
 
-        self::$adapterClass = $adapterClassName;
+        $this->adapterClass = $adapterClassName;
     }
 
     /**

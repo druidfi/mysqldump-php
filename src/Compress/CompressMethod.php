@@ -32,6 +32,20 @@ enum CompressMethod: string
     }
 
     /**
+     * Highest supported compression level, or null when the method
+     * does not take a level.
+     */
+    public function maxLevel(): ?int
+    {
+        return match ($this) {
+            self::Gzip => 9,
+            self::Lz4 => 12,
+            self::Zstd => 22,
+            default => null,
+        };
+    }
+
+    /**
      * Create the compressor for this method. A level of 0 means the
      * compressor's own default level (Zstd defaults to 3, Lz4 to 1).
      *

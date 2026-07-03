@@ -17,12 +17,14 @@ codebase; items that are done are kept checked for history.
    - [ ] Deduplicate the six near-identical `iterate*()` generators into one shared helper
          (query + column extraction + optional include filter)
 
-2. [ ] Improve dependency wiring:
-   - [ ] Fix `Mysqldump::$adapterClass` being `static` — `addTypeAdapter()` leaks the adapter
-         across all instances in the same process; make it an instance property
-   - [ ] Pass ObjectDumper dependencies more explicitly instead of six positional closures
-         (e.g. a small context object or named-argument value object)
-   - [ ] Reconsider `PDO::ATTR_PERSISTENT => true` as a hardcoded default in DatabaseConnector
+2. [x] Improve dependency wiring:
+   - [x] Fix `Mysqldump::$adapterClass` being `static` — now an instance property, with a
+         regression test that `addTypeAdapter()` no longer leaks across instances
+   - [x] Pass ObjectDumper dependencies more explicitly — dumpers are constructed with named
+         arguments; a separate context class was considered and skipped as over-engineering
+   - [x] `PDO::ATTR_PERSISTENT => true` removed from the connection defaults — one-shot dumps
+         gain nothing from persistence and recycled handles can carry over session state;
+         opt back in via the `pdoOptions` constructor argument
 
 3. [ ] Improve error handling:
    - [ ] Create custom exception classes (e.g. `ConnectionException`, `ConfigurationException`,
@@ -89,8 +91,9 @@ codebase; items that are done are kept checked for history.
     - [ ] Fix `DumpSettings::get()` casting every setting to `string` — return proper types or add
           typed getters
     - [ ] Validate `net_buffer_length` and other numeric settings via `Constraint` attributes
-    - [ ] Align the `compress-level` constraint (currently 0–9) with Zstd (1–22) and Lz4 (1–12)
-          level ranges documented in the README
+    - [x] Align the `compress-level` constraint with the real level ranges — the attribute allows
+          the global 0–22 range and `DumpSettings` enforces the per-method maximum via
+          `CompressMethod::maxLevel()` (Gzip 9, Lz4 12, Zstd 22)
 
 ## Documentation Improvements
 
@@ -101,8 +104,8 @@ codebase; items that are done are kept checked for history.
 
 13. [ ] Improve user documentation (README already covers install, hooks, settings, privileges):
     - [ ] Document 2.x → 3.x upgrade / breaking changes
-    - [ ] Replace references to the ifsnop wiki with own examples
-    - [ ] Document compression options incl. optional ext-zstd / ext-lz4 requirements
+    - [x] Replace references to the ifsnop wiki with own examples
+    - [x] Document compression options incl. optional ext-zstd / ext-lz4 requirements
     - [ ] Document dumping to stream wrappers (gs://, s3:// via league/flysystem etc.)
           instead of adding cloud SDK dependencies to the library
 
@@ -161,7 +164,7 @@ codebase; items that are done are kept checked for history.
 
 22. [ ] Improve progress reporting (an `infoHook` with per-table row counts already exists):
     - [ ] Report total table count / overall progress, not just per-table row counts
-    - [ ] Document the info hook payload shape in the README
+    - [x] Document the info hook payload shape in the README
 
 ## Maintenance Improvements
 
