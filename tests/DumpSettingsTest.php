@@ -234,10 +234,42 @@ class DumpSettingsTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Cannot use both replace and insert-ignore options simultaneously');
-        
+
         new DumpSettings([
             'replace' => true,
             'insert-ignore' => true
         ]);
+    }
+
+    /**
+     * Test that compression levels above the method-specific maximum are rejected
+     */
+    public function testCompressLevelAboveMethodMaximumIsRejected(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Compression level 10 is out of range for Gzip (1-9)');
+
+        new DumpSettings([
+            'compress' => 'Gzip',
+            'compress-level' => 10,
+        ]);
+    }
+
+    /**
+     * Test that method-specific maximum levels above 9 are accepted (Zstd 1-22, Lz4 1-12)
+     */
+    public function testCompressLevelWithinMethodMaximumIsAccepted(): void
+    {
+        $settings = new DumpSettings([
+            'compress' => 'Zstd',
+            'compress-level' => 22,
+        ]);
+        $this->assertSame(22, $settings->getCompressLevel());
+
+        $settings = new DumpSettings([
+            'compress' => 'Lz4',
+            'compress-level' => 12,
+        ]);
+        $this->assertSame(12, $settings->getCompressLevel());
     }
 }
