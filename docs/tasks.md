@@ -91,8 +91,9 @@ codebase; items that are done are kept checked for history.
     - [ ] Fix `DumpSettings::get()` casting every setting to `string` — return proper types or add
           typed getters
     - [ ] Validate `net_buffer_length` and other numeric settings via `Constraint` attributes
-    - [ ] Align the `compress-level` constraint (currently 0–9) with Zstd (1–22) and Lz4 (1–12)
-          level ranges documented in the README
+    - [x] Align the `compress-level` constraint with the real level ranges — the attribute allows
+          the global 0–22 range and `DumpSettings` enforces the per-method maximum via
+          `CompressMethod::maxLevel()` (Gzip 9, Lz4 12, Zstd 22)
 
 ## Documentation Improvements
 
@@ -103,8 +104,8 @@ codebase; items that are done are kept checked for history.
 
 13. [ ] Improve user documentation (README already covers install, hooks, settings, privileges):
     - [ ] Document 2.x → 3.x upgrade / breaking changes
-    - [ ] Replace references to the ifsnop wiki with own examples
-    - [ ] Document compression options incl. optional ext-zstd / ext-lz4 requirements
+    - [x] Replace references to the ifsnop wiki with own examples
+    - [x] Document compression options incl. optional ext-zstd / ext-lz4 requirements
     - [ ] Document dumping to stream wrappers (gs://, s3:// via league/flysystem etc.)
           instead of adding cloud SDK dependencies to the library
 
@@ -163,7 +164,7 @@ codebase; items that are done are kept checked for history.
 
 22. [ ] Improve progress reporting (an `infoHook` with per-table row counts already exists):
     - [ ] Report total table count / overall progress, not just per-table row counts
-    - [ ] Document the info hook payload shape in the README
+    - [x] Document the info hook payload shape in the README
 
 ## Maintenance Improvements
 
