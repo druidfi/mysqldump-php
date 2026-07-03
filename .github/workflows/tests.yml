@@ -115,7 +115,7 @@ jobs:
         run: vendor/bin/rector process --dry-run --no-progress-bar --ansi
 
       - name: Run PHPStan
-        run: vendor/bin/phpstan --error-format=github --no-progress --ansi
+        run: vendor/bin/phpstan --error-format=github --no-progress --ansi --memory-limit=256M
 
       - name: Run PHPunit tests
         run: vendor/bin/phpunit

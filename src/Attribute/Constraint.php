@@ -13,6 +13,7 @@ use Attribute;
 class Constraint
 {
     /**
+     * @param array<string|int>|null $allowedValues
      * @param class-string<\BackedEnum>|null $enum Backed enum whose values are the allowed values
      */
     public function __construct(

@@ -27,7 +27,7 @@ class DatabaseConnector
      * @param string $dsn PDO DSN connection string
      * @param string|null $user SQL account username
      * @param string|null $pass SQL account password
-     * @param array $pdoOptions PDO configured attributes
+     * @param array<int, mixed> $pdoOptions PDO configured attributes
      * @throws Exception
      */
     public function __construct(

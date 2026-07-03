@@ -55,7 +55,7 @@ class DatabaseConnectorTest extends TestCase
         new DatabaseConnector('mysql:host=localhost', 'user', 'pass');
     }
 
-    private function getPrivate(object $object, string $var)
+    private function getPrivate(object $object, string $var): mixed
     {
         $refl = new \ReflectionProperty($object::class, $var);
         return $refl->getValue($object);

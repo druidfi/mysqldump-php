@@ -6,6 +6,7 @@ use Exception;
 
 class CompressBzip2 implements CompressInterface
 {
+    /** @var resource|false */
     private $fileHandler;
 
     /**

@@ -16,6 +16,9 @@ use ReflectionClassConstant;
  */
 class ConfigValidator
 {
+    /**
+     * @var array<string, array{default: mixed, description: string|null, constraint: Constraint|null, deprecated: Deprecated|null}>|null
+     */
     private static ?array $metadataCache = null;
 
     /**
@@ -43,6 +46,8 @@ class ConfigValidator
 
     /**
      * Extract attribute metadata from a constant.
+     *
+     * @return array{default: mixed, description: string|null, constraint: Constraint|null, deprecated: Deprecated|null}
      */
     private static function extractConstantMetadata(ReflectionClassConstant $constant): array
     {
@@ -181,7 +186,8 @@ class ConfigValidator
 
     /**
      * Validate all settings in a configuration array.
-     * 
+     *
+     * @param array<string, mixed> $settings
      * @throws Exception if any validation fails
      */
     public static function validateAll(array $settings): void

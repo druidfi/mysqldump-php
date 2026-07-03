@@ -6,6 +6,7 @@ use Exception;
 
 class CompressNone implements CompressInterface
 {
+    /** @var resource|false */
     private $fileHandler;
 
     /**

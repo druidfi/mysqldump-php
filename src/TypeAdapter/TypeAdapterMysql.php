@@ -11,6 +11,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
     const DEFINER_RE = 'DEFINER=`(?:[^`]|``)*`@`(?:[^`]|``)*`';
 
     // Numerical Mysql types
+    /** @var array<string, string[]> */
     public array $mysqlTypes = [
         'numerical' => [
             'bit',
@@ -151,7 +152,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
             '/^(CREATE(?:\s+ALGORITHM=(?:UNDEFINED|MERGE|TEMPTABLE))?)\s+('
             .self::DEFINER_RE.'(?:\s+SQL SECURITY DEFINER|INVOKER)?)?\s+(VIEW .+)$/',
             '/*!50001 \1 */'.PHP_EOL.$definerStr.'/*!50001 \3 */',
-            $viewStmt,
+            (string) $viewStmt,
             1
         )) {
             $viewStmt = $viewStmtReplaced;
@@ -177,7 +178,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
         if ($triggerStmtReplaced = preg_replace(
             '/^(CREATE)\s+('.self::DEFINER_RE.')?\s+(TRIGGER\s.*)$/s',
             '/*!50003 \1*/ '.$definerStr.'/*!50003 \3 */',
-            $triggerStmt,
+            (string) $triggerStmt,
             1
         )) {
             $triggerStmt = $triggerStmtReplaced;
@@ -299,7 +300,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
         if ($eventStmtReplaced = preg_replace(
             '/^(CREATE)\s+('.self::DEFINER_RE.')?\s+(EVENT .*)$/',
             '/*!50106 \1*/ '.$definerStr.'/*!50106 \3 */',
-            $eventStmt,
+            (string) $eventStmt,
             1
         )) {
             $eventStmt = $eventStmtReplaced;
@@ -492,8 +493,8 @@ class TypeAdapterMysql implements TypeAdapterInterface
      * Decode column metadata and fill info structure.
      * type, is_numeric and is_blob will always be available.
      *
-     * @param array $colType Array returned from "SHOW COLUMNS FROM tableName"
-     * @return array
+     * @param array<string, mixed> $colType Array returned from "SHOW COLUMNS FROM tableName"
+     * @return array<string, mixed>
      */
     public function parseColumnType(array $colType): array
     {

@@ -12,6 +12,9 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class ValidatesValue
 {
+    /**
+     * @param array<string|int>|null $allowedValues
+     */
     public function __construct(
         public readonly ?string $type = null,
         public readonly bool $notNull = false,

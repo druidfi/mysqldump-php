@@ -26,6 +26,9 @@ class CompressGzipTest extends TestCase
         $this->assertSame($level, $this->getLevel($gzip));
     }
 
+    /**
+     * @return array<int, array{int}>
+     */
     public static function validLevelProvider(): array
     {
         return [[1], [5], [9]];
@@ -38,6 +41,9 @@ class CompressGzipTest extends TestCase
         $this->assertSame(0, $this->getLevel($gzip));
     }
 
+    /**
+     * @return array<int, array{int}>
+     */
     public static function outOfRangeLevelProvider(): array
     {
         return [[0], [10], [100]];
