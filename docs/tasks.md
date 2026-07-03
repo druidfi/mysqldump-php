@@ -62,11 +62,11 @@ codebase; items that are done are kept checked for history.
          Gzipstream were rejected at validation
    - [x] `InsertType` backed enum replacing `getInsertType()` strings
 
-7. [ ] Tighten tooling now that the floor is PHP 8.4:
+7. [x] Tighten tooling now that the floor is PHP 8.4:
    - [x] Enable `->withPhpSets()` in `rector.php` and raise `withTypeCoverageLevel` /
          `withDeadCodeLevel` / `withCodeQualityLevel` from 0 to 10
-   - [ ] Raise PHPStan towards 6+ and fix findings (level 5 done; level 6 has ~72 findings,
-         mostly missing iterable value types in PHPDoc)
+   - [x] Raise PHPStan to level 6 and fix findings (mostly missing iterable value types
+         in PHPDoc); level 6 now passes clean and is blocking in CI
 
 ## Code Quality Improvements
 
@@ -90,7 +90,9 @@ codebase; items that are done are kept checked for history.
           an error (fixed via `str_starts_with()` in the `array_any()` rewrite)
     - [ ] Fix `DumpSettings::get()` casting every setting to `string` — return proper types or add
           typed getters
-    - [ ] Validate `net_buffer_length` and other numeric settings via `Constraint` attributes
+    - [x] Validate `net_buffer_length` and other numeric settings via `Constraint` attributes
+          (`net_buffer_length` has `min: 1024`, `compress-level` has `min: 0, max: 22` —
+          the only two numeric options)
     - [x] Align the `compress-level` constraint with the real level ranges — the attribute allows
           the global 0–22 range and `DumpSettings` enforces the per-method maximum via
           `CompressMethod::maxLevel()` (Gzip 9, Lz4 12, Zstd 22)
@@ -121,7 +123,7 @@ codebase; items that are done are kept checked for history.
     - [x] Test with different database versions
     - [x] Test with different PHP versions
     - [ ] Broaden dump-settings coverage in `tests/scripts/test.sh` (e.g. compression methods,
-          `complete-insert`, `no-data` patterns, `skip-definer`)
+          `no-data` patterns, `skip-definer`; `complete-insert` is already covered)
     - [ ] Add MariaDB 11.x LTS to the matrix when supported by the test images
 
 16. [ ] Add performance testing:
