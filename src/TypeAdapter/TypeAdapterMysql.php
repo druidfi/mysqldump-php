@@ -3,7 +3,7 @@
 namespace Druidfi\Mysqldump\TypeAdapter;
 
 use Druidfi\Mysqldump\DumpSettings;
-use Exception;
+use Druidfi\Mysqldump\Exception\DumpException;
 use PDO;
 
 class TypeAdapterMysql implements TypeAdapterInterface
@@ -107,12 +107,12 @@ class TypeAdapterMysql implements TypeAdapterInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DumpException
      */
     public function createTable(array $row): string
     {
         if (!isset($row['Create Table'])) {
-            throw new Exception("Error getting table code, unknown output");
+            throw new DumpException("Error getting table code, unknown output");
         }
 
         $createTable = $row['Create Table'];
@@ -134,14 +134,14 @@ class TypeAdapterMysql implements TypeAdapterInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DumpException
      */
     public function createView(array $row): string
     {
         $ret = "";
 
         if (!isset($row['Create View'])) {
-            throw new Exception("Error getting view structure, unknown output");
+            throw new DumpException("Error getting view structure, unknown output");
         }
 
         $viewStmt = $row['Create View'];
@@ -164,13 +164,13 @@ class TypeAdapterMysql implements TypeAdapterInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DumpException
      */
     public function createTrigger(array $row): string
     {
         $ret = "";
         if (!isset($row['SQL Original Statement'])) {
-            throw new Exception("Error getting trigger code, unknown output");
+            throw new DumpException("Error getting trigger code, unknown output");
         }
 
         $triggerStmt = $row['SQL Original Statement'];
@@ -192,14 +192,14 @@ class TypeAdapterMysql implements TypeAdapterInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DumpException
      */
     public function createProcedure(array $row): string
     {
         $ret = "";
 
         if (!isset($row['Create Procedure'])) {
-            throw new Exception("Error getting procedure code, unknown output. ".
+            throw new DumpException("Error getting procedure code, unknown output. ".
                 "Please check 'https://bugs.mysql.com/bug.php?id=14564'");
         }
 
@@ -229,14 +229,14 @@ class TypeAdapterMysql implements TypeAdapterInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DumpException
      */
     public function createFunction(array $row): string
     {
         $ret = "";
 
         if (!isset($row['Create Function'])) {
-            throw new Exception("Error getting function code, unknown output. ".
+            throw new DumpException("Error getting function code, unknown output. ".
                 "Please check 'https://bugs.mysql.com/bug.php?id=14564'");
         }
         $functionStmt = $row['Create Function'];
@@ -281,14 +281,14 @@ class TypeAdapterMysql implements TypeAdapterInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DumpException
      */
     public function createEvent(array $row): string
     {
         $ret = "";
 
         if (!isset($row['Create Event'])) {
-            throw new Exception("Error getting event code, unknown output. ".
+            throw new DumpException("Error getting event code, unknown output. ".
                 "Please check 'https://stackoverflow.com/questions/10853826/mysql-5-5-create-event-gives-syntax-error'");
         }
 

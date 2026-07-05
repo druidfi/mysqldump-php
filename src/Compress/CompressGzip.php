@@ -2,7 +2,8 @@
 
 namespace Druidfi\Mysqldump\Compress;
 
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
+use Druidfi\Mysqldump\Exception\DumpException;
 
 class CompressGzip implements CompressInterface
 {
@@ -11,12 +12,12 @@ class CompressGzip implements CompressInterface
     private readonly int $level;
 
     /**
-     * @throws Exception
+     * @throws ConfigurationException
      */
     public function __construct(int $level = 0)
     {
         if (!function_exists('gzopen')) {
-            throw new Exception('Compression is enabled, but gzip lib is not installed or configured properly');
+            throw new ConfigurationException('Compression is enabled, but gzip lib is not installed or configured properly');
         }
 
         // gzip level: 0 = default, 1-9 = fast to best
@@ -24,7 +25,7 @@ class CompressGzip implements CompressInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DumpException
      */
     public function open(string $filename): bool
     {
@@ -32,21 +33,21 @@ class CompressGzip implements CompressInterface
         $this->fileHandler = gzopen($filename, $mode);
 
         if (false === $this->fileHandler) {
-            throw new Exception('Output file is not writable');
+            throw new DumpException('Output file is not writable');
         }
 
         return true;
     }
 
     /**
-     * @throws Exception
+     * @throws DumpException
      */
     public function write(string $str): int
     {
         $bytesWritten = gzwrite($this->fileHandler, $str);
 
         if (false === $bytesWritten) {
-            throw new Exception('Writing to file failed! Probably, there is no more free space left?');
+            throw new DumpException('Writing to file failed! Probably, there is no more free space left?');
         }
 
         return $bytesWritten;

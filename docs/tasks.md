@@ -26,10 +26,12 @@ codebase; items that are done are kept checked for history.
          gain nothing from persistence and recycled handles can carry over session state;
          opt back in via the `pdoOptions` constructor argument
 
-3. [ ] Improve error handling:
-   - [ ] Create custom exception classes (e.g. `ConnectionException`, `ConfigurationException`,
-         `DumpException`) extending a common `MysqldumpException`; everything currently throws bare `Exception`
-   - [ ] Implement a proper exception hierarchy and document which methods throw what
+3. [x] Improve error handling:
+   - [x] Create custom exception classes (`ConnectionException`, `ConfigurationException`,
+         `DumpException`) extending a common `MysqldumpException` in `src/Exception/`;
+         the base extends native `Exception` so existing catch blocks keep working
+   - [x] Implement a proper exception hierarchy and document which methods throw what
+         (`@throws` docblocks updated throughout; README "Error handling" section added)
 
 4. [ ] Implement interfaces for major components:
    - [x] Create a DumperInterface for different dumper implementations
@@ -99,8 +101,8 @@ codebase; items that are done are kept checked for history.
 
 ## Documentation Improvements
 
-12. [ ] Improve code documentation:
-    - [ ] Document `@throws` consistently once custom exceptions exist (task 3)
+12. [x] Improve code documentation:
+    - [x] Document `@throws` consistently with the custom exception classes from task 3
     - [x] Remove stale PHPDoc — the `getDatabaseStructure*` docblocks claiming to fill a
           non-existent `$this->tables` array went away with the methods themselves (task 1)
 

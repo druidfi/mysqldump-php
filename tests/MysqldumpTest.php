@@ -2,6 +2,7 @@
 
 namespace Druidfi\Mysqldump\Tests;
 
+use Druidfi\Mysqldump\Exception\ConnectionException;
 use Druidfi\Mysqldump\Mysqldump;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -54,25 +55,25 @@ class MysqldumpTest extends TestCase
 
     public function testDSNStringExits(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(ConnectionException::class);
         $dump = new Mysqldump('', 'testing', 'testing');
     }
 
     public function testHostExits(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(ConnectionException::class);
         $dump = new Mysqldump('mysql: dbname=test;', 'testing', 'testing');
     }
 
     public function testDBTypeExists(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(ConnectionException::class);
         $dump = new Mysqldump('host=localhost; dbname=test;', 'testing', 'testing');
     }
 
     public function testDBNameExists(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(ConnectionException::class);
         $dump = new Mysqldump('mysql: host=localhost', 'testing', 'testing');
     }
 

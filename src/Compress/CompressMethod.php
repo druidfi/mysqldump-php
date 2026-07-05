@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Druidfi\Mysqldump\Compress;
 
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
 
 /**
  * Available compression methods for dump output.
@@ -21,14 +21,14 @@ enum CompressMethod: string
     /**
      * Resolve a compression method from user input, case-insensitively.
      *
-     * @throws Exception when the method is not defined
+     * @throws ConfigurationException when the method is not defined
      */
     public static function fromName(string $method): self
     {
         $normalized = ucfirst(strtolower($method));
 
         return self::tryFrom($normalized)
-            ?? throw new Exception("Compression method ($normalized) is not defined yet");
+            ?? throw new ConfigurationException("Compression method ($normalized) is not defined yet");
     }
 
     /**
@@ -49,7 +49,7 @@ enum CompressMethod: string
      * Create the compressor for this method. A level of 0 means the
      * compressor's own default level (Zstd defaults to 3, Lz4 to 1).
      *
-     * @throws Exception when a required extension is missing
+     * @throws ConfigurationException when a required extension is missing
      */
     public function compressor(int $level = 0): CompressInterface
     {

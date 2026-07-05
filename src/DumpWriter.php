@@ -5,7 +5,8 @@ namespace Druidfi\Mysqldump;
 
 use Druidfi\Mysqldump\Compress\CompressInterface;
 use Druidfi\Mysqldump\Compress\CompressManagerFactory;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
+use Druidfi\Mysqldump\Exception\DumpException;
 
 /**
  * Class DumpWriter
@@ -29,7 +30,8 @@ class DumpWriter
      * Initialize the writer with the specified destination.
      *
      * @param string $destination Path to the output file or php://stdout
-     * @throws Exception
+     * @throws ConfigurationException when the compression method is unavailable
+     * @throws DumpException when the destination cannot be opened
      */
     public function initialize(string $destination): void
     {
@@ -48,7 +50,7 @@ class DumpWriter
      *
      * @param string $data Data to write
      * @return int Number of bytes written
-     * @throws Exception
+     * @throws DumpException
      */
     public function write(string $data): int
     {

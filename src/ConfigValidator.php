@@ -6,7 +6,7 @@ namespace Druidfi\Mysqldump;
 use Deprecated;
 use Druidfi\Mysqldump\Attribute\Constraint;
 use Druidfi\Mysqldump\Attribute\DefaultValue;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
 use ReflectionClass;
 use ReflectionClassConstant;
 
@@ -103,7 +103,7 @@ class ConfigValidator
     /**
      * Validate a configuration option value against its Constraint attribute.
      * 
-     * @throws Exception if validation fails
+     * @throws ConfigurationException if validation fails
      */
     public static function validate(string $optionName, mixed $value): void
     {
@@ -124,7 +124,7 @@ class ConfigValidator
             if (!is_string($value) || $constraint->enum::tryFrom($value) === null) {
                 $allowed = implode(', ', array_column($constraint->enum::cases(), 'value'));
                 $message = $constraint->message ?? "Invalid value for '{$optionName}'. Allowed: {$allowed}";
-                throw new Exception($message);
+                throw new ConfigurationException($message);
             }
         }
 
@@ -133,7 +133,7 @@ class ConfigValidator
             if (!in_array($value, $constraint->allowedValues, true)) {
                 $allowed = implode(', ', $constraint->allowedValues);
                 $message = $constraint->message ?? "Invalid value for '{$optionName}'. Allowed: {$allowed}";
-                throw new Exception($message);
+                throw new ConfigurationException($message);
             }
         }
 
@@ -141,12 +141,12 @@ class ConfigValidator
         if (is_numeric($value)) {
             if ($constraint->min !== null && $value < $constraint->min) {
                 $message = $constraint->message ?? "Value for '{$optionName}' must be at least {$constraint->min}";
-                throw new Exception($message);
+                throw new ConfigurationException($message);
             }
 
             if ($constraint->max !== null && $value > $constraint->max) {
                 $message = $constraint->message ?? "Value for '{$optionName}' must be at most {$constraint->max}";
-                throw new Exception($message);
+                throw new ConfigurationException($message);
             }
         }
 
@@ -154,7 +154,7 @@ class ConfigValidator
         if ($constraint->pattern !== null && is_string($value)) {
             if (!preg_match($constraint->pattern, $value)) {
                 $message = $constraint->message ?? "Value for '{$optionName}' does not match required pattern";
-                throw new Exception($message);
+                throw new ConfigurationException($message);
             }
         }
     }
@@ -188,7 +188,7 @@ class ConfigValidator
      * Validate all settings in a configuration array.
      *
      * @param array<string, mixed> $settings
-     * @throws Exception if any validation fails
+     * @throws ConfigurationException if any validation fails
      */
     public static function validateAll(array $settings): void
     {

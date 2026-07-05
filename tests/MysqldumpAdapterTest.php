@@ -7,7 +7,7 @@ use Druidfi\Mysqldump\Tests\Doubles\FakeTypeAdapter;
 use Druidfi\Mysqldump\TypeAdapter\TypeAdapterMysql;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
 use PDO;
 use ReflectionProperty;
 
@@ -17,7 +17,7 @@ class MysqldumpAdapterTest extends TestCase
     public function testAddTypeAdapterRejectsInvalidClass(): void
     {
         $dump = new Mysqldump('mysql:host=localhost;dbname=test', 'user', 'pass');
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessageMatches('/Adapter .* is not instance of/');
         $dump->addTypeAdapter(\stdClass::class);
     }

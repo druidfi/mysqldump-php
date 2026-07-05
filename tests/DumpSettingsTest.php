@@ -5,7 +5,7 @@ namespace Druidfi\Mysqldump\Tests;
 use Druidfi\Mysqldump\DumpSettings;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
 
 #[CoversClass(DumpSettings::class)]
 class DumpSettingsTest extends TestCase
@@ -76,7 +76,7 @@ class DumpSettingsTest extends TestCase
      */
     public function testInvalidSettings(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Unexpected value in dumpSettings');
         
         new DumpSettings(['invalid-setting' => true]);
@@ -87,7 +87,7 @@ class DumpSettingsTest extends TestCase
      */
     public function testInvalidTableSettings(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Include-tables and exclude-tables should be arrays');
         
         new DumpSettings(['include-tables' => 'users']);
@@ -232,7 +232,7 @@ class DumpSettingsTest extends TestCase
      */
     public function testReplaceAndInsertIgnoreMutualExclusion(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Cannot use both replace and insert-ignore options simultaneously');
 
         new DumpSettings([
@@ -246,7 +246,7 @@ class DumpSettingsTest extends TestCase
      */
     public function testCompressLevelAboveMethodMaximumIsRejected(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Compression level 10 is out of range for Gzip (1-9)');
 
         new DumpSettings([

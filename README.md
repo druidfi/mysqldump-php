@@ -59,6 +59,10 @@ from 2.x. The following changes may require action:
 - **`compress-level` is validated per method.** Levels up to the method maximum are accepted
   (Gzip 1-9, Lz4 1-12, Zstd 1-22) where 2.x rejected everything above 9, and a level above the
   method maximum now throws with a method-specific message.
+- **Exceptions are now typed.** The library throws subclasses of
+  `Druidfi\Mysqldump\Exception\MysqldumpException` instead of bare `Exception`. No action is
+  needed — the base class extends `Exception`, so existing `catch (\Exception $e)` blocks keep
+  working — but you can now catch more specific types, see [Error handling](#error-handling).
 
 Also fixed in 3.x with no action needed: 2.x settings validation rejected the `Zstd`, `Lz4` and
 `Gzipstream` compression methods due to a mismatch between the allowed values and the factory;
@@ -80,7 +84,7 @@ composer require druidfi/mysqldump-php
 try {
     $dump = new \Druidfi\Mysqldump\Mysqldump('mysql:host=localhost;dbname=testdb', 'username', 'password');
     $dump->start('storage/work/dump.sql');
-} catch (\Exception $e) {
+} catch (\Druidfi\Mysqldump\Exception\MysqldumpException $e) {
     echo 'mysqldump-php error: ' . $e->getMessage();
 }
 ```
@@ -88,6 +92,21 @@ try {
 The sections below cover the most common use cases. All configuration options are listed under
 [Dump Settings](#dump-settings), and the [Tests](#tests) section describes how the output is
 compared against native `mysqldump`.
+
+## Error handling
+
+All exceptions thrown by the library extend `Druidfi\Mysqldump\Exception\MysqldumpException`,
+which itself extends the native `Exception`. Catch the base class to handle any library error,
+or a subclass to react to a specific failure:
+
+- `ConnectionException` — the database connection could not be established: malformed DSN
+  string or a PDO connection failure. Thrown from the constructor (DSN parsing) and from
+  `start()` (connecting).
+- `ConfigurationException` — invalid dump settings: unknown options, values failing validation,
+  conflicting options (e.g. `replace` + `insert-ignore`), include-tables that do not exist in
+  the database, or a compression method whose PHP extension is not installed.
+- `DumpException` — the dump itself failed: output file not writable, a write error (e.g. disk
+  full), or an unexpected result from the server while reading object structures.
 
 ## Changing values when exporting
 

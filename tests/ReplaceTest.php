@@ -6,7 +6,7 @@ use Druidfi\Mysqldump\DumpSettings;
 use Druidfi\Mysqldump\Mysqldump;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Exception;
+use Druidfi\Mysqldump\Exception\ConfigurationException;
 
 #[CoversClass(Mysqldump::class)]
 #[CoversClass(DumpSettings::class)]
@@ -51,7 +51,7 @@ class ReplaceTest extends TestCase
      */
     public function testMutualExclusivity(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Cannot use both replace and insert-ignore options simultaneously');
         
         new DumpSettings([

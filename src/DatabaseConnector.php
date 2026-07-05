@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Druidfi\Mysqldump;
 
-use Exception;
+use Druidfi\Mysqldump\Exception\ConnectionException;
 use PDO;
 use PDOException;
 use SensitiveParameter;
@@ -28,7 +28,7 @@ class DatabaseConnector
      * @param string|null $user SQL account username
      * @param string|null $pass SQL account password
      * @param array<int, mixed> $pdoOptions PDO configured attributes
-     * @throws Exception
+     * @throws ConnectionException
      */
     public function __construct(
         private readonly string $dsn = '',
@@ -48,18 +48,18 @@ class DatabaseConnector
      *   mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
      *
      * @param string $dsn dsn string to parse
-     * @throws Exception
+     * @throws ConnectionException
      */
     private function parseDsn(string $dsn): void
     {
         if (empty($dsn) || !($pos = strpos($dsn, ':'))) {
-            throw new Exception('Empty DSN string');
+            throw new ConnectionException('Empty DSN string');
         }
 
         $dbType = strtolower(substr($dsn, 0, $pos));
 
         if (empty($dbType)) {
-            throw new Exception('Missing database type from DSN string');
+            throw new ConnectionException('Missing database type from DSN string');
         }
 
         $data = [];
@@ -72,11 +72,11 @@ class DatabaseConnector
         }
 
         if (empty($data['host']) && empty($data['unix_socket'])) {
-            throw new Exception('Missing host from DSN string');
+            throw new ConnectionException('Missing host from DSN string');
         }
 
         if (empty($data['dbname'])) {
-            throw new Exception('Missing database name from DSN string');
+            throw new ConnectionException('Missing database name from DSN string');
         }
 
         $this->host = (!empty($data['host'])) ? $data['host'] : $data['unix_socket'];
@@ -87,7 +87,7 @@ class DatabaseConnector
      * Connect to the database with PDO.
      *
      * @return PDO The PDO connection
-     * @throws Exception
+     * @throws ConnectionException
      */
     public function connect(): PDO
     {
@@ -123,7 +123,7 @@ class DatabaseConnector
             $this->conn = new PDO($this->dsn, $this->user, $this->pass, $options);
         } catch (PDOException $e) {
             $message = sprintf("Connection to %s failed with message: %s", $this->host, $e->getMessage());
-            throw new Exception($message);
+            throw new ConnectionException($message);
         }
 
         return $this->conn;
