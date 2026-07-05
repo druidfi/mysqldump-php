@@ -25,9 +25,10 @@ Bug fixes relevant to both lines land on `main` first and are backported to `2.x
 
 ```
 src/
-├── Mysqldump.php              # Main orchestrator class (~1100 lines)
+├── Mysqldump.php              # Main orchestrator class (~750 lines)
 ├── DumpSettings.php           # Configuration management
 ├── DumpWriter.php             # File output handler
+├── TableDataDumper.php        # Table row data dumper (INSERT/REPLACE statements)
 ├── DatabaseConnector.php      # PDO connection management
 ├── ConfigValidator.php        # Settings validation via reflection
 ├── ConfigOption.php           # Config constants with PHP 8 attributes
@@ -274,7 +275,7 @@ $dump->getAdapter(PDO $conn);
 1. **Optional Extensions**: `ext-zstd` and `ext-lz4` are optional; code must handle their absence gracefully
 2. **PHP 8.5 Deprecation**: `MYSQL_ATTR_USE_BUFFERED_QUERY` is deprecated in PHP 8.5; handled in `DatabaseConnector`
 3. **Integration Tests**: Output must match native mysqldump exactly (whitespace-sensitive)
-4. **Large Mysqldump Class**: The main class is ~1100 lines; consider impact when modifying
+4. **Large Mysqldump Class**: The main class is ~750 lines; consider impact when modifying
 5. **Closure Callbacks**: ObjectDumpers receive closures, not direct dependencies
 
 ## Links
