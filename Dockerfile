@@ -1,7 +1,7 @@
 ARG PHP_SHORT_VERSION=84
 
 FROM php:8.4 AS php-84
-FROM php:8.5.0beta2 AS php-85
+FROM php:8.5 AS php-85
 
 FROM php-${PHP_SHORT_VERSION}
 
