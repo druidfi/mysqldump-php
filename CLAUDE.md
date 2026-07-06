@@ -29,7 +29,8 @@ src/
 ├── DumpSettings.php           # Configuration management
 ├── DumpWriter.php             # File output handler
 ├── TableDataDumper.php        # Table row data dumper (INSERT/REPLACE statements)
-├── DatabaseConnector.php      # PDO connection management
+├── ConnectionInterface.php    # Contract for connection providers (swappable/mockable)
+├── DatabaseConnector.php      # PDO connection management (default ConnectionInterface impl)
 ├── ConfigValidator.php        # Settings validation via reflection
 ├── ConfigOption.php           # Config constants with PHP 8 attributes
 ├── InsertType.php             # Enum for INSERT/INSERT IGNORE/REPLACE
@@ -229,6 +230,9 @@ $dump->setInfoHook(callable $hook);
 // Type adapter extension
 $dump->addTypeAdapter(string $adapterClassName);
 $dump->getAdapter(PDO $conn);
+
+// Connection injection (before start)
+$dump->setConnector(ConnectionInterface $connector);
 ```
 
 ### Error Handling
