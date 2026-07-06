@@ -76,15 +76,22 @@ codebase; items that are done are kept checked for history.
 
 ## Code Quality Improvements
 
-8. [ ] Reduce code duplication:
-   - [ ] Refactor the near-identical `getProcedureStructure()` / `getFunctionStructure()` /
-         `getEventStructure()` / `getTriggerStructure()` "show create + write" pattern
-   - [ ] Extract the repeated comment-header writing (`skipComments()` + sprintf block) into a helper
+8. [x] Reduce code duplication:
+   - [x] Refactor the near-identical `getProcedureStructure()` / `getFunctionStructure()` /
+         `getEventStructure()` / `getTriggerStructure()` "show create + write" pattern into a
+         shared `writeStructureFromShowCreate()` helper — also applied to the table and view
+         structure extractors, which had the same shape
+   - [x] Extract the repeated comment-header writing (`skipComments()` + sprintf block) into
+         `commentBlock()` / `writeComment()` helpers
 
-9. [ ] Improve method organization:
-   - [ ] Break up `TableDataDumper::dump()` (~95 lines, formerly `Mysqldump::listValues()`)
-         into smaller private methods
-   - [ ] Group related methods together in `Mysqldump.php`
+9. [x] Improve method organization:
+   - [x] Break up `TableDataDumper::dump()` (~95 lines, formerly `Mysqldump::listValues()`)
+         into smaller private methods (`buildSelectQuery()` + `writeInsertStatements()`;
+         `dump()` itself is now ~25 lines of orchestration)
+   - [x] Group related methods together in `Mysqldump.php` — `getAdapter()` moved next to
+         `addTypeAdapter()` and the `tableColumnTypes()` accessor next to
+         `getTableColumnTypes()`; the file reads top-down as dump flow → helpers →
+         iterators → structure extractors → public configuration API
 
 10. [x] Enhance type safety (baseline):
     - [x] Add return type declarations to public API methods

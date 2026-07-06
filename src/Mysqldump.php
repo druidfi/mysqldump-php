@@ -89,14 +89,51 @@ class Mysqldump
         $this->db = $this->getAdapter($this->conn);
     }
 
-    public function getAdapter(PDO $conn): TypeAdapterInterface
-    {
-        return new ($this->adapterClass)($conn, $this->settings);
-    }
-
     private function write(string $data): int
     {
         return $this->writer->write($data);
+    }
+
+    /**
+     * Format a comment header block, or an empty string when comments are skipped.
+     *
+     * @param string $text Single line of comment text
+     */
+    private function commentBlock(string $text): string
+    {
+        if ($this->settings->skipComments()) {
+            return '';
+        }
+
+        return '--' . PHP_EOL . '-- ' . $text . PHP_EOL . '--' . PHP_EOL . PHP_EOL;
+    }
+
+    /**
+     * Write a comment header block unless comments are skipped.
+     *
+     * @param string $text Single line of comment text
+     */
+    private function writeComment(string $text): void
+    {
+        $this->write($this->commentBlock($text));
+    }
+
+    /**
+     * Run a SHOW CREATE statement and pass its first row to $writeCreate.
+     *
+     * @param string $query SHOW CREATE statement for the object
+     * @param Closure $writeCreate function(array $row): void writes the create statement(s)
+     */
+    private function writeStructureFromShowCreate(string $query, Closure $writeCreate): void
+    {
+        $stmt = $this->conn->query($query);
+
+        foreach ($stmt as $row) {
+            $writeCreate($row);
+            break;
+        }
+
+        $stmt->closeCursor();
     }
 
     /**
@@ -396,32 +433,22 @@ class Mysqldump
     private function getTableStructure(string $tableName): void
     {
         if (!$this->settings->isEnabled('no-create-info')) {
-            $ret = '';
+            // The comment is only written when the table exists, so it is
+            // passed into the closure instead of being written up front.
+            $comment = $this->commentBlock(sprintf('Table structure for table `%s`', $tableName));
 
-            if (!$this->settings->skipComments()) {
-                $ret = sprintf(
-                    "--" . PHP_EOL .
-                    "-- Table structure for table `%s`" . PHP_EOL .
-                    "--" . PHP_EOL . PHP_EOL,
-                    $tableName
-                );
-            }
+            $this->writeStructureFromShowCreate(
+                $this->db->showCreateTable($tableName),
+                function (array $row) use ($tableName, $comment): void {
+                    $this->write($comment);
 
-            $stmt = $this->db->showCreateTable($tableName);
+                    if ($this->settings->isEnabled('add-drop-table')) {
+                        $this->write($this->db->dropTable($tableName));
+                    }
 
-            $stmtCT = $this->conn->query($stmt);
-            foreach ($stmtCT as $r) {
-                $this->write($ret);
-
-                if ($this->settings->isEnabled('add-drop-table')) {
-                    $this->write($this->db->dropTable($tableName));
+                    $this->write($this->db->createTable($row));
                 }
-
-                $this->write($this->db->createTable($r));
-
-                break;
-            }
-            $stmtCT->closeCursor();
+            );
         }
 
         $this->tableColumnTypes[$tableName] = $this->getTableColumnTypes($tableName);
@@ -455,36 +482,35 @@ class Mysqldump
     }
 
     /**
+     * Get table column types.
+     *
+     * @return array<string, array<string, array<string, mixed>>>
+     */
+    protected function tableColumnTypes(): array
+    {
+        return $this->tableColumnTypes;
+    }
+
+    /**
      * View structure extractor, create table (avoids cyclic references).
      *
      * @param string $viewName Name of view to export
      */
     private function getViewStructureTable(string $viewName): void
     {
-        if (!$this->settings->skipComments()) {
-            $ret = (
-                '--' . PHP_EOL .
-                sprintf('-- Stand-In structure for view `%s`', $viewName) . PHP_EOL .
-                '--' . PHP_EOL . PHP_EOL
-            );
-
-            $this->write($ret);
-        }
-
-        $stmt = $this->db->showCreateView($viewName);
+        $this->writeComment(sprintf('Stand-In structure for view `%s`', $viewName));
 
         // create views as tables, to resolve dependencies
-        $stmtSCV = $this->conn->query($stmt);
-        foreach ($stmtSCV as $r) {
-            if ($this->settings->isEnabled('add-drop-table')) {
-                $this->write($this->db->dropView($viewName));
+        $this->writeStructureFromShowCreate(
+            $this->db->showCreateView($viewName),
+            function (array $row) use ($viewName): void {
+                if ($this->settings->isEnabled('add-drop-table')) {
+                    $this->write($this->db->dropView($viewName));
+                }
+
+                $this->write($this->createStandInTable($viewName));
             }
-
-            $this->write($this->createStandInTable($viewName));
-
-            break;
-        }
-        $stmtSCV->closeCursor();
+        );
     }
 
     /**
@@ -516,29 +542,17 @@ class Mysqldump
      */
     private function getViewStructureView(string $viewName): void
     {
-        if (!$this->settings->skipComments()) {
-            $ret = sprintf(
-                "--" . PHP_EOL .
-                "-- View structure for view `%s`" . PHP_EOL .
-                "--" . PHP_EOL . PHP_EOL,
-                $viewName
-            );
-
-            $this->write($ret);
-        }
-
-        $stmt = $this->db->showCreateView($viewName);
+        $this->writeComment(sprintf('View structure for view `%s`', $viewName));
 
         // Create views, to resolve dependencies replacing tables with views
-        $stmtSCV2 = $this->conn->query($stmt);
-        foreach ($stmtSCV2 as $r) {
-            // Because we must replace table with view, we should delete it
-            $this->write($this->db->dropView($viewName));
-            $this->write($this->db->createView($r));
-
-            break;
-        }
-        $stmtSCV2->closeCursor();
+        $this->writeStructureFromShowCreate(
+            $this->db->showCreateView($viewName),
+            function (array $row) use ($viewName): void {
+                // Because we must replace table with view, we should delete it
+                $this->write($this->db->dropView($viewName));
+                $this->write($this->db->createView($row));
+            }
+        );
     }
 
     /**
@@ -548,20 +562,16 @@ class Mysqldump
      */
     private function getTriggerStructure(string $triggerName): void
     {
-        $stmt = $this->db->showCreateTrigger($triggerName);
+        $this->writeStructureFromShowCreate(
+            $this->db->showCreateTrigger($triggerName),
+            function (array $row) use ($triggerName): void {
+                if ($this->settings->isEnabled('add-drop-trigger')) {
+                    $this->write($this->db->addDropTrigger($triggerName));
+                }
 
-        $stmtSCT = $this->conn->query($stmt);
-        foreach ($stmtSCT as $r) {
-            if ($this->settings->isEnabled('add-drop-trigger')) {
-                $this->write($this->db->addDropTrigger($triggerName));
+                $this->write($this->db->createTrigger($row));
             }
-
-            $this->write($this->db->createTrigger($r));
-
-            $stmtSCT->closeCursor();
-            return;
-        }
-        $stmtSCT->closeCursor();
+        );
     }
 
     /**
@@ -571,22 +581,12 @@ class Mysqldump
      */
     private function getProcedureStructure(string $procedureName): void
     {
-        if (!$this->settings->skipComments()) {
-            $ret = "--" . PHP_EOL .
-                "-- Dumping routines for database '" . $this->connector->getDbName() . "'" . PHP_EOL .
-                "--" . PHP_EOL . PHP_EOL;
-            $this->write($ret);
-        }
+        $this->writeComment("Dumping routines for database '" . $this->connector->getDbName() . "'");
 
-        $stmt = $this->db->showCreateProcedure($procedureName);
-
-        $stmtSCP = $this->conn->query($stmt);
-        foreach ($stmtSCP as $r) {
-            $this->write($this->db->createProcedure($r));
-            $stmtSCP->closeCursor();
-            return;
-        }
-        $stmtSCP->closeCursor();
+        $this->writeStructureFromShowCreate(
+            $this->db->showCreateProcedure($procedureName),
+            fn (array $row): int => $this->write($this->db->createProcedure($row))
+        );
     }
 
     /**
@@ -596,22 +596,12 @@ class Mysqldump
      */
     private function getFunctionStructure(string $functionName): void
     {
-        if (!$this->settings->skipComments()) {
-            $ret = "--" . PHP_EOL .
-                "-- Dumping routines for database '" . $this->connector->getDbName() . "'" . PHP_EOL .
-                "--" . PHP_EOL . PHP_EOL;
-            $this->write($ret);
-        }
+        $this->writeComment("Dumping routines for database '" . $this->connector->getDbName() . "'");
 
-        $stmt = $this->db->showCreateFunction($functionName);
-
-        $stmtSCF = $this->conn->query($stmt);
-        foreach ($stmtSCF as $r) {
-            $this->write($this->db->createFunction($r));
-            $stmtSCF->closeCursor();
-            return;
-        }
-        $stmtSCF->closeCursor();
+        $this->writeStructureFromShowCreate(
+            $this->db->showCreateFunction($functionName),
+            fn (array $row): int => $this->write($this->db->createFunction($row))
+        );
     }
 
     /**
@@ -622,32 +612,12 @@ class Mysqldump
      */
     private function getEventStructure(string $eventName): void
     {
-        if (!$this->settings->skipComments()) {
-            $ret = "--" . PHP_EOL .
-                "-- Dumping events for database '" . $this->connector->getDbName() . "'" . PHP_EOL .
-                "--" . PHP_EOL . PHP_EOL;
-            $this->write($ret);
-        }
+        $this->writeComment("Dumping events for database '" . $this->connector->getDbName() . "'");
 
-        $stmt = $this->db->showCreateEvent($eventName);
-
-        $stmtSCE = $this->conn->query($stmt);
-        foreach ($stmtSCE as $r) {
-            $this->write($this->db->createEvent($r));
-            $stmtSCE->closeCursor();
-            return;
-        }
-        $stmtSCE->closeCursor();
-    }
-
-    /**
-     * Get table column types.
-     *
-     * @return array<string, array<string, array<string, mixed>>>
-     */
-    protected function tableColumnTypes(): array
-    {
-        return $this->tableColumnTypes;
+        $this->writeStructureFromShowCreate(
+            $this->db->showCreateEvent($eventName),
+            fn (array $row): int => $this->write($this->db->createEvent($row))
+        );
     }
 
     /**
@@ -730,6 +700,11 @@ class Mysqldump
         }
 
         $this->adapterClass = $adapterClassName;
+    }
+
+    public function getAdapter(PDO $conn): TypeAdapterInterface
+    {
+        return new ($this->adapterClass)($conn, $this->settings);
     }
 
     /**

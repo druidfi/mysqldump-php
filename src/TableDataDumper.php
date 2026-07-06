@@ -50,41 +50,79 @@ class TableDataDumper
     {
         $this->prepareListValues($tableName);
 
-        $onlyOnce = true;
-        $colNames = [];
         $columnTypes = ($this->getColumnTypes)($tableName);
 
         // getting the column statement has side effect, so we backup this setting for consitency
         $completeInsertBackup = $this->settings->isEnabled('complete-insert');
 
+        $query = $this->buildSelectQuery($tableName, $columnTypes);
+
+        // colNames is used to get the name of the columns when using complete-insert;
+        // resolved after buildSelectQuery() because getColumnStmt() enables
+        // complete-insert when the table has virtual columns
+        $colNames = $this->settings->isEnabled('complete-insert') ? $this->getColumnNames($columnTypes) : [];
+
+        $count = $this->writeInsertStatements($tableName, $query, $columnTypes, $colNames);
+
+        $this->endListValues($tableName, $count);
+
+        if ($this->info !== null) {
+            ($this->info)('table', ['name' => $tableName, 'completed' => true, 'rowCount' => $count]);
+        }
+
+        $this->settings->setCompleteInsert($completeInsertBackup);
+    }
+
+    /**
+     * Build the SELECT statement used to read the table rows, applying the
+     * per-table (or default) WHERE condition and LIMIT.
+     *
+     * @param string $tableName Name of table to export
+     * @param array<string, array<string, mixed>> $columnTypes Column type info for the table
+     */
+    private function buildSelectQuery(string $tableName, array $columnTypes): string
+    {
         // colStmt is used to form a query to obtain row values
         $colStmt = $this->getColumnStmt($columnTypes);
 
-        // colNames is used to get the name of the columns when using complete-insert
-        if ($this->settings->isEnabled('complete-insert')) {
-            $colNames = $this->getColumnNames($columnTypes);
-        }
-
-        $stmt = "SELECT " . implode(",", $colStmt) . " FROM `$tableName`";
+        $query = "SELECT " . implode(",", $colStmt) . " FROM `$tableName`";
 
         // Table specific conditions override the default 'where'
         $condition = ($this->getTableWhere)($tableName);
 
         if ($condition) {
-            $stmt .= sprintf(' WHERE %s', $condition);
+            $query .= sprintf(' WHERE %s', $condition);
         }
 
         if ($limit = ($this->getTableLimit)($tableName)) {
-            $stmt .= is_numeric($limit) ?
+            $query .= is_numeric($limit) ?
                 sprintf(' LIMIT %d', $limit) :
                 sprintf(' LIMIT %s', $limit);
         }
 
-        $resultSet = $this->conn->query($stmt);
+        return $query;
+    }
+
+    /**
+     * Run the SELECT query and write the rows as INSERT/REPLACE statements,
+     * flushing a statement whenever it exceeds net_buffer_length (or per row
+     * when extended-insert is off). Reports progress through the info hook.
+     *
+     * @param string $tableName Name of table to export
+     * @param string $query SELECT statement reading the rows
+     * @param array<string, array<string, mixed>> $columnTypes Column type info for the table
+     * @param string[] $colNames Quoted column names for complete-insert, empty otherwise
+     * @return int Number of rows dumped
+     * @throws DumpException
+     */
+    private function writeInsertStatements(string $tableName, string $query, array $columnTypes, array $colNames): int
+    {
+        $resultSet = $this->conn->query($query);
         $resultSet->setFetchMode(PDO::FETCH_ASSOC);
 
         $insertType = $this->getInsertType()->value;
         $count = 0;
+        $onlyOnce = true;
 
         $isInfoCallable = $this->info !== null;
         if ($isInfoCallable) {
@@ -132,13 +170,7 @@ class TableDataDumper
             $this->writer->write($line. ';' . PHP_EOL);
         }
 
-        $this->endListValues($tableName, $count);
-
-        if ($isInfoCallable) {
-            ($this->info)('table', ['name' => $tableName, 'completed' => true, 'rowCount' => $count]);
-        }
-
-        $this->settings->setCompleteInsert($completeInsertBackup);
+        return $count;
     }
 
     private function getInsertType(): InsertType
