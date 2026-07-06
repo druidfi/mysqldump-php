@@ -29,7 +29,7 @@ use PDO;
 class Mysqldump
 {
     // Database
-    private readonly DatabaseConnector $connector;
+    private ConnectionInterface $connector;
     private ?PDO $conn = null;
     private readonly DumpWriter $writer;
     private TypeAdapterInterface $db;
@@ -79,7 +79,7 @@ class Mysqldump
 
 
     /**
-     * Connect with PDO using the DatabaseConnector.
+     * Connect with PDO using the configured connector.
      *
      * @throws ConnectionException
      */
@@ -705,6 +705,15 @@ class Mysqldump
         }
 
         return $limit;
+    }
+
+    /**
+     * Replace the default DatabaseConnector, e.g. to supply an existing PDO
+     * connection or a custom connection strategy. Must be called before start().
+     */
+    public function setConnector(ConnectionInterface $connector): void
+    {
+        $this->connector = $connector;
     }
 
     /**

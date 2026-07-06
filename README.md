@@ -108,6 +108,33 @@ or a subclass to react to a specific failure:
 - `DumpException` — the dump itself failed: output file not writable, a write error (e.g. disk
   full), or an unexpected result from the server while reading object structures.
 
+## Providing your own database connection
+
+By default the connection is built from the DSN, username and password given to the constructor.
+If you need to reuse an existing PDO instance or apply a custom connection strategy, implement
+`Druidfi\Mysqldump\ConnectionInterface` and inject it before starting the dump:
+
+```php
+use Druidfi\Mysqldump\ConnectionInterface;
+use Druidfi\Mysqldump\Mysqldump;
+
+class ExistingPdoConnection implements ConnectionInterface
+{
+    public function __construct(private readonly PDO $pdo) {}
+
+    public function connect(): PDO { return $this->pdo; }
+    public function getHost(): string { return 'app-db'; }
+    public function getDbName(): string { return 'testdb'; }
+}
+
+$dumper = new Mysqldump('mysql:host=localhost;dbname=testdb', 'username', 'password');
+$dumper->setConnector(new ExistingPdoConnection($pdo));
+$dumper->start('storage/work/dump.sql');
+```
+
+`getHost()` and `getDbName()` are used in the dump file header comments and in the
+`SHOW`/`CREATE DATABASE` statements, so return the values of the database being dumped.
+
 ## Changing values when exporting
 
 You can register a callable that will be used to transform values during the export. An example use-case for this is

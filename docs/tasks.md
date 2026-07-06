@@ -35,9 +35,11 @@ codebase; items that are done are kept checked for history.
    - [x] Implement a proper exception hierarchy and document which methods throw what
          (`@throws` docblocks updated throughout; README "Error handling" section added)
 
-4. [ ] Implement interfaces for major components:
+4. [x] Implement interfaces for major components:
    - [x] Create a DumperInterface for different dumper implementations
-   - [ ] Create a ConnectionInterface so DatabaseConnector can be swapped/mocked
+   - [x] Create a ConnectionInterface so DatabaseConnector can be swapped/mocked —
+         `Mysqldump::setConnector()` injects a custom implementation before `start()`;
+         `ConnectionInterfaceTest` runs a full dump against injected SQLite to prove it
 
 ## PHP 8.4 Modernization (new in 3.x)
 

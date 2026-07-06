@@ -13,7 +13,7 @@ use SensitiveParameter;
  *
  * Handles database connection logic for mysqldump-php.
  */
-class DatabaseConnector
+class DatabaseConnector implements ConnectionInterface
 {
     private string $host;
 
