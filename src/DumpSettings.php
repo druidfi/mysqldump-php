@@ -81,7 +81,7 @@ class DumpSettings
 
         $this->settings = array_replace_recursive(self::$defaults, $settings);
 
-        $this->settings['init_commands'][] = "SET NAMES " . $this->get('default-character-set');
+        $this->settings['init_commands'][] = "SET NAMES " . $this->getDefaultCharacterSet();
 
         if (false === $this->settings['skip-tz-utc']) {
             $this->settings['init_commands'][] = "SET TIME_ZONE='+00:00'";
@@ -232,8 +232,17 @@ class DumpSettings
         return $this->isEnabled('skip-tz-utc');
     }
 
-    public function get(string $option): string
+    /**
+     * Return the raw value of a setting in its actual type.
+     * Prefer the typed getters where one exists.
+     */
+    public function get(string $option): mixed
     {
-        return (string) $this->settings[$option];
+        return $this->settings[$option] ?? null;
+    }
+
+    public function getWhere(): string
+    {
+        return (string) $this->settings['where'];
     }
 }

@@ -171,13 +171,31 @@ class DumpSettingsTest extends TestCase
     }
     
     /**
-     * Test the get method
+     * Test that the get method returns values in their actual type
      */
     public function testGetMethod(): void
     {
-        $settings = new DumpSettings(['net_buffer_length' => 500000]);
-        
-        $this->assertEquals('500000', $settings->get('net_buffer_length'));
+        $settings = new DumpSettings([
+            'net_buffer_length' => 500000,
+            'exclude-tables' => ['logs'],
+        ]);
+
+        $this->assertSame(500000, $settings->get('net_buffer_length'));
+        $this->assertSame(['logs'], $settings->get('exclude-tables'));
+        $this->assertFalse($settings->get('complete-insert'));
+        $this->assertNull($settings->get('unknown-option'));
+    }
+
+    /**
+     * Test the getWhere typed getter
+     */
+    public function testGetWhere(): void
+    {
+        $settings = new DumpSettings([]);
+        $this->assertSame('', $settings->getWhere());
+
+        $settings = new DumpSettings(['where' => 'id > 100']);
+        $this->assertSame('id > 100', $settings->getWhere());
     }
     
     /**
