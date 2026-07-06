@@ -6,12 +6,14 @@ codebase; items that are done are kept checked for history.
 
 ## Architecture Improvements
 
-1. [ ] Refactor the large Mysqldump class (~1090 lines) into smaller, more focused classes:
+1. [x] Refactor the large Mysqldump class (~1090 lines, now ~750) into smaller, more focused classes:
    - [x] Create a separate DatabaseConnector class to handle connection logic
    - [x] Create a separate DumpWriter class to handle file output
    - [x] Create separate classes for different database object types (Tables, Views, Triggers, etc.)
-   - [ ] Extract table data dumping (`listValues()`, `prepareListValues()`, `endListValues()`,
-         `prepareColumnValues()`, `getColumnStmt()`, `getColumnNames()`) into a dedicated class
+   - [x] Extract table data dumping (`listValues()`, `prepareListValues()`, `endListValues()`,
+         `prepareColumnValues()`, `getColumnStmt()`, `getColumnNames()`) into a dedicated
+         `TableDataDumper` class (state still living on Mysqldump — column types, wheres/limits,
+         hooks — is passed in as closures; unit-tested against SQLite in `TableDataDumperTest`)
    - [x] Remove the vestigial `getDatabaseStructure*()` methods: five were empty no-ops and
          `getDatabaseStructureTables()` only validated include-tables (now `validateIncludedTables()`)
    - [x] Deduplicate the six near-identical `iterate*()` generators into one shared
@@ -78,7 +80,8 @@ codebase; items that are done are kept checked for history.
    - [ ] Extract the repeated comment-header writing (`skipComments()` + sprintf block) into a helper
 
 9. [ ] Improve method organization:
-   - [ ] Break up `listValues()` (~95 lines) into smaller private methods
+   - [ ] Break up `TableDataDumper::dump()` (~95 lines, formerly `Mysqldump::listValues()`)
+         into smaller private methods
    - [ ] Group related methods together in `Mysqldump.php`
 
 10. [x] Enhance type safety (baseline):

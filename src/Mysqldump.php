@@ -99,19 +99,6 @@ class Mysqldump
         return $this->writer->write($data);
     }
 
-    private function getInsertType(): InsertType
-    {
-        if ($this->settings->isEnabled('replace')) {
-            return InsertType::Replace;
-        }
-
-        if ($this->settings->isEnabled('insert-ignore')) {
-            return InsertType::InsertIgnore;
-        }
-
-        return InsertType::Insert;
-    }
-
     /**
      * Primary function, triggers dumping.
      *
@@ -161,15 +148,29 @@ class Mysqldump
             $this->write($this->db->databases($this->connector->getDbName()));
         }
 
+        // Dumps the data rows of each table
+        $dataDumper = new TableDataDumper(
+            conn: $this->conn,
+            settings: $this->settings,
+            db: $this->db,
+            writer: $this->writer,
+            getColumnTypes: fn(string $table): array => $this->tableColumnTypes[$table],
+            getTableWhere: $this->getTableWhere(...),
+            getTableLimit: $this->getTableLimit(...),
+            transformTableRow: $this->transformTableRowCallable,
+            transformColumnValue: $this->transformColumnValueCallable,
+            info: $this->infoCallable
+        );
+
         // Use dedicated dumpers for different object types
         $tablesDumper = new ObjectDumper\TablesDumper(
             iterateTables: fn(): \Generator => $this->iterateTables(),
             matches: fn(string $name, array $arr): bool => $this->matches($name, $arr),
             getTableStructure: function (string $table): void { $this->getTableStructure($table); },
-            listValues: function (string $table): void {
+            listValues: function (string $table) use ($dataDumper): void {
                 $no_data = $this->settings->isEnabled('no-data');
                 if (!$no_data && !$this->matches($table, $this->settings->getNoData())) {
-                    $this->listValues($table);
+                    $dataDumper->dump($table);
                 }
             },
             getExcludedTables: fn(): array => $this->settings->getExcludedTables(),
@@ -637,274 +638,6 @@ class Mysqldump
             return;
         }
         $stmtSCE->closeCursor();
-    }
-
-    /**
-     * Prepare values for output.
-     *
-     * @param string $tableName Name of table which contains rows
-     * @param array<string, mixed> $row Associative array of column names and values to be quoted
-     * @return array<int, mixed> quoted values ready for the VALUES list
-     */
-    private function prepareColumnValues(string $tableName, array $row): array
-    {
-        $ret = [];
-        $columnTypes = $this->tableColumnTypes[$tableName];
-
-        if ($this->transformTableRowCallable) {
-            $row = ($this->transformTableRowCallable)($tableName, $row);
-        }
-
-        $dbHandler = $this->conn;
-        $hexBlobEnabled = $this->settings->isEnabled('hex-blob');
-        foreach ($row as $colName => $colValue) {
-            if ($this->transformColumnValueCallable) {
-                $colValue = ($this->transformColumnValueCallable)($tableName, $colName, $colValue, $row);
-            }
-
-            if ($colValue === null) {
-                $ret[] = "NULL";
-                continue;
-            }
-
-            $colType = $columnTypes[$colName];
-            if ($hexBlobEnabled && $colType['is_blob']) {
-                if ($colType['type'] == 'bit' || $colValue !== '') {
-                    $ret[] = sprintf('0x%s', $colValue);
-                } else {
-                    $ret[] = "''";
-                }
-                continue;
-            }
-
-            if ($colType['is_numeric']) {
-                $ret[] = $colValue;
-                continue;
-            }
-
-            $ret[] = $dbHandler->quote($colValue);
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Table rows extractor.
-     *
-     * @param string $tableName Name of table to export
-     */
-    private function listValues(string $tableName): void
-    {
-        $this->prepareListValues($tableName);
-
-        $onlyOnce = true;
-        $lineSize = 0;
-        $colNames = [];
-
-        // getting the column statement has side effect, so we backup this setting for consitency
-        $completeInsertBackup = $this->settings->isEnabled('complete-insert');
-
-        // colStmt is used to form a query to obtain row values
-        $colStmt = $this->getColumnStmt($tableName);
-
-        // colNames is used to get the name of the columns when using complete-insert
-        if ($this->settings->isEnabled('complete-insert')) {
-            $colNames = $this->getColumnNames($tableName);
-        }
-
-        $stmt = "SELECT " . implode(",", $colStmt) . " FROM `$tableName`";
-
-        // Table specific conditions override the default 'where'
-        $condition = $this->getTableWhere($tableName);
-
-        if ($condition) {
-            $stmt .= sprintf(' WHERE %s', $condition);
-        }
-
-        if ($limit = $this->getTableLimit($tableName)) {
-            $stmt .= is_numeric($limit) ?
-                sprintf(' LIMIT %d', $limit) :
-                sprintf(' LIMIT %s', $limit);
-        }
-
-        $resultSet = $this->conn->query($stmt);
-        $resultSet->setFetchMode(PDO::FETCH_ASSOC);
-
-        $insertType = $this->getInsertType()->value;
-        $count = 0;
-
-        $isInfoCallable = $this->infoCallable !== null;
-        if ($isInfoCallable) {
-            ($this->infoCallable)('table', ['name' => $tableName, 'completed' => false, 'rowCount' => $count]);
-        }
-
-        $line = '';
-        foreach ($resultSet as $row) {
-            $count++;
-            $values = $this->prepareColumnValues($tableName, $row);
-            $valueList = implode(',', $values);
-
-            if ($onlyOnce || !$this->settings->isEnabled('extended-insert')) {
-                if ($this->settings->isEnabled('complete-insert') && count($colNames)) {
-                    $line .= sprintf(
-                        '%s INTO `%s` (%s) VALUES (%s)',
-                        $insertType,
-                        $tableName,
-                        implode(', ', $colNames),
-                        $valueList
-                    );
-                } else {
-                    $line .= sprintf('%s INTO `%s` VALUES (%s)', $insertType, $tableName, $valueList);
-                }
-                $onlyOnce = false;
-            } else {
-                $line .= sprintf(',(%s)', $valueList);
-            }
-
-            if ((strlen($line) > $this->settings->getNetBufferLength())
-                || !$this->settings->isEnabled('extended-insert')) {
-                $onlyOnce = true;
-                $this->write($line . ';' . PHP_EOL);
-                $line = '';
-
-                if ($isInfoCallable) {
-                    ($this->infoCallable)('table', ['name' => $tableName, 'completed' => false, 'rowCount' => $count]);
-                }
-            }
-        }
-
-        $resultSet->closeCursor();
-
-        if ($line !== '') {
-            $this->write($line. ';' . PHP_EOL);
-        }
-
-        $this->endListValues($tableName, $count);
-
-        if ($isInfoCallable) {
-            ($this->infoCallable)('table', ['name' => $tableName, 'completed' => true, 'rowCount' => $count]);
-        }
-
-        $this->settings->setCompleteInsert($completeInsertBackup);
-    }
-
-    /**
-     * Table rows extractor, append information prior to dump.
-     *
-     * @param string $tableName Name of table to export
-     */
-    private function prepareListValues(string $tableName): void
-    {
-        if (!$this->settings->skipComments()) {
-            $this->write(
-                "--" . PHP_EOL .
-                "-- Dumping data for table `$tableName`" . PHP_EOL .
-                "--" . PHP_EOL . PHP_EOL
-            );
-        }
-
-        if ($this->settings->isEnabled('lock-tables') && !$this->settings->isEnabled('single-transaction')) {
-            $this->db->lockTable($tableName);
-        }
-
-        if ($this->settings->isEnabled('add-locks')) {
-            $this->write($this->db->startAddLockTable($tableName));
-        }
-
-        if ($this->settings->isEnabled('disable-keys')) {
-            $this->write($this->db->startAddDisableKeys($tableName));
-        }
-
-        // Disable autocommit for faster reload
-        if ($this->settings->isEnabled('no-autocommit')) {
-            $this->write($this->db->startDisableAutocommit());
-        }
-    }
-
-    /**
-     * Table rows extractor, close locks and commits after dump.
-     *
-     * @param string $tableName Name of table to export.
-     * @param integer $count Number of rows inserted.
-     */
-    private function endListValues(string $tableName, int $count = 0): void
-    {
-        if ($this->settings->isEnabled('disable-keys')) {
-            $this->write($this->db->endAddDisableKeys($tableName));
-        }
-
-        if ($this->settings->isEnabled('add-locks')) {
-            $this->write($this->db->endAddLockTable($tableName));
-        }
-
-        if ($this->settings->isEnabled('lock-tables')
-            && !$this->settings->isEnabled('single-transaction')) {
-            $this->db->unlockTable($tableName);
-        }
-
-        // Commit to enable autocommit
-        if ($this->settings->isEnabled('no-autocommit')) {
-            $this->write($this->db->endDisableAutocommit());
-        }
-
-        $this->write(PHP_EOL);
-
-        if (!$this->settings->skipComments()) {
-            $this->write(
-                "-- Dumped table `" . $tableName . "` with $count row(s)" . PHP_EOL .
-                '--' . PHP_EOL . PHP_EOL
-            );
-        }
-    }
-
-    /**
-     * Build SQL List of all columns on current table which will be used for selecting.
-     *
-     * @param string $tableName Name of table to get columns
-     *
-     * @return string[] SQL sentence with columns for select
-     */
-    protected function getColumnStmt(string $tableName): array
-    {
-        $colStmt = [];
-        foreach ($this->tableColumnTypes[$tableName] as $colName => $colType) {
-            if ($colType['is_virtual']) {
-                $this->settings->setCompleteInsert();
-            } elseif ($colType['type'] == 'double') {
-                // PHP 8.1+ returns double fields with float precision issues; dump via CONCAT
-                $colStmt[] = sprintf("CONCAT(`%s`) AS `%s`", $colName, $colName);
-            } elseif ($colType['type'] === 'bit' && $this->settings->isEnabled('hex-blob')) {
-                $colStmt[] = sprintf("LPAD(HEX(`%s`),2,'0') AS `%s`", $colName, $colName);
-            } elseif ($colType['is_blob'] && $this->settings->isEnabled('hex-blob')) {
-                $colStmt[] = sprintf("HEX(`%s`) AS `%s`", $colName, $colName);
-            } else {
-                $colStmt[] = sprintf("`%s`", $colName);
-            }
-        }
-
-        return $colStmt;
-    }
-
-    /**
-     * Build SQL List of all columns on current table which will be used for inserting.
-     *
-     * @param string $tableName Name of table to get columns
-     *
-     * @return string[] columns for sql sentence for insert
-     */
-    private function getColumnNames(string $tableName): array
-    {
-        $colNames = [];
-
-        foreach ($this->tableColumnTypes[$tableName] as $colName => $colType) {
-            if ($colType['is_virtual']) {
-                $this->settings->setCompleteInsert();
-            } else {
-                $colNames[] = sprintf('`%s`', $colName);
-            }
-        }
-
-        return $colNames;
     }
 
     /**
