@@ -56,6 +56,10 @@ from 2.x. The following changes may require action:
   use the native PHP 8.4 `#[\Deprecated]` attribute.
 - **`ConfigValidator::checkDeprecated()` return value changed.** The `reason` and `alternative`
   keys were replaced by a single `message` key (`deprecated` and `since` are unchanged).
+- **`DumpSettings::get()` returns the setting's actual type.** In 2.x every value was cast to
+  `string`; now arrays, booleans and integers come back unchanged, and unknown options return
+  `null` instead of the string `""`. Prefer the typed getters (`getWhere()`,
+  `getNetBufferLength()`, ...) where one exists.
 - **`compress-level` is validated per method.** Levels up to the method maximum are accepted
   (Gzip 1-9, Lz4 1-12, Zstd 1-22) where 2.x rejected everything above 9, and a level above the
   method maximum now throws with a method-specific message.

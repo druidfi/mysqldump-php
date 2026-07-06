@@ -635,8 +635,8 @@ class Mysqldump
     {
         if (!empty($this->tableWheres[$tableName])) {
             return $this->tableWheres[$tableName];
-        } elseif ($this->settings->get('where')) {
-            return $this->settings->get('where');
+        } elseif ($this->settings->getWhere()) {
+            return $this->settings->getWhere();
         }
 
         return false;

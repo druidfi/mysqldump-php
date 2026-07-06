@@ -102,8 +102,9 @@ codebase; items that are done are kept checked for history.
 11. [ ] Implement better validation:
     - [x] `matches()` reads `$pattern[0]` — an empty string in include/exclude/no-data arrays causes
           an error (fixed via `str_starts_with()` in the `array_any()` rewrite)
-    - [ ] Fix `DumpSettings::get()` casting every setting to `string` — return proper types or add
-          typed getters
+    - [x] Fix `DumpSettings::get()` casting every setting to `string` — `get()` now returns the
+          raw value as `mixed` (`null` for unknown options) and the one string consumer uses a
+          new `getWhere()` typed getter; documented as a breaking change in the README
     - [x] Validate `net_buffer_length` and other numeric settings via `Constraint` attributes
           (`net_buffer_length` has `min: 1024`, `compress-level` has `min: 0, max: 22` —
           the only two numeric options)
