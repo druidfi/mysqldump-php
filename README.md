@@ -60,6 +60,9 @@ from 2.x. The following changes may require action:
   `string`; now arrays, booleans and integers come back unchanged, and unknown options return
   `null` instead of the string `""`. Prefer the typed getters (`getWhere()`,
   `getNetBufferLength()`, ...) where one exists.
+- **`TypeAdapterInterface` gained `quoteIdentifier()`.** Identifiers (table, view, column, ...
+  names) are now escaped wherever they are interpolated into SQL, so names containing backticks
+  dump correctly. Custom type adapters must implement the new method.
 - **`compress-level` is validated per method.** Levels up to the method maximum are accepted
   (Gzip 1-9, Lz4 1-12, Zstd 1-22) where 2.x rejected everything above 9, and a level above the
   method maximum now throws with a method-specific message.
@@ -188,6 +191,12 @@ $dumper->setTableWheres([
 ]);
 ```
 
+> [!WARNING]
+> The `where` dump setting, `setTableWheres()` and `setTableLimits()` values are inserted into
+> the dump's `SELECT` statements as raw SQL by design — that is what makes arbitrary conditions
+> possible. They are not escaped or validated, so never build them from untrusted input
+> (request parameters, user-supplied data, etc.).
+
 ## Table specific export limits
 
 You can register table specific 'limits' to limit the returned rows on a per table basis:
@@ -301,6 +310,7 @@ All options:
   - MySQL docs [8.0](https://dev.mysql.com/doc/refman/8.0/en/mysqlpump.html#option_mysqlpump_skip-definer)
 - **where**
   - MySQL docs [8.0](https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html#option_mysqldump_where)
+  - Raw SQL by design — see the warning under [Table specific export conditions](#table-specific-export-conditions)
 
 The following option is deprecated. Passing it triggers a deprecation notice, and it will be removed
 in a future version; use `init_commands` to control `FOREIGN_KEY_CHECKS` manually if needed.

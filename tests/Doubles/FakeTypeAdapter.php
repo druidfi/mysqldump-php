@@ -34,6 +34,7 @@ class FakeTypeAdapter implements TypeAdapterInterface
     public function getVersion(): string { return 'fake'; }
     public function lockTable(string $tableName): void { }
     public function parseColumnType(array $colType): array { return []; }
+    public function quoteIdentifier(string $identifier): string { return '`' . str_replace('`', '``', $identifier) . '`'; }
     public function restoreParameters(): string { return ''; }
     public function setupTransaction(): string { return ''; }
     public function showColumns(string $tableName): string { return ''; }

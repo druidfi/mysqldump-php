@@ -157,12 +157,15 @@ codebase; items that are done are kept checked for history.
 
 ## Security Improvements
 
-18. [ ] Harden identifier and input handling (classic prepared statements don't apply to
+18. [x] Harden identifier and input handling (classic prepared statements don't apply to
         identifiers or to a dump tool's SHOW/SELECT flow):
-    - [ ] Escape/validate table names consistently when interpolated into SQL
-          (e.g. `` `$tableName` `` in `listValues()`; a name containing a backtick would break the query)
-    - [ ] Document that `where`, `tableWheres` and `tableLimits` are raw SQL by design and must not
-          contain untrusted input
+    - [x] Escape/validate table names consistently when interpolated into SQL —
+          `quoteIdentifier()` added to `TypeAdapterInterface` (backtick-doubling in
+          `TypeAdapterMysql`) and applied to every identifier interpolation: SELECT/INSERT in
+          `TableDataDumper`, SHOW CREATE/DROP/LOCK/ALTER in `TypeAdapterMysql`, Stand-In tables;
+          INFORMATION_SCHEMA database-name string literals now go through `PDO::quote()`
+    - [x] Document that `where`, `tableWheres` and `tableLimits` are raw SQL by design and must not
+          contain untrusted input (README warning + setter docblocks + `ConfigOption` description)
 
 19. [ ] Improve security posture of the project:
     - [ ] Add a SECURITY.md with a vulnerability reporting policy
