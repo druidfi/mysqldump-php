@@ -338,6 +338,27 @@ Use **SHOW GRANTS FOR user@host;** to know what privileges user has. See the fol
 - [Which are the minimum privileges required to get a backup of a MySQL database schema?](https://dba.stackexchange.com/questions/55546/which-are-the-minimum-privileges-required-to-get-a-backup-of-a-mysql-database-sc/55572#55572)
 - [PROCESS privilege from MySQL 5.7.31 and MySQL 8.0.21 in July 2020](https://anothercoffee.net/how-to-fix-the-mysqldump-access-denied-process-privilege-error/)
 
+## Security considerations
+
+The library never stores credentials — they are passed to the constructor and used only to open
+the PDO connection. Keeping them safe is the calling application's responsibility. Do not hardcode
+credentials in code or commit them to version control; read them from environment variables or a
+secret manager instead:
+
+```php
+$dump = new \Druidfi\Mysqldump\Mysqldump(
+    sprintf('mysql:host=%s;dbname=%s', getenv('DB_HOST'), getenv('DB_NAME')),
+    getenv('DB_USER'),
+    getenv('DB_PASSWORD')
+);
+```
+
+Remember that the `where`, `setTableWheres()` and `setTableLimits()` values are raw SQL and must
+not be built from untrusted input — see the warning under
+[Table specific export conditions](#table-specific-export-conditions).
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
 ## Tests
 
 The testing script creates and populates a database using all possible datatypes. Then it exports it using both
