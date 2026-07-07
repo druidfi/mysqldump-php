@@ -359,6 +359,8 @@ docker compose exec -w /app/tests/scripts php84 ./test.sh mysql84
 docker compose exec -w /app/tests/scripts php85 ./test.sh mysql84
 docker compose exec -w /app/tests/scripts php84 ./test.sh mariadb
 docker compose exec -w /app/tests/scripts php85 ./test.sh mariadb
+docker compose exec -w /app/tests/scripts php84 ./test.sh mariadb11
+docker compose exec -w /app/tests/scripts php85 ./test.sh mariadb11
 ```
 
 ## Credits

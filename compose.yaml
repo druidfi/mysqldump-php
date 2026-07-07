@@ -27,6 +27,14 @@ services:
     volumes:
       - ./docker-entrypoint-initdb.d/mariadb-init.sql:/docker-entrypoint-initdb.d/00-init.sql
 
+  mariadb11:
+    container_name: mysqldump-php-mariadb-11
+    image: mariadb:11.8
+    env_file:
+      - .env.mysql
+    volumes:
+      - ./docker-entrypoint-initdb.d/mariadb-init.sql:/docker-entrypoint-initdb.d/00-init.sql
+
   php84:
     container_name: mysqldump-php-84
     build:
