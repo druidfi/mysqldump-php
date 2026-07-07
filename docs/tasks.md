@@ -119,12 +119,15 @@ codebase; items that are done are kept checked for history.
     - [x] Remove stale PHPDoc — the `getDatabaseStructure*` docblocks claiming to fill a
           non-existent `$this->tables` array went away with the methods themselves (task 1)
 
-13. [ ] Improve user documentation (README already covers install, hooks, settings, privileges):
+13. [x] Improve user documentation (README already covers install, hooks, settings, privileges):
     - [x] Document 2.x → 3.x upgrade / breaking changes (README "Upgrading from 2.x to 3.x")
     - [x] Replace references to the ifsnop wiki with own examples
     - [x] Document compression options incl. optional ext-zstd / ext-lz4 requirements
-    - [ ] Document dumping to stream wrappers (gs://, s3:// via league/flysystem etc.)
-          instead of adding cloud SDK dependencies to the library
+    - [x] Document dumping to stream wrappers (gs://, s3:// via league/flysystem etc.)
+          instead of adding cloud SDK dependencies to the library — README "Dumping to cloud
+          storage and other streams" section: `start()` opens the target with `fopen()`, so any
+          registered wrapper works; notes that `Gzip`/`Bzip2` are local-only and `Gzipstream`
+          is the wrapper-safe gzip
 
 ## Testing Improvements
 
