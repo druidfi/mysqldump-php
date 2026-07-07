@@ -9,6 +9,7 @@
 /composer.phar
 /tests/scripts/output/*.checksum
 /tests/scripts/output/*.sql
+/tests/scripts/output/*.sql.gz
 /vendor/
 /.phpunit.result.cache
 /.phpunit.cache/

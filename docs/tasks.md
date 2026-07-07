@@ -136,12 +136,16 @@ codebase; items that are done are kept checked for history.
     - [x] Add tests for edge cases
     - [x] Implement proper mocking for dependencies
 
-15. [ ] Extend integration testing (CI already runs PHP 8.4/8.5 × MySQL 8.0/8.4/MariaDB 10.11 and
+15. [x] Extend integration testing (CI already runs PHP 8.4/8.5 × MySQL 8.0/8.4/MariaDB 10.11 and
         compares output against native mysqldump):
     - [x] Test with different database versions
     - [x] Test with different PHP versions
-    - [ ] Broaden dump-settings coverage in `tests/scripts/test.sh` (e.g. compression methods,
-          `no-data` patterns, `skip-definer`; `complete-insert` is already covered)
+    - [x] Broaden dump-settings coverage in `tests/scripts/test.sh` (e.g. compression methods,
+          `no-data` patterns, `skip-definer`; `complete-insert` is already covered) — test017
+          proves Gzip/Gzipstream dumps decompress byte-identical to an uncompressed reference
+          (Bzip2/Zstd/Lz4 need optional extensions and stay unit-test-covered); test018 covers
+          `no-data` with an exact name + regex pattern (both `matches()` branches);
+          `skip-definer` was already covered by the test012 no-definer dump
     - [x] Add MariaDB 11.x LTS to the matrix — `mariadb:11.8` added to compose.yaml
           (`mariadb11` service) and to CI (8 combinations total); the filtered diffs proved
           immune to the 11.x output drift, but the image drops the `mysql`/`mysqldump`

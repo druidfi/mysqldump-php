@@ -85,7 +85,7 @@ for i in 000; do
 done
 }
 
-for i in $(seq 0 40) ; do
+for i in $(seq 0 60) ; do
     ret[$i]=0
 done
 
@@ -372,6 +372,35 @@ if [[ $errCode -ne 0 ]]; then error "$test"; fi
 # test include-tables: other tables must NOT appear in the dump
 test="Test#$index include-tables: verify excluded tables absent from dump"
 ! grep -q "INSERT INTO \`test001\`\|INSERT INTO \`test002\`\|INSERT INTO \`test003\`" output/mysqldump-php_test016.sql
+errCode=$?; ret[((index++))]=$errCode
+if [[ $errCode -ne 0 ]]; then error "$test"; fi
+
+# test compression: Gzip output must decompress to exactly the uncompressed reference dump
+test="Test#$index compression: gunzip mysqldump-php_test017_gzip.sql.gz matches reference"
+gunzip -c output/mysqldump-php_test017_gzip.sql.gz > output/mysqldump-php_test017_gzip.sql \
+    && diff output/mysqldump-php_test017.sql output/mysqldump-php_test017_gzip.sql
+errCode=$?; ret[((index++))]=$errCode
+if [[ $errCode -ne 0 ]]; then error "$test"; fi
+
+# test compression: Gzipstream output must decompress to exactly the uncompressed reference dump
+test="Test#$index compression: gunzip mysqldump-php_test017_gzipstream.sql.gz matches reference"
+gunzip -c output/mysqldump-php_test017_gzipstream.sql.gz > output/mysqldump-php_test017_gzipstream.sql \
+    && diff output/mysqldump-php_test017.sql output/mysqldump-php_test017_gzipstream.sql
+errCode=$?; ret[((index++))]=$errCode
+if [[ $errCode -ne 0 ]]; then error "$test"; fi
+
+# test no-data patterns: matched tables (exact name + regex) keep structure but lose data
+test="Test#$index no-data patterns: test015/test200 structure dumped without INSERTs"
+grep -q "CREATE TABLE \`test015\`" output/mysqldump-php_test018.sql \
+    && grep -q "CREATE TABLE \`test200\`" output/mysqldump-php_test018.sql \
+    && ! grep -q "INSERT INTO \`test015\`\|INSERT INTO \`test200\`" output/mysqldump-php_test018.sql
+errCode=$?; ret[((index++))]=$errCode
+if [[ $errCode -ne 0 ]]; then error "$test"; fi
+
+# test no-data patterns: tables not matching the patterns still have their data
+test="Test#$index no-data patterns: unmatched tables keep INSERTs"
+grep -q "INSERT INTO \`test000\`" output/mysqldump-php_test018.sql \
+    && grep -q "INSERT INTO \`test027\`" output/mysqldump-php_test018.sql
 errCode=$?; ret[((index++))]=$errCode
 if [[ $errCode -ne 0 ]]; then error "$test"; fi
 
