@@ -170,10 +170,13 @@ codebase; items that are done are kept checked for history.
     - [x] Document that `where`, `tableWheres` and `tableLimits` are raw SQL by design and must not
           contain untrusted input (README warning + setter docblocks + `ConfigOption` description)
 
-19. [ ] Improve security posture of the project:
-    - [ ] Add a SECURITY.md with a vulnerability reporting policy
-    - [ ] Document secure credential practices (env vars, secret managers) in the README
-          — actual credential storage/rotation is the caller's responsibility, not the library's
+19. [x] Improve security posture of the project:
+    - [x] Add a SECURITY.md with a vulnerability reporting policy — supported versions,
+          GitHub private vulnerability reporting as the channel, and a scope note that the
+          raw-SQL settings (`where`/`tableWheres`/`tableLimits`) are by design
+    - [x] Document secure credential practices (env vars, secret managers) in the README
+          ("Security considerations" section with a `getenv()` example) — actual credential
+          storage/rotation stays the caller's responsibility, not the library's
 
 ## Feature Enhancements
 
