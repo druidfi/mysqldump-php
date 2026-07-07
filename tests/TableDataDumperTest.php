@@ -153,6 +153,45 @@ class TableDataDumperTest extends TestCase
         $this->assertStringContainsString('(3,NULL)', $output);
     }
 
+    public function testTableAndColumnNamesWithBackticksAreEscaped(): void
+    {
+        // SQLite supports MySQL-style backtick quoting including doubling
+        $this->pdo->exec('CREATE TABLE `weird``name` (id INTEGER, `col``umn` TEXT)');
+        $this->pdo->exec("INSERT INTO `weird``name` VALUES (1, 'x')");
+
+        $dumpSettings = new DumpSettings(['complete-insert' => true]);
+        $writer = new DumpWriter($dumpSettings);
+        $writer->initialize($this->outputFile);
+
+        $columnTypes = [
+            'id' => ['is_numeric' => true, 'is_blob' => false, 'type' => 'int', 'type_sql' => 'int', 'is_virtual' => false],
+            'col`umn' => ['is_numeric' => false, 'is_blob' => false, 'type' => 'text', 'type_sql' => 'text', 'is_virtual' => false],
+        ];
+
+        $dumper = new TableDataDumper(
+            conn: $this->pdo,
+            settings: $dumpSettings,
+            db: new FakeTypeAdapter($this->pdo, $dumpSettings),
+            writer: $writer,
+            getColumnTypes: fn(string $table): array => $columnTypes,
+            getTableWhere: fn(string $table): false => false,
+            getTableLimit: fn(string $table): false => false,
+        );
+
+        $dumper->dump('weird`name');
+        $writer->close();
+
+        $output = file_get_contents($this->outputFile);
+
+        $this->assertStringContainsString(
+            "INSERT INTO `weird``name` (`id`, `col``umn`) VALUES (1,'x');",
+            $output
+        );
+        // Comment headers quote identifiers too, like native mysqldump
+        $this->assertStringContainsString('-- Dumping data for table `weird``name`', $output);
+        $this->assertStringContainsString('-- Dumped table `weird``name` with 1 row(s)', $output);
+    }
+
     public function testInfoHookReportsRowCount(): void
     {
         $payloads = [];

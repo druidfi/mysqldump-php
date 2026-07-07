@@ -85,7 +85,7 @@ class TableDataDumper
         // colStmt is used to form a query to obtain row values
         $colStmt = $this->getColumnStmt($columnTypes);
 
-        $query = "SELECT " . implode(",", $colStmt) . " FROM `$tableName`";
+        $query = "SELECT " . implode(",", $colStmt) . " FROM " . $this->db->quoteIdentifier($tableName);
 
         // Table specific conditions override the default 'where'
         $condition = ($this->getTableWhere)($tableName);
@@ -138,14 +138,19 @@ class TableDataDumper
             if ($onlyOnce || !$this->settings->isEnabled('extended-insert')) {
                 if ($this->settings->isEnabled('complete-insert') && count($colNames)) {
                     $line .= sprintf(
-                        '%s INTO `%s` (%s) VALUES (%s)',
+                        '%s INTO %s (%s) VALUES (%s)',
                         $insertType,
-                        $tableName,
+                        $this->db->quoteIdentifier($tableName),
                         implode(', ', $colNames),
                         $valueList
                     );
                 } else {
-                    $line .= sprintf('%s INTO `%s` VALUES (%s)', $insertType, $tableName, $valueList);
+                    $line .= sprintf(
+                        '%s INTO %s VALUES (%s)',
+                        $insertType,
+                        $this->db->quoteIdentifier($tableName),
+                        $valueList
+                    );
                 }
                 $onlyOnce = false;
             } else {
@@ -195,9 +200,10 @@ class TableDataDumper
     private function prepareListValues(string $tableName): void
     {
         if (!$this->settings->skipComments()) {
+            // Native mysqldump quotes identifiers in comment headers too
             $this->writer->write(
                 "--" . PHP_EOL .
-                "-- Dumping data for table `$tableName`" . PHP_EOL .
+                "-- Dumping data for table " . $this->db->quoteIdentifier($tableName) . PHP_EOL .
                 "--" . PHP_EOL . PHP_EOL
             );
         }
@@ -251,7 +257,7 @@ class TableDataDumper
 
         if (!$this->settings->skipComments()) {
             $this->writer->write(
-                "-- Dumped table `" . $tableName . "` with $count row(s)" . PHP_EOL .
+                "-- Dumped table " . $this->db->quoteIdentifier($tableName) . " with $count row(s)" . PHP_EOL .
                 '--' . PHP_EOL . PHP_EOL
             );
         }
@@ -315,17 +321,19 @@ class TableDataDumper
     {
         $colStmt = [];
         foreach ($columnTypes as $colName => $colType) {
+            $quotedColName = $this->db->quoteIdentifier((string) $colName);
+
             if ($colType['is_virtual']) {
                 $this->settings->setCompleteInsert();
             } elseif ($colType['type'] == 'double') {
                 // PHP 8.1+ returns double fields with float precision issues; dump via CONCAT
-                $colStmt[] = sprintf("CONCAT(`%s`) AS `%s`", $colName, $colName);
+                $colStmt[] = sprintf("CONCAT(%s) AS %s", $quotedColName, $quotedColName);
             } elseif ($colType['type'] === 'bit' && $this->settings->isEnabled('hex-blob')) {
-                $colStmt[] = sprintf("LPAD(HEX(`%s`),2,'0') AS `%s`", $colName, $colName);
+                $colStmt[] = sprintf("LPAD(HEX(%s),2,'0') AS %s", $quotedColName, $quotedColName);
             } elseif ($colType['is_blob'] && $this->settings->isEnabled('hex-blob')) {
-                $colStmt[] = sprintf("HEX(`%s`) AS `%s`", $colName, $colName);
+                $colStmt[] = sprintf("HEX(%s) AS %s", $quotedColName, $quotedColName);
             } else {
-                $colStmt[] = sprintf("`%s`", $colName);
+                $colStmt[] = $quotedColName;
             }
         }
 
@@ -346,7 +354,7 @@ class TableDataDumper
             if ($colType['is_virtual']) {
                 $this->settings->setCompleteInsert();
             } else {
-                $colNames[] = sprintf('`%s`', $colName);
+                $colNames[] = $this->db->quoteIdentifier((string) $colName);
             }
         }
 

@@ -122,7 +122,7 @@ class ConfigOption
     #[DefaultValue(value: false, description: 'Skip DEFINER clauses')]
     public const string SKIP_DEFINER = 'skip-definer';
 
-    #[DefaultValue(value: '', description: 'WHERE clause for filtering data')]
+    #[DefaultValue(value: '', description: 'WHERE clause for filtering data (raw SQL, must not contain untrusted input)')]
     public const string WHERE = 'where';
 
     #[DefaultValue(value: true, description: 'Disable foreign key checks (deprecated)')]

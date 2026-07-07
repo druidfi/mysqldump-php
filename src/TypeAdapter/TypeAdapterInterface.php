@@ -43,6 +43,12 @@ interface TypeAdapterInterface
      */
     public function parseColumnType(array $colType): array;
 
+    /**
+     * Quote an identifier (table, view, column, ... name) for safe interpolation
+     * into SQL, escaping any quoting characters the name itself contains.
+     */
+    public function quoteIdentifier(string $identifier): string;
+
     public function restoreParameters(): string;
     public function setupTransaction(): string;
     public function showColumns(string $tableName): string;

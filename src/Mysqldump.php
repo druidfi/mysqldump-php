@@ -435,7 +435,10 @@ class Mysqldump
         if (!$this->settings->isEnabled('no-create-info')) {
             // The comment is only written when the table exists, so it is
             // passed into the closure instead of being written up front.
-            $comment = $this->commentBlock(sprintf('Table structure for table `%s`', $tableName));
+            // Native mysqldump quotes identifiers in comment headers too.
+            $comment = $this->commentBlock(
+                sprintf('Table structure for table %s', $this->db->quoteIdentifier($tableName))
+            );
 
             $this->writeStructureFromShowCreate(
                 $this->db->showCreateTable($tableName),
@@ -498,7 +501,7 @@ class Mysqldump
      */
     private function getViewStructureTable(string $viewName): void
     {
-        $this->writeComment(sprintf('Stand-In structure for view `%s`', $viewName));
+        $this->writeComment(sprintf('Stand-In structure for view %s', $this->db->quoteIdentifier($viewName)));
 
         // create views as tables, to resolve dependencies
         $this->writeStructureFromShowCreate(
@@ -525,14 +528,14 @@ class Mysqldump
         $ret = [];
 
         foreach ($this->tableColumnTypes[$viewName] as $k => $v) {
-            $ret[] = sprintf('`%s` %s', $k, $v['type_sql']);
+            $ret[] = sprintf('%s %s', $this->db->quoteIdentifier((string) $k), $v['type_sql']);
         }
 
         $ret = implode(PHP_EOL . ',', $ret);
 
         return sprintf(
-            "CREATE TABLE IF NOT EXISTS `%s` (" . PHP_EOL . "%s" . PHP_EOL . ");" . PHP_EOL,
-            $viewName,
+            "CREATE TABLE IF NOT EXISTS %s (" . PHP_EOL . "%s" . PHP_EOL . ");" . PHP_EOL,
+            $this->db->quoteIdentifier($viewName),
             $ret
         );
     }
@@ -542,7 +545,7 @@ class Mysqldump
      */
     private function getViewStructureView(string $viewName): void
     {
-        $this->writeComment(sprintf('View structure for view `%s`', $viewName));
+        $this->writeComment(sprintf('View structure for view %s', $this->db->quoteIdentifier($viewName)));
 
         // Create views, to resolve dependencies replacing tables with views
         $this->writeStructureFromShowCreate(
@@ -624,6 +627,9 @@ class Mysqldump
      * Keyed by table name, with the value as the conditions:
      * e.g. 'users' => 'date_registered > NOW() - INTERVAL 6 MONTH AND deleted=0'
      *
+     * The conditions are inserted into the SELECT statements as raw SQL by
+     * design and must not contain untrusted input.
+     *
      * @param array<string, string> $tableWheres
      */
     public function setTableWheres(array $tableWheres): void
@@ -644,6 +650,10 @@ class Mysqldump
 
     /**
      * Keyed by table name, with the value as the numeric limit: e.g. 'users' => 3000
+     *
+     * Non-numeric values are ignored (see getTableLimit()), but the resulting
+     * LIMIT is inserted into the SELECT statements as raw SQL by design and
+     * must not contain untrusted input.
      *
      * @param array<string, mixed> $tableLimits
      */

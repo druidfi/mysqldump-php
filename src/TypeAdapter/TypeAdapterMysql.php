@@ -54,6 +54,15 @@ class TypeAdapterMysql implements TypeAdapterInterface
         }
     }
 
+    /**
+     * Quote an identifier MySQL-style: wrap in backticks and double any
+     * backtick the name itself contains.
+     */
+    public function quoteIdentifier(string $identifier): string
+    {
+        return '`' . str_replace('`', '``', $identifier) . '`';
+    }
+
     public function databases(string $databaseName): string
     {
         $stmt = $this->db->query("SHOW VARIABLES LIKE 'character_set_database';");
@@ -65,45 +74,45 @@ class TypeAdapterMysql implements TypeAdapterInterface
         $stmt->closeCursor();
 
         return sprintf(
-            "CREATE DATABASE /*!32312 IF NOT EXISTS*/ `%s`" .
+            "CREATE DATABASE /*!32312 IF NOT EXISTS*/ %s" .
             " /*!40100 DEFAULT CHARACTER SET %s " .
             " COLLATE %s */;" . PHP_EOL . PHP_EOL .
-            "USE `%s`;" . PHP_EOL . PHP_EOL,
-            $databaseName,
+            "USE %s;" . PHP_EOL . PHP_EOL,
+            $this->quoteIdentifier($databaseName),
             $characterSet,
             $collation,
-            $databaseName
+            $this->quoteIdentifier($databaseName)
         );
     }
 
     public function showCreateTable(string $tableName): string
     {
-        return "SHOW CREATE TABLE `$tableName`";
+        return "SHOW CREATE TABLE " . $this->quoteIdentifier($tableName);
     }
 
     public function showCreateView(string $viewName): string
     {
-        return "SHOW CREATE VIEW `$viewName`";
+        return "SHOW CREATE VIEW " . $this->quoteIdentifier($viewName);
     }
 
     public function showCreateTrigger(string $triggerName): string
     {
-        return "SHOW CREATE TRIGGER `$triggerName`";
+        return "SHOW CREATE TRIGGER " . $this->quoteIdentifier($triggerName);
     }
 
     public function showCreateProcedure(string $procedureName): string
     {
-        return "SHOW CREATE PROCEDURE `$procedureName`";
+        return "SHOW CREATE PROCEDURE " . $this->quoteIdentifier($procedureName);
     }
 
     public function showCreateFunction(string $functionName): string
     {
-        return "SHOW CREATE FUNCTION `$functionName`";
+        return "SHOW CREATE FUNCTION " . $this->quoteIdentifier($functionName);
     }
 
     public function showCreateEvent(string $eventName): string
     {
-        return "SHOW CREATE EVENT `$eventName`";
+        return "SHOW CREATE EVENT " . $this->quoteIdentifier($eventName);
     }
 
     /**
@@ -216,8 +225,8 @@ class TypeAdapterMysql implements TypeAdapterInterface
             }
         }
 
-        $ret .= "/*!50003 DROP PROCEDURE IF EXISTS `".
-            $row['Procedure']."` */;".PHP_EOL.
+        $ret .= "/*!50003 DROP PROCEDURE IF EXISTS ".
+            $this->quoteIdentifier((string) $row['Procedure'])." */;".PHP_EOL.
             "/*!40101 SET @saved_cs_client     = @@character_set_client */;".PHP_EOL.
             "/*!40101 SET character_set_client = ".$this->settings->getDefaultCharacterSet()." */;".PHP_EOL.
             "DELIMITER ;;".PHP_EOL.
@@ -255,8 +264,8 @@ class TypeAdapterMysql implements TypeAdapterInterface
             }
         }
 
-        $ret .= "/*!50003 DROP FUNCTION IF EXISTS `".
-            $row['Function']."` */;".PHP_EOL.
+        $ret .= "/*!50003 DROP FUNCTION IF EXISTS ".
+            $this->quoteIdentifier((string) $row['Function'])." */;".PHP_EOL.
             "/*!40101 SET @saved_cs_client     = @@character_set_client */;".PHP_EOL.
             "/*!50003 SET @saved_cs_results     = @@character_set_results */ ;".PHP_EOL.
             "/*!50003 SET @saved_col_connection = @@collation_connection */ ;".PHP_EOL.
@@ -307,7 +316,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
         }
 
         $ret .= "/*!50106 SET @save_time_zone= @@TIME_ZONE */ ;".PHP_EOL.
-            "/*!50106 DROP EVENT IF EXISTS `".$eventName."` */;".PHP_EOL.
+            "/*!50106 DROP EVENT IF EXISTS ".$this->quoteIdentifier((string) $eventName)." */;".PHP_EOL.
             "DELIMITER ;;".PHP_EOL.
             "/*!50003 SET @saved_cs_client      = @@character_set_client */ ;;".PHP_EOL.
             "/*!50003 SET @saved_cs_results     = @@character_set_results */ ;;".PHP_EOL.
@@ -338,9 +347,9 @@ class TypeAdapterMysql implements TypeAdapterInterface
         return sprintf(
             "SELECT TABLE_NAME AS tbl_name ".
             "FROM INFORMATION_SCHEMA.TABLES ".
-            "WHERE TABLE_TYPE='BASE TABLE' AND TABLE_SCHEMA='%s' ".
+            "WHERE TABLE_TYPE='BASE TABLE' AND TABLE_SCHEMA=%s ".
             "ORDER BY TABLE_NAME",
-            $databaseName
+            $this->db->quote($databaseName)
         );
     }
 
@@ -349,20 +358,20 @@ class TypeAdapterMysql implements TypeAdapterInterface
         return sprintf(
             "SELECT TABLE_NAME AS tbl_name ".
             "FROM INFORMATION_SCHEMA.TABLES ".
-            "WHERE TABLE_TYPE='VIEW' AND TABLE_SCHEMA='%s' ".
+            "WHERE TABLE_TYPE='VIEW' AND TABLE_SCHEMA=%s ".
             "ORDER BY TABLE_NAME",
-            $databaseName
+            $this->db->quote($databaseName)
         );
     }
 
     public function showTriggers(string $databaseName): string
     {
-        return sprintf("SHOW TRIGGERS FROM `%s`;", $databaseName);
+        return sprintf("SHOW TRIGGERS FROM %s;", $this->quoteIdentifier($databaseName));
     }
 
     public function showColumns(string $tableName): string
     {
-        return sprintf("SHOW COLUMNS FROM `%s`;", $tableName);
+        return sprintf("SHOW COLUMNS FROM %s;", $this->quoteIdentifier($tableName));
     }
 
     public function showProcedures(string $databaseName): string
@@ -370,8 +379,8 @@ class TypeAdapterMysql implements TypeAdapterInterface
         return sprintf(
             "SELECT SPECIFIC_NAME AS procedure_name ".
             "FROM INFORMATION_SCHEMA.ROUTINES ".
-            "WHERE ROUTINE_TYPE='PROCEDURE' AND ROUTINE_SCHEMA='%s'",
-            $databaseName
+            "WHERE ROUTINE_TYPE='PROCEDURE' AND ROUTINE_SCHEMA=%s",
+            $this->db->quote($databaseName)
         );
     }
 
@@ -380,8 +389,8 @@ class TypeAdapterMysql implements TypeAdapterInterface
         return sprintf(
             "SELECT SPECIFIC_NAME AS function_name ".
             "FROM INFORMATION_SCHEMA.ROUTINES ".
-            "WHERE ROUTINE_TYPE='FUNCTION' AND ROUTINE_SCHEMA='%s'",
-            $databaseName
+            "WHERE ROUTINE_TYPE='FUNCTION' AND ROUTINE_SCHEMA=%s",
+            $this->db->quote($databaseName)
         );
     }
 
@@ -393,8 +402,8 @@ class TypeAdapterMysql implements TypeAdapterInterface
         return sprintf(
             "SELECT EVENT_NAME AS event_name ".
             "FROM INFORMATION_SCHEMA.EVENTS ".
-            "WHERE EVENT_SCHEMA='%s'",
-            $databaseName
+            "WHERE EVENT_SCHEMA=%s",
+            $this->db->quote($databaseName)
         );
     }
 
@@ -416,7 +425,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
 
     public function lockTable(string $tableName): void
     {
-        $this->db->exec(sprintf("LOCK TABLES `%s` READ LOCAL", $tableName));
+        $this->db->exec(sprintf("LOCK TABLES %s READ LOCAL", $this->quoteIdentifier($tableName)));
     }
 
     public function unlockTable(string $tableName): void
@@ -426,7 +435,7 @@ class TypeAdapterMysql implements TypeAdapterInterface
 
     public function startAddLockTable(string $tableName): string
     {
-        return sprintf("LOCK TABLES `%s` WRITE;" . PHP_EOL, $tableName);
+        return sprintf("LOCK TABLES %s WRITE;" . PHP_EOL, $this->quoteIdentifier($tableName));
     }
 
     public function endAddLockTable(string $tableName): string
@@ -436,12 +445,12 @@ class TypeAdapterMysql implements TypeAdapterInterface
 
     public function startAddDisableKeys(string $tableName): string
     {
-        return sprintf("/*!40000 ALTER TABLE `%s` DISABLE KEYS */;". PHP_EOL, $tableName);
+        return sprintf("/*!40000 ALTER TABLE %s DISABLE KEYS */;". PHP_EOL, $this->quoteIdentifier($tableName));
     }
 
     public function endAddDisableKeys(string $tableName): string
     {
-        return sprintf("/*!40000 ALTER TABLE `%s` ENABLE KEYS */;". PHP_EOL, $tableName);
+        return sprintf("/*!40000 ALTER TABLE %s ENABLE KEYS */;". PHP_EOL, $this->quoteIdentifier($tableName));
     }
 
     public function startDisableAutocommit(): string
@@ -456,26 +465,26 @@ class TypeAdapterMysql implements TypeAdapterInterface
 
     public function addDropDatabase(string $databaseName): string
     {
-        return sprintf("/*!40000 DROP DATABASE IF EXISTS `%s`*/;". PHP_EOL.PHP_EOL, $databaseName);
+        return sprintf("/*!40000 DROP DATABASE IF EXISTS %s*/;". PHP_EOL.PHP_EOL, $this->quoteIdentifier($databaseName));
     }
 
     public function addDropTrigger(string $triggerName): string
     {
-        return sprintf("DROP TRIGGER IF EXISTS `%s`;".PHP_EOL, $triggerName);
+        return sprintf("DROP TRIGGER IF EXISTS %s;".PHP_EOL, $this->quoteIdentifier($triggerName));
     }
 
     public function dropTable(string $tableName): string
     {
-        return sprintf("DROP TABLE IF EXISTS `%s`;".PHP_EOL, $tableName);
+        return sprintf("DROP TABLE IF EXISTS %s;".PHP_EOL, $this->quoteIdentifier($tableName));
     }
 
     public function dropView(string $viewName): string
     {
         return sprintf(
-            "DROP TABLE IF EXISTS `%s`;".PHP_EOL.
-            "/*!50001 DROP VIEW IF EXISTS `%s`*/;".PHP_EOL,
-            $viewName,
-            $viewName
+            "DROP TABLE IF EXISTS %s;".PHP_EOL.
+            "/*!50001 DROP VIEW IF EXISTS %s*/;".PHP_EOL,
+            $this->quoteIdentifier($viewName),
+            $this->quoteIdentifier($viewName)
         );
     }
 
