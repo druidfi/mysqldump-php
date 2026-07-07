@@ -67,6 +67,9 @@ from 2.x. The following changes may require action:
 - **`compress-level` is validated per method.** Levels up to the method maximum are accepted
   (Gzip 1-9, Lz4 1-12, Zstd 1-22) where 2.x rejected everything above 9, and a level above the
   method maximum now throws with a method-specific message.
+- **The protected `Mysqldump::tableColumnTypes()` accessor was removed.** Column type maps are
+  now freed as soon as each table or view has been dumped, so memory no longer grows with the
+  number of tables; the accessor had nothing meaningful to return anymore.
 - **Exceptions are now typed.** The library throws subclasses of
   `Druidfi\Mysqldump\Exception\MysqldumpException` instead of bare `Exception`. No action is
   needed — the base class extends `Exception`, so existing `catch (\Exception $e)` blocks keep

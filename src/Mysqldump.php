@@ -209,6 +209,9 @@ class Mysqldump
                 if (!$no_data && !$this->matches($table, $this->settings->getNoData())) {
                     $dataDumper->dump($table);
                 }
+                // Column types are only needed between structure and data dump of this
+                // table; free them so the map does not grow with the number of tables.
+                unset($this->tableColumnTypes[$table]);
             },
             getExcludedTables: fn(): array => $this->settings->getExcludedTables(),
             getNoData: fn(): array => $this->settings->getNoData()
@@ -237,6 +240,8 @@ class Mysqldump
                 if ($this->matches($name, $this->settings->getExcludedTables())) { return; }
                 $this->tableColumnTypes[$name] = $this->getTableColumnTypes($name);
                 $this->getViewStructureTable($name);
+                // Only the Stand-In table above needs the view's column types.
+                unset($this->tableColumnTypes[$name]);
             },
             getViewStructureView: function (string $name): void {
                 if ($this->settings->isEnabled('no-create-info')) { return; }
@@ -482,16 +487,6 @@ class Mysqldump
         $columns->closeCursor();
 
         return $columnTypes;
-    }
-
-    /**
-     * Get table column types.
-     *
-     * @return array<string, array<string, array<string, mixed>>>
-     */
-    protected function tableColumnTypes(): array
-    {
-        return $this->tableColumnTypes;
     }
 
     /**
