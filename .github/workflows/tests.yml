@@ -26,30 +26,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    services:
-      db:
-        image: ${{ matrix.database_image }}
-        env:
-          # The MySQL docker container requires these environment variables to be set
-          # so we can create and migrate the test database.
-          # See: https://hub.docker.com/_/mysql
-          MARIADB_ROOT_PASSWORD: example
-          MYSQL_ROOT_PASSWORD: example
-          MYSQL_DATABASE: example
-          MYSQL_USER: example
-          MYSQL_PASSWORD: example
-          MYSQL_AUTHENTICATION_PLUGIN: ${{ matrix.auth_plugin }}
-          # MySQL 8.4 disables mysql_native_password by default, but the
-          # MariaDB client on the runner cannot use caching_sha2_password
-          # without TLS, so the plugin is re-enabled via server flag.
-          MYSQL_EXTRA_FLAGS: ${{ matrix.mysql_extra_flags }}
-        ports:
-          # Opens port 3306 on service container and host
-          # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
-          - 3306:3306
-          # Before continuing, verify the mysql container is reachable from the ubuntu host
-        options: --name db --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     strategy:
       fail-fast: false
       matrix:
@@ -58,39 +34,37 @@ jobs:
           # MySQL 8.0
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnamilegacy/mysql:8.0.40
+            database_image: mysql:8.0
             php-version: 8.4
-            auth_plugin: mysql_native_password
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnamilegacy/mysql:8.0.40
+            database_image: mysql:8.0
             php-version: 8.5
-            auth_plugin: mysql_native_password
 
-          # MySQL 8.4 LTS (no auth_plugin: the default_authentication_plugin
-          # server option was removed in 8.4)
+          # MySQL 8.4 LTS: mysql_native_password is disabled by default, but
+          # the test user needs it (the clients used in tests cannot use
+          # caching_sha2_password without TLS), so the plugin is re-enabled
+          # via server flag — same as compose.yaml.
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnamilegacy/mysql:8.4.5
+            database_image: mysql:8.4
             php-version: 8.4
-            mysql_extra_flags: --mysql-native-password=ON
+            database_flags: --mysql-native-password=ON
           - os: ubuntu-24.04
             database: mysql
-            database_image: bitnamilegacy/mysql:8.4.5
+            database_image: mysql:8.4
             php-version: 8.5
-            mysql_extra_flags: --mysql-native-password=ON
+            database_flags: --mysql-native-password=ON
 
           # MariaDB 10.11 LTS
           - os: ubuntu-22.04
             database: mariadb
-            database_image: bitnamilegacy/mariadb:10.11.9
+            database_image: mariadb:10.11
             php-version: 8.4
-            auth_plugin: mysql_native_password
           - os: ubuntu-22.04
             database: mariadb
-            database_image: bitnamilegacy/mariadb:10.11.9
+            database_image: mariadb:10.11
             php-version: 8.5
-            auth_plugin: mysql_native_password
 
     steps:
 
@@ -99,6 +73,22 @@ jobs:
         with:
           fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Start database container
+        # Same setup as compose.yaml: official image, the repo init script is
+        # run by the image entrypoint, and server flags are passed as command
+        # arguments. A `docker run` step is used instead of a GitHub `services:`
+        # block because services start before checkout (no repo files to mount)
+        # and cannot pass command arguments — the two limitations that
+        # previously forced the Bitnami images with their custom env vars.
+        # The database boots in the background while the PHP steps run.
+        run: |
+          docker run --detach --name db \
+            --publish 3306:3306 \
+            --env MYSQL_ROOT_PASSWORD=example \
+            --env MARIADB_ROOT_PASSWORD=example \
+            --volume "$PWD/docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro" \
+            ${{ matrix.database_image }} ${{ matrix.database_flags }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -120,11 +110,21 @@ jobs:
       - name: Run PHPunit tests
         run: vendor/bin/phpunit
 
-      - name: Create user and databases for testing
-        # Run inside the service container over the local socket: on
-        # MySQL 8.4 the root user uses caching_sha2_password, which the
-        # runner's MariaDB client cannot authenticate with over plain TCP.
-        run: cat docker-entrypoint-initdb.d/${{ matrix.database }}-init.sql | docker exec -i -e MYSQL_PWD=example db mysql -uroot
+      - name: Wait for database to be ready
+        # -h127.0.0.1 forces TCP inside the container: the entrypoint's
+        # temporary init-phase server only listens on the unix socket, so this
+        # only succeeds once the final server is up and the init script
+        # (which creates the example user and test databases) has run.
+        run: |
+          for i in $(seq 1 60); do
+            if docker exec db mysql -h127.0.0.1 -uexample -pexample -e "SELECT 1" >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Database did not become ready in time" >&2
+          docker logs db >&2
+          exit 1
 
       - name: Run test script
         run: |
