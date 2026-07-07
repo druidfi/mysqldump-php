@@ -139,10 +139,10 @@ codebase; items that are done are kept checked for history.
     - [x] Test with different PHP versions
     - [ ] Broaden dump-settings coverage in `tests/scripts/test.sh` (e.g. compression methods,
           `no-data` patterns, `skip-definer`; `complete-insert` is already covered)
-    - [ ] Add MariaDB 11.x LTS to the matrix — unblocked since CI switched from the frozen
-          `bitnamilegacy/*` images to official ones (`mariadb:11.8` LTS exists); needs a trial
-          run first to check for output drift in the filtered diffs (e.g. the mariadb-dump
-          sandbox-mode header line)
+    - [x] Add MariaDB 11.x LTS to the matrix — `mariadb:11.8` added to compose.yaml
+          (`mariadb11` service) and to CI (8 combinations total); the filtered diffs proved
+          immune to the 11.x output drift, but the image drops the `mysql`/`mysqldump`
+          compatibility symlinks, so the CI readiness gate picks the client binary per database
 
 16. [ ] Add performance testing:
     - [ ] Benchmark dump operations against a large fixture database

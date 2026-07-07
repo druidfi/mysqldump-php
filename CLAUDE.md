@@ -80,7 +80,7 @@ docs/
 
 # Root-level Docker test setup
 Dockerfile                     # PHP test container (PHP_SHORT_VERSION build arg)
-compose.yaml                   # Services: mysql, mysql84, mariadb, php84, php85
+compose.yaml                   # Services: mysql, mysql84, mariadb, mariadb11, php84, php85
 config/skip-ssl.cnf            # MySQL client config for test containers
 docker-entrypoint-initdb.d/    # DB init scripts (mysql-init.sql, mariadb-init.sql)
 .env.mysql                     # Shared DB credentials for compose services
@@ -106,7 +106,7 @@ cd tests/scripts && ./test.sh 127.0.0.1
 
 # Docker-based testing
 docker compose up mysql php84    # or php85; mysql84 for MySQL 8.4 LTS
-docker compose up mariadb php84  # same, against MariaDB
+docker compose up mariadb php84  # same, against MariaDB (mariadb11 for 11.8 LTS)
 ```
 
 ## Key Coding Conventions
@@ -166,14 +166,14 @@ Druidfi\Mysqldump\
 ### Integration Tests
 - Compare mysqldump-php output against native mysqldump
 - Tests must produce identical output to pass
-- Run against MySQL 8.0 and MariaDB 10.11
+- Run against MySQL 8.0/8.4 and MariaDB 10.11/11.8
 - Test fixtures in `tests/scripts/test*.src.sql`
 
 ### CI Matrix
 Tests run on:
 - PHP: 8.4, 8.5
-- Databases: MySQL 8.0, MySQL 8.4 LTS, MariaDB 10.11
-- Total: 6 combinations
+- Databases: MySQL 8.0, MySQL 8.4 LTS, MariaDB 10.11 LTS, MariaDB 11.8 LTS
+- Total: 8 combinations
 
 The `2.x` branch keeps the wider PHP 8.1–8.5 matrix (10 combinations).
 

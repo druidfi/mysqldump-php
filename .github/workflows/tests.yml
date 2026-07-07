@@ -66,6 +66,17 @@ jobs:
             database_image: mariadb:10.11
             php-version: 8.5
 
+          # MariaDB 11.8 LTS (the image no longer ships the mysql/mysqldump
+          # compatibility symlinks — container binaries are mariadb/mariadb-dump)
+          - os: ubuntu-22.04
+            database: mariadb
+            database_image: mariadb:11.8
+            php-version: 8.4
+          - os: ubuntu-22.04
+            database: mariadb
+            database_image: mariadb:11.8
+            php-version: 8.5
+
     steps:
 
       - name: Checkout code
@@ -115,9 +126,12 @@ jobs:
         # temporary init-phase server only listens on the unix socket, so this
         # only succeeds once the final server is up and the init script
         # (which creates the example user and test databases) has run.
+        # MariaDB 11+ images no longer ship the `mysql` compatibility symlink.
         run: |
+          CLIENT=mysql
+          if [ "${{ matrix.database }}" = "mariadb" ]; then CLIENT=mariadb; fi
           for i in $(seq 1 60); do
-            if docker exec db mysql -h127.0.0.1 -uexample -pexample -e "SELECT 1" >/dev/null 2>&1; then
+            if docker exec db "$CLIENT" -h127.0.0.1 -uexample -pexample -e "SELECT 1" >/dev/null 2>&1; then
               exit 0
             fi
             sleep 2
@@ -127,8 +141,9 @@ jobs:
           exit 1
 
       - name: Run test script
+        # test.sh compares against the runner's own mysqldump binary. (An
+        # earlier `alias mysqldump='docker exec db mysqldump'` here never
+        # reached test.sh — aliases do not propagate to child processes.)
         run: |
-          shopt -s expand_aliases
-          alias mysqldump='docker exec db mysqldump'
           mysqldump --version
           cd tests/scripts && ./test.sh 127.0.0.1
