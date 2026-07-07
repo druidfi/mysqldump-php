@@ -22,7 +22,8 @@ Out of the box, `mysqldump-php` supports backing up table structures, the data i
 - supports virtual columns from MySQL 5.7
 - does insert-ignore, like a REPLACE but ignoring errors if a duplicate key exists
 - modifying data from database on-the-fly when dumping, using hooks
-- can save directly to Google Cloud storage over a compressed stream wrapper (GZIPSTREAM)
+- can save directly to cloud storage (Google Cloud Storage, Amazon S3, ...) over
+  [PHP stream wrappers](#dumping-to-cloud-storage-and-other-streams)
 
 ## Requirements
 
@@ -220,6 +221,29 @@ $dumper->setTableLimits([
     'users' => [20, 10], // MySQL query equivalent "... LIMIT 20, 10", i.e. 10 rows starting from offset 20
 ]);
 ```
+## Dumping to cloud storage and other streams
+
+The filename given to `start()` is opened with PHP's `fopen()`, so any registered
+[stream wrapper](https://www.php.net/manual/en/wrappers.php) works as a dump target: built-in ones
+like `php://stdout` or `ftp://`, and cloud storage wrappers registered by the respective SDKs —
+`gs://` by [google/cloud-storage](https://github.com/googleapis/google-cloud-php-storage), `s3://` by
+[aws/aws-sdk-php](https://github.com/aws/aws-sdk-php), or any
+[league/flysystem](https://flysystem.thephpleague.com/) adapter exposed as a wrapper. No cloud SDK
+dependencies are needed in this library:
+
+```php
+$storage = new Google\Cloud\Storage\StorageClient(['projectId' => 'my-project']);
+$storage->registerStreamWrapper();
+
+$dump = new \Druidfi\Mysqldump\Mysqldump($dsn, $user, $pass, ['compress' => 'Gzipstream']);
+$dump->start('gs://my-bucket/backup.sql.gz');
+```
+
+> [!NOTE]
+> The `Gzip` and `Bzip2` compression methods use `gzopen()`/`bzopen()`, which only work on local
+> files. When dumping to a stream wrapper, use `Gzipstream` (identical gzip output written through
+> `fopen()`), `Zstd`, `Lz4` or `None`.
+
 ## Dump Settings
 
 Dump settings can be changed from default values with the 4th argument of the Mysqldump constructor.
