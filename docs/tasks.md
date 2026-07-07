@@ -153,13 +153,16 @@ codebase; items that are done are kept checked for history.
 
 ## Performance Improvements
 
-17. [ ] Optimize memory usage:
+17. [x] Optimize memory usage:
     - [x] Review and optimize large data structures
     - [x] Use generators for large result sets
     - [x] `iterate*()` generator buffering reviewed and kept as deliberate: only object *names*
           are buffered (tiny), and the cursor must be closed before consumers run their own
           queries per object — documented in `iterateObjectNames()`
-    - [ ] Review `$tableColumnTypes` growth on databases with many tables/columns
+    - [x] Review `$tableColumnTypes` growth on databases with many tables/columns — entries are
+          strictly populate-then-consume (table structure → data dump; view → Stand-In table),
+          so each entry is now freed right after its table/view is dumped and memory stays flat;
+          the unused protected `tableColumnTypes()` accessor was removed (README upgrade note)
 
 ## Security Improvements
 
