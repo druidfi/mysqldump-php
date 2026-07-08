@@ -22,7 +22,7 @@ class TableDataDumper
      * @param Closure $getColumnTypes function(string $table): array<string, array<string, mixed>>
      * @param Closure $getTableWhere function(string $table): string|false
      * @param Closure $getTableLimit function(string $table): int|string|false
-     * @param Closure|null $transformTableRow function(string $table, array $row): array
+     * @param Closure|null $transformTableRow function(string $table, array $row): ?array — null skips the row
      * @param Closure|null $transformColumnValue function(string $table, string $col, mixed $value, array $row): mixed
      * @param Closure|null $info function(string $object, array $payload): void
      */
@@ -131,6 +131,14 @@ class TableDataDumper
 
         $line = '';
         foreach ($resultSet as $row) {
+            if ($this->transformTableRow) {
+                $row = ($this->transformTableRow)($tableName, $row);
+
+                if ($row === null) {
+                    continue;
+                }
+            }
+
             $count++;
             $values = $this->prepareColumnValues($tableName, $columnTypes, $row);
             $valueList = implode(',', $values);
@@ -268,16 +276,13 @@ class TableDataDumper
      *
      * @param string $tableName Name of table which contains rows
      * @param array<string, array<string, mixed>> $columnTypes Column type info for the table
-     * @param array<string, mixed> $row Associative array of column names and values to be quoted
+     * @param array<string, mixed> $row Associative array of column names and values to be quoted,
+     *                                  already passed through the row transform hook
      * @return array<int, mixed> quoted values ready for the VALUES list
      */
     private function prepareColumnValues(string $tableName, array $columnTypes, array $row): array
     {
         $ret = [];
-
-        if ($this->transformTableRow) {
-            $row = ($this->transformTableRow)($tableName, $row);
-        }
 
         $hexBlobEnabled = $this->settings->isEnabled('hex-blob');
         foreach ($row as $colName => $colValue) {

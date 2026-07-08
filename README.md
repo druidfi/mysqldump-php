@@ -165,6 +165,27 @@ $dumper->setTransformTableRowHook(function ($tableName, array $row) {
 $dumper->start('storage/work/dump.sql');
 ```
 
+## Filtering rows when exporting
+
+The same hook can drop rows entirely: return `null` instead of the row and it is left out of
+the dump. Unlike the `where`/`setTableWheres()` settings this filters in PHP, so it works for
+conditions that are hard to express in SQL or that depend on data outside the database:
+
+```php
+$dumper->setTransformTableRowHook(function ($tableName, array $row) {
+    // Exclude soft-deleted users from the dump
+    if ($tableName === 'users' && $row['deleted_at'] !== null) {
+        return null;
+    }
+
+    return $row;
+});
+```
+
+Skipped rows are not counted in the dump's row-count comments or in the info hook's `rowCount`.
+Prefer `where`/`setTableWheres()` when the condition is expressible in SQL — filtering in the
+database avoids transferring the skipped rows at all.
+
 ## Getting information about the dump
 
 You can register a callable that will be used to report on the progress of the dump

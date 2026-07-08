@@ -714,6 +714,9 @@ class Mysqldump
 
     /**
      * Set a callable that will be used to transform table rows.
+     *
+     * Called as function(string $tableName, array $row): ?array. Return the
+     * (possibly modified) row, or null to skip the row from the dump entirely.
      */
     public function setTransformTableRowHook(callable $callable): void
     {
