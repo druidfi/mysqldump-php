@@ -246,6 +246,59 @@ try {
 
     $dump->start("output/mysqldump-php_test016.sql");
 
+    // test017: compression methods — the decompressed output must be byte-identical to an
+    // uncompressed dump made with the same settings. skip-dump-date makes the dumps
+    // reproducible across runs. Gzip and Gzipstream only: ext-zlib is always available,
+    // while Bzip2/Zstd/Lz4 need optional extensions and are covered by unit tests.
+    $compressionSettings = [
+        'extended-insert' => false,
+        'hex-blob' => true,
+        'skip-dump-date' => true,
+    ];
+
+    print "Create dump with PHP: mysql-php_test017.sql (compression reference)" . PHP_EOL;
+
+    $dump = new Mysqldump("mysql:host=$host;dbname=test001", $user, $pass, $compressionSettings);
+    $dump->start("output/mysqldump-php_test017.sql");
+
+    print "Create dump with PHP: mysql-php_test017_gzip.sql.gz (Gzip)" . PHP_EOL;
+
+    $dump = new Mysqldump(
+        "mysql:host=$host;dbname=test001",
+        $user,
+        $pass,
+        ['compress' => CompressManagerFactory::GZIP] + $compressionSettings
+    );
+
+    $dump->start("output/mysqldump-php_test017_gzip.sql.gz");
+
+    print "Create dump with PHP: mysql-php_test017_gzipstream.sql.gz (Gzipstream)" . PHP_EOL;
+
+    $dump = new Mysqldump(
+        "mysql:host=$host;dbname=test001",
+        $user,
+        $pass,
+        ['compress' => CompressManagerFactory::GZIPSTREAM] + $compressionSettings
+    );
+
+    $dump->start("output/mysqldump-php_test017_gzipstream.sql.gz");
+
+    print "Create dump with PHP: mysql-php_test018.sql (no-data patterns)" . PHP_EOL;
+
+    // Exact table name and regex pattern, covering both branches of matches()
+    $dump = new Mysqldump(
+        "mysql:host=$host;dbname=test001",
+        $user,
+        $pass,
+        [
+            'no-data' => ['test015', '/^test2/'],
+            'extended-insert' => false,
+            'hex-blob' => true,
+        ]
+    );
+
+    $dump->start("output/mysqldump-php_test018.sql");
+
     exit(0);
 } catch (Exception $e) {
     print "Error: " . $e->getMessage() . PHP_EOL;
