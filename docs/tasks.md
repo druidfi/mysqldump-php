@@ -197,7 +197,10 @@ codebase; items that are done are kept checked for history.
 
 21. [ ] Enhance data transformation capabilities:
     - [ ] Provide ready-made anonymization helpers/recipes on top of the existing hooks
-    - [ ] Support returning `null` from hooks to skip a row entirely (row filtering)
+    - [x] Support returning `null` from hooks to skip a row entirely (row filtering) —
+          `transformTableRowHook` may now return `null` to drop the row from the dump;
+          skipped rows are excluded from row-count comments and the info hook's `rowCount`
+          (README "Filtering rows when exporting")
 
 22. [ ] Improve progress reporting (an `infoHook` with per-table row counts already exists):
     - [ ] Report total table count / overall progress, not just per-table row counts

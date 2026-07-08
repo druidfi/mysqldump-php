@@ -144,6 +144,32 @@ class TableDataDumperTest extends TestCase
         $this->assertStringContainsString("(1,'JOHN')", $output);
     }
 
+    public function testTransformTableRowHookReturningNullSkipsRow(): void
+    {
+        $payloads = [];
+        $output = $this->dumpUsersTable(overrides: [
+            'transformTableRow' => fn(string $table, array $row): ?array =>
+                $row['id'] == 2 ? null : $row,
+            'info' => function (string $object, array $payload) use (&$payloads): void {
+                $payloads[] = $payload;
+            },
+        ]);
+
+        $this->assertStringContainsString("INSERT INTO `users` VALUES (1,'John');", $output);
+        $this->assertStringNotContainsString("O''Hara", $output);
+        // Skipped rows are not counted as dumped
+        $this->assertSame(['name' => 'users', 'completed' => true, 'rowCount' => 1], end($payloads));
+    }
+
+    public function testTransformTableRowHookSkippingAllRowsWritesNoInsert(): void
+    {
+        $output = $this->dumpUsersTable(overrides: [
+            'transformTableRow' => fn(string $table, array $row): ?array => null,
+        ]);
+
+        $this->assertStringNotContainsString('INSERT INTO', $output);
+    }
+
     public function testNullValuesAreDumpedAsNull(): void
     {
         $this->pdo->exec('INSERT INTO users VALUES (3, NULL)');
