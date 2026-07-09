@@ -99,7 +99,7 @@ codebase; items that are done are kept checked for history.
     - [x] Use strict typing throughout the codebase
     - Note: remaining gaps are itemized under task 5
 
-11. [ ] Implement better validation:
+11. [x] Implement better validation:
     - [x] `matches()` reads `$pattern[0]` — an empty string in include/exclude/no-data arrays causes
           an error (fixed via `str_starts_with()` in the `array_any()` rewrite)
     - [x] Fix `DumpSettings::get()` casting every setting to `string` — `get()` now returns the
