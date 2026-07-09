@@ -200,6 +200,10 @@ Notes on the helpers:
 Anonymization here means the dump never contains the original values; it is not a substitute
 for access control on the source database itself.
 
+For realistic-looking fake data (names, addresses, phone numbers) the hooks combine well with
+[FakerPHP](https://fakerphp.org/) — see [docs/faker.md](docs/faker.md) for recipes, including
+how to keep Faker output deterministic so joins and unique indexes survive.
+
 ## Filtering rows when exporting
 
 The same hook can drop rows entirely: return `null` instead of the row and it is left out of
