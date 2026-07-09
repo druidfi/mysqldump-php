@@ -165,6 +165,41 @@ $dumper->setTransformTableRowHook(function ($tableName, array $row) {
 $dumper->start('storage/work/dump.sql');
 ```
 
+### Anonymization recipes
+
+For the common GDPR-sanitization cases the `Anonymizer` class provides ready-made,
+dependency-free helpers. `Anonymizer::columnMap()` builds a row-transform hook from a
+`table => column => transformer` map; tables and columns not in the map pass through untouched:
+
+```php
+use Druidfi\Mysqldump\Anonymizer;
+
+$dumper->setTransformTableRowHook(Anonymizer::columnMap([
+    'customers' => [
+        'email' => Anonymizer::email(),          // user-1a2b3c4d5e6f@example.com
+        'phone' => Anonymizer::mask(3),          // 040********
+        'social_security_number' => Anonymizer::fixed('REDACTED'),
+    ],
+    'users' => [
+        'name' => Anonymizer::hash('my-secret-salt'),
+        // Any callable(mixed $value, array $row): mixed works alongside the helpers
+        'display_name' => fn ($value, array $row) => 'user-' . $row['id'],
+    ],
+]));
+```
+
+Notes on the helpers:
+
+- All of them keep `NULL` values as `NULL`, so nullability semantics survive anonymization.
+- `hash()` and `email()` are deterministic — the same input always produces the same output —
+  so unique indexes and joins on the anonymized values keep working across tables and dumps.
+- Deterministic output of guessable data (names, phone numbers, SSNs) can be re-identified by
+  hashing candidate values, so pass a secret salt for those columns.
+- `mask()` preserves the string length, keeping the dump's data shape realistic.
+
+Anonymization here means the dump never contains the original values; it is not a substitute
+for access control on the source database itself.
+
 ## Filtering rows when exporting
 
 The same hook can drop rows entirely: return `null` instead of the row and it is left out of

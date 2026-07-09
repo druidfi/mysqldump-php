@@ -2,6 +2,7 @@
 
 namespace Druidfi\Mysqldump\Tests;
 
+use Druidfi\Mysqldump\Anonymizer;
 use Druidfi\Mysqldump\DumpSettings;
 use Druidfi\Mysqldump\DumpWriter;
 use Druidfi\Mysqldump\TableDataDumper;
@@ -168,6 +169,18 @@ class TableDataDumperTest extends TestCase
         ]);
 
         $this->assertStringNotContainsString('INSERT INTO', $output);
+    }
+
+    public function testAnonymizerColumnMapWorksAsRowTransformHook(): void
+    {
+        $output = $this->dumpUsersTable(overrides: [
+            'transformTableRow' => Anonymizer::columnMap([
+                'users' => ['name' => Anonymizer::fixed('anonymous')],
+            ]),
+        ]);
+
+        $this->assertStringContainsString("(1,'anonymous'),(2,'anonymous')", $output);
+        $this->assertStringNotContainsString('John', $output);
     }
 
     public function testNullValuesAreDumpedAsNull(): void

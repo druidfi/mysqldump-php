@@ -195,8 +195,12 @@ codebase; items that are done are kept checked for history.
     - [x] Support for LZ4 compression
     - [x] Configurable compression levels
 
-21. [ ] Enhance data transformation capabilities:
-    - [ ] Provide ready-made anonymization helpers/recipes on top of the existing hooks
+21. [x] Enhance data transformation capabilities:
+    - [x] Provide ready-made anonymization helpers/recipes on top of the existing hooks —
+          new dependency-free `Anonymizer` class: `columnMap()` builds a row-transform hook
+          from a table => column => transformer map; value helpers `fixed()`, `mask()`,
+          `hash()` and `email()` preserve NULLs, and the deterministic ones preserve
+          uniqueness/joins (README "Anonymization recipes" documents the salting caveat)
     - [x] Support returning `null` from hooks to skip a row entirely (row filtering) —
           `transformTableRowHook` may now return `null` to drop the row from the dump;
           skipped rows are excluded from row-count comments and the info hook's `rowCount`
