@@ -1,6 +1,15 @@
+/.github export-ignore
+/config export-ignore
+/docker-entrypoint-initdb.d export-ignore
+/docs export-ignore
 /tests export-ignore
-/unit-tests export-ignore
+.env.mysql export-ignore
 .gitattributes export-ignore
 .gitignore export-ignore
-.travis.yml export-ignore
+CLAUDE.md export-ignore
+Dockerfile export-ignore
+SECURITY.md export-ignore
+compose.yaml export-ignore
+phpstan.dist.neon export-ignore
 phpunit.xml export-ignore
+rector.php export-ignore
