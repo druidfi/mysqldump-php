@@ -79,8 +79,8 @@ docs/
 └── tasks.md                   # Improvement roadmap (checkbox task list)
 
 # Root-level Docker test setup
-Dockerfile                     # PHP test container (PHP_SHORT_VERSION build arg)
-compose.yaml                   # Services: mysql, mysql84, mariadb, mariadb11, php84, php85
+Dockerfile                     # PHP test container (PHP_SHORT_VERSION build arg: 84, 85, 86)
+compose.yaml                   # Services: mysql, mysql84, mariadb, mariadb11, php84, php85, php86
 config/skip-ssl.cnf            # MySQL client config for test containers
 docker-entrypoint-initdb.d/    # DB init scripts (mysql-init.sql, mariadb-init.sql)
 .env.mysql                     # Shared DB credentials for compose services
@@ -105,7 +105,7 @@ vendor/bin/rector process --dry-run
 cd tests/scripts && ./test.sh 127.0.0.1
 
 # Docker-based testing
-docker compose up mysql php84    # or php85; mysql84 for MySQL 8.4 LTS
+docker compose up mysql php84    # or php85/php86; mysql84 for MySQL 8.4 LTS
 docker compose up mariadb php84  # same, against MariaDB (mariadb11 for 11.8 LTS)
 ```
 
@@ -171,9 +171,9 @@ Druidfi\Mysqldump\
 
 ### CI Matrix
 Tests run on:
-- PHP: 8.4, 8.5
+- PHP: 8.4, 8.5, 8.6
 - Databases: MySQL 8.0, MySQL 8.4 LTS, MariaDB 10.11 LTS, MariaDB 11.8 LTS
-- Total: 8 combinations
+- Total: 12 combinations
 
 The `2.x` branch keeps the wider PHP 8.1–8.5 matrix (10 combinations).
 

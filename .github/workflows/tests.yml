@@ -24,7 +24,14 @@ jobs:
 
   tests:
 
+    name: PHP ${{ matrix.php-version }} / ${{ matrix.database_image }}${{ matrix.experimental && ' (experimental)' || '' }}
+
     runs-on: ${{ matrix.os }}
+
+    # PHP 8.6 is brand new (8.6.0 released 2026-11-19): its jobs are marked
+    # `experimental` so a failure there is reported but does not fail the run.
+    # Drop the flag once 8.6 has settled.
+    continue-on-error: ${{ matrix.experimental == true }}
 
     strategy:
       fail-fast: false
@@ -40,6 +47,11 @@ jobs:
             database: mysql
             database_image: mysql:8.0
             php-version: 8.5
+          - os: ubuntu-24.04
+            database: mysql
+            database_image: mysql:8.0
+            php-version: 8.6
+            experimental: true
 
           # MySQL 8.4 LTS: mysql_native_password is disabled by default, but
           # the test user needs it (the clients used in tests cannot use
@@ -55,6 +67,12 @@ jobs:
             database_image: mysql:8.4
             php-version: 8.5
             database_flags: --mysql-native-password=ON
+          - os: ubuntu-24.04
+            database: mysql
+            database_image: mysql:8.4
+            php-version: 8.6
+            experimental: true
+            database_flags: --mysql-native-password=ON
 
           # MariaDB 10.11 LTS
           - os: ubuntu-22.04
@@ -65,6 +83,11 @@ jobs:
             database: mariadb
             database_image: mariadb:10.11
             php-version: 8.5
+          - os: ubuntu-22.04
+            database: mariadb
+            database_image: mariadb:10.11
+            php-version: 8.6
+            experimental: true
 
           # MariaDB 11.8 LTS (the image no longer ships the mysql/mysqldump
           # compatibility symlinks — container binaries are mariadb/mariadb-dump)
@@ -76,6 +99,11 @@ jobs:
             database: mariadb
             database_image: mariadb:11.8
             php-version: 8.5
+          - os: ubuntu-22.04
+            database: mariadb
+            database_image: mariadb:11.8
+            php-version: 8.6
+            experimental: true
 
     steps:
 
