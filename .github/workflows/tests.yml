@@ -24,6 +24,8 @@ jobs:
 
   tests:
 
+    name: PHP ${{ matrix.php-version }} / ${{ matrix.database_image }}${{ matrix.experimental && ' (experimental)' || '' }}
+
     runs-on: ${{ matrix.os }}
 
     # PHP 8.6 is brand new (8.6.0 released 2026-11-19): its jobs are marked
