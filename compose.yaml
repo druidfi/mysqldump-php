@@ -60,3 +60,16 @@ services:
     depends_on:
       - mysql
       - mariadb
+
+  php86:
+    container_name: mysqldump-php-86
+    build:
+      context: .
+      args:
+        PHP_SHORT_VERSION: 86
+    volumes:
+      - .:/app
+      - ./config/skip-ssl.cnf:/etc/my.cnf.d/skip-ssl.cnf
+    depends_on:
+      - mysql
+      - mariadb
